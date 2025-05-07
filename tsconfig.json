@@ -6,7 +6,8 @@
       "@/*": [
         "./*"
       ]
-    }
+    },
+    "types": ["jest", "node"]
   },
   "include": [
     "**/*.ts",
@@ -14,4 +15,5 @@
     ".expo/types/**/*.ts",
     "expo-env.d.ts"
   ]
+
 }
