@@ -1,30 +1,32 @@
 import React, { useState } from 'react';
-import { signUp } from '../../auth/cognito';
+import { signUp } from '@/src/auth/authService';
 import { Text, View, StyleSheet, Button } from "react-native";
 import FormField from "@/src/components/ui/FormField";
 import { useRouter } from 'expo-router';
+import { useAuth } from '@/src/context/authContext';
 
 const RegisterForm = () => {
-    const [email, setEmail] = useState('');
+    const [email, setEmailLocal] = useState('');
     const [password, setPassword] = useState('');
     const [confirmPassword, setConfirmPassword] = useState('');
     const [error, setError] = useState('');
     const [loading, setLoading] = useState(false);
-  
-    // Function to handle login submission
+    const router = useRouter();
+    const { setEmail } = useAuth();
+
+    // Function to handle signUp submission
     const handleSubmit = async () => {
       setLoading(true);
       setError('');
-      const router = useRouter();
 
       try {
             const result = await signUp(email, password, email);
             console.log('Successfully signed in:', result);
-            if (!result.userConfirmed){
 
+            if (!result.userConfirmed){
+                setEmail(email);
                 // Navigate to "Enter Code" page, passing the email
-                router.push({ pathname: '/verify', params: { email } });
-                  
+                router.push({ pathname: '/verify', params: { email } }); 
             }
             // Redirect to another screen or handle logged-in state here
       } catch (err) {
@@ -38,7 +40,7 @@ const RegisterForm = () => {
     return (
         <>
         <View style={styles.container}>
-            <FormField label="Email" value={email} onChangeText={setEmail} placeholder="Enter your email" />
+            <FormField label="Email" value={email} onChangeText={setEmailLocal} placeholder="Enter your email" />
             <FormField label="Password" value={password} onChangeText={setPassword} placeholder="Enter password" secureTextEntry />
             <FormField label="Confirm Password" value={confirmPassword} onChangeText={setConfirmPassword} placeholder="Confirm password" secureTextEntry />
 

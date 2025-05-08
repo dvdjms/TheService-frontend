@@ -1,36 +1,93 @@
-import { confirmSignUp } from '../../src/auth/cognito';
-
-jest.mock('amazon-cognito-identity-js', () => {
-    const actual = jest.requireActual('amazon-cognito-identity-js');
-  
-    return {
-      ...actual,
-      CognitoUser: jest.fn().mockImplementation(() => ({
-        confirmRegistration: (
-          code: string,
-          forceAliasCreation: boolean,
-          callback: (err: Error | null, result: string | null) => void
-        ) => {
-          if (code === 'valid-code') {
-            callback(null, 'Confirmation successful');
-          } else {
-            callback(new Error('Invalid code'), null);
-          }
-        },
-      })),
-      CognitoUserPool: jest.fn().mockImplementation(() => ({
-        getCurrentUser: jest.fn(),
-      })),
-    };
-  });
-  
+import {
+    confirmSignUp,
+    mockAddUser,
+    mockSetVerificationCode,
+    resetAuthMocks
+} from '../../src/auth/authService';
 
 describe('confirmSignUp', () => {
-  it('should confirm registration successfully with a valid code', async () => {
-    await expect(confirmSignUp('test@example.com', 'valid-code')).resolves.toBe('Confirmation successful');
-  });
+    const testEmail = 'test@example.com';
+    const testCode = '654321';
+    const testPassword = 'ValidPass123!';
 
-  it('should throw an error for invalid confirmation code', async () => {
-    await expect(confirmSignUp('test@example.com', 'invalid-code')).rejects.toThrow('Invalid code');
-  });
+    beforeEach(() => {
+        resetAuthMocks?.();
+    });
+
+    it('should confirm user with correct code', async () => {
+
+        mockAddUser?.(testEmail, testPassword, false, { email: testEmail });
+        mockSetVerificationCode?.(testEmail, testCode);
+
+        const result = await confirmSignUp(testEmail, testCode);
+
+        expect(result).toBe('SUCCESS');
+    });
+
+
+    it('should reject with UserNotFoundException for unknown email', async () => {
+
+        await expect(confirmSignUp('nonexistent@test.com', testCode))
+            .rejects.toMatchObject({
+                code: 'UserNotFoundException',
+                message: 'User does not exist'
+            });
+    });
+
+    it('should reject with AlreadyConfirmedException for confirmed users', async () => {
+
+        mockAddUser?.(testEmail, testPassword, true, { email: testEmail });
+        mockSetVerificationCode?.(testEmail, testCode);
+
+        await expect(confirmSignUp(testEmail, testCode))
+            .rejects.toMatchObject({
+                code: 'AlreadyConfirmedException',
+                message: 'User is already confirmed'
+            });
+    });
+
+    it('should reject with CodeMismatchException for wrong code', async () => {
+
+        mockAddUser?.(testEmail, testPassword, false, { email: testEmail });
+        mockSetVerificationCode?.(testEmail, testCode);
+
+        await expect(confirmSignUp(testEmail, 'wrong-code'))
+            .rejects.toMatchObject({
+                code: 'CodeMismatchException',
+                message: 'Invalid verification code'
+            });
+    });
+
+    // Edge Cases
+    it('should clean up verification code after successful confirmation', async () => {
+
+        mockAddUser?.(testEmail, testPassword, false, { email: testEmail });
+        mockSetVerificationCode?.(testEmail, testCode);
+
+        await confirmSignUp(testEmail, testCode);
+
+        await expect(confirmSignUp(testEmail, testCode))
+        .rejects.toMatchObject({
+            code: expect.stringMatching(/CodeMismatchException|AlreadyConfirmedException/)
+        });
+    });
+
+    it('should handle concurrent confirmation attempts', async () => {
+
+        mockAddUser?.(testEmail, testPassword, false, { email: testEmail });
+        mockSetVerificationCode?.(testEmail, testCode);
+
+        // Run multiple confirmations simultaneously
+        const results = await Promise.allSettled([
+            confirmSignUp(testEmail, testCode),
+            confirmSignUp(testEmail, testCode)
+        ]);
+
+        const fulfilled = results.filter(r => r.status === 'fulfilled');
+        const rejected = results.filter(r => r.status === 'rejected');
+        
+        expect(fulfilled).toHaveLength(1); // Only one should succeed
+        expect(rejected).toHaveLength(1); // Other should fail
+        expect(['CodeMismatchException', 'AlreadyConfirmedException']).toContain(rejected[0].reason.code);
+    });
 });

@@ -1,4 +1,5 @@
 import { Stack } from "expo-router";
+import HeaderProfileButton from '../../../src/components/ui/HeaderProfileButton';
 
 
 export default function HomeLayout() {
@@ -14,6 +15,11 @@ export default function HomeLayout() {
             fontWeight: 'bold',
             },
         }}>
+        <Stack.Screen
+            options={{
+            headerRight: () => <HeaderProfileButton />,
+            }}
+        />
         <Stack.Screen name="index" options={{ headerShown: false, headerTitle: "",}} />
     </Stack>
     );

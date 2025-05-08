@@ -1,22 +1,20 @@
 import { View, StyleSheet, TextInput, Button } from "react-native";
 import { Link } from 'expo-router';
 import { useLocalSearchParams } from 'expo-router';
-
 import ScreenTitle from "@/src/components/ui/ScreenTitle";
 import RegisterForm from "@/src/components/forms/RegisterForm";
-import FormField from "@/src/components/ui/FormField";
+import VerificationForm from "@/src/components/forms/VerificationForm";
+
 
 export default function VerifyScreen() {
 
     const { email } = useLocalSearchParams();
 
-
-
     return (
         <>
         <View style={styles.container}>
-            <ScreenTitle title="Verifiation" />
-
+            <ScreenTitle title="Verification" />
+            <VerificationForm />
             <Link href="/login">Login</Link>
         </View>
       </>

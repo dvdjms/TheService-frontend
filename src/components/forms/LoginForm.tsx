@@ -1,31 +1,35 @@
 import React, { useState } from 'react';
-import { signIn } from '../../auth/cognito';
+import { signIn } from '@/src/auth/authTypes';
 import { Text, View, StyleSheet, Button } from "react-native";
 import FormField from "@/src/components/ui/FormField";
-import ScreenTitle from "@/src/components/ui/ScreenTitle";
 import { Link } from 'expo-router';
+import { useRouter } from 'expo-router';
+import { useAuth } from '@/src/context/authContext';
 
 const LoginForm = () => {
-    const [email, setEmail] = useState('');
+    const { email, setEmail } = useAuth();;
     const [password, setPassword] = useState('');
     const [error, setError] = useState('');
     const [loading, setLoading] = useState(false);
-  
+    const router = useRouter();
+
     // Function to handle login submission
     const handleSubmit = async () => {
-      setLoading(true);
-      setError('');
-  
-      try {
-        const result = await signIn(email, password);
-        console.log('Successfully signed in:', result);
-        // Redirect to another screen or handle logged-in state here
-      } catch (err) {
-        console.error('Sign-in failed:', err);
-        setError('Failed to sign in. Please check your credentials.');
-      } finally {
-        setLoading(false);
-      }
+        setLoading(true);
+        setError('');
+
+        try {
+            const result = await signIn(email, password);
+
+            console.log('Successfully signed in:', result);
+            // Redirect to another screen or handle logged-in state here
+            router.push({ pathname: '/', params: { email } });
+        } catch (err) {
+            console.error('Sign-in failed:', err);
+            setError('Failed to sign in. Please check your credentials.');
+        } finally {
+            setLoading(false);
+        }
     };
 
     return (

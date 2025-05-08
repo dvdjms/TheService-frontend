@@ -1,43 +1,44 @@
 import React, { useState } from 'react';
-import { confirmSignUp } from '@/src/auth/cognito';
+import { confirmSignUp } from '@/src/auth/authTypes';
 import { Text, View, StyleSheet, Button } from "react-native";
 import FormField from "@/src/components/ui/FormField";
 import { useRouter } from 'expo-router';
-import { useLocalSearchParams } from 'expo-router';
+import { useAuth } from '@/src/context/authContext';
 
 const VerificationForm = () => {
     const [error, setError] = useState('');
     const [loading, setLoading] = useState(false);
     const [code, setCode] = useState('');
     const router = useRouter();
-    const { email } = useLocalSearchParams();
+    const { email } = useAuth();
 
     // Function to handle email verification
     const handleSubmit = async () => {
-      try {
+        try {
+            // const email = searchParams.email as string;
+            console.log('email:', email, 'code', code)
+            const result = await confirmSignUp(email, code)
 
-            // const result = await confirmSignUp(email, code)
+            console.log('Verification successful:', result);
+            // if (!result.UserConfirmed){
+            //     setError("Invalid Code. Please check email")
+            // }
 
-            // console.log('Verification successful:', result);
-            // if (!result.userConfirmed){
-
-                // Navigate to "Enter Code" page, passing the email
-                router.push({ pathname: '/verify', params: { email } });
-                  
-            
             // Redirect to another screen or handle logged-in state here
-      } catch (err) {
+            router.push({ pathname: '/', params: { email } });
+                  
+        } catch (err) {
             console.error('Sign-in failed:', err);
-            setError('Failed to verify in. Please check your email.');
-      } finally {
+            setError('Failed to verify. Please check your email.');
+        } finally {
             setLoading(false);
-      }
+        }
     };
 
     return (
         <>
         <View style={styles.container}>
-            <FormField label="Code" value={code} onChangeText={setCode} placeholder="Entry Code" secureTextEntry />
+            <FormField label="Enter Code" value={code} onChangeText={setCode} placeholder="Enter Code" secureTextEntry />
 
             <Button
                 title={loading ? 'Verifying...' : 'Verify'}

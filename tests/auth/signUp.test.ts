@@ -1,45 +1,41 @@
-import { signUp } from '../../src/auth/cognito';
+import { signUp, mockGetUserDatabase } from '../../src/auth/authService';
 
-jest.mock('amazon-cognito-identity-js', () => {
-  const actual = jest.requireActual('amazon-cognito-identity-js');
-
-  return {
-    ...actual,
-    CognitoUserPool: jest.fn().mockImplementation(() => ({
-      signUp: jest.fn((username, password, attributeList, nullValue, callback) => {
-        if (username === 'exists@example.com') {
-          callback(new Error('User already exists'), null);
-        } else if (!/[A-Z]/.test(password)) {
-          callback(new Error('InvalidPasswordException: Password must have uppercase characters'), null);
-        } else {
-          callback(null, {
-            user: {
-              getUsername: () => username,
-            },
-          });
+describe('signUp function', () => {
+    beforeEach(() => {
+        for (const key in mockGetUserDatabase) {
+            delete mockGetUserDatabase[key];
         }
-      }),
-    })),
-  };
-});
+    });
 
-describe('signUp', () => {
+    it('should resolve with user data when valid credentials are provided', async () => {
+        const result = await signUp('test@example.com', 'password123', 'test@example.com');
+        expect(result.user.getUsername()).toBe('test@example.com');
+        expect(result.userConfirmed).toBe(false);
+    });
 
-  it('should sign up a new user successfully', async () => {
-    const result = await signUp('test@example.com', 'Password123!', 'test@example.com');
-    expect(result).toHaveProperty('user');
-    expect(result.user.getUsername()).toBe('test@example.com');
-  });
+    it('should reject when username is missing', async () => {
+        await expect(signUp('', 'password123', 'test@example.com'))
+            .rejects.toThrow('All fields are required');
+    });
 
-  it('should fail if user already exists', async () => {
-    await expect(signUp('exists@example.com', 'Password123', 'exists@example.com')).rejects.toThrow(
-      'User already exists'
-    );
-  });
+    it('should reject when password is too short', async () => {
+        await expect(signUp('test@example.com', 'short', 'test@example.com'))
+            .rejects.toThrow('Password must be at least 8 characters');
+    });
 
-  it('should fail if password is invalid', async () => {
-    await expect(signUp('new@example.com', 'password123', 'new@example.com')).rejects.toThrow(
-      'InvalidPasswordException'
-    );
-  });
+    it('should reject when username is invalid', async () => {
+        await expect(signUp('invalid-email', 'password123', 'invalid-email'))
+            .rejects.toThrow('Username must be a valid email address');
+    });
+
+    it('should reject non-email usernames', async () => {
+        await expect(signUp('not-an-email', 'ValidPass123!', 'test@example.com'))
+            .rejects.toThrow('Username must be a valid email address');
+    });
+    
+    it('should store password hashes', async () => {
+        await signUp('test@example.com', 'password123', 'test@example.com');
+        const db = mockGetUserDatabase!;
+        expect(db['test@example.com'].passwordHash).toMatch(/^mock-hash-/);
+    });
 });

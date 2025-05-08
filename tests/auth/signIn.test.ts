@@ -1,38 +1,52 @@
-import { signIn } from '../../src/auth/cognito';
+import { signIn, mockAddUser, resetAuthMocks } from '../../src/auth/authService';
 
-jest.mock('amazon-cognito-identity-js', () => {
-  const actual = jest.requireActual('amazon-cognito-identity-js');
+describe('signIn function', () => {
+    beforeEach(() => {
+        resetAuthMocks?.();
+        mockAddUser?.('testuser', 'correctpassword');
+    });
 
-  return {
-    ...actual,
-    CognitoUserPool: jest.fn().mockImplementation(() => ({
-      getCurrentUser: jest.fn(), // Optional, in case your logic uses it
-    })),
-    CognitoUser: jest.fn().mockImplementation(() => ({
-      authenticateUser: jest.fn((details, callbacks) => {
-        if (
-          details.getUsername() === 'test@example.com' &&
-          details.getPassword() === 'correct-password'
-        ) {
-          callbacks.onSuccess('Login success');
-        } else {
-          callbacks.onFailure(new Error('Login failed'));
-        }
-      }),
-    })),
-    AuthenticationDetails: jest.fn((data) => ({
-      getUsername: () => data.Username,
-      getPassword: () => data.Password,
-    })),
-  };
-});
+    it('should resolve with tokens when credentials are valid', async () => {
+        const result = await signIn('testuser', 'correctpassword');
+        const idToken = result.getIdToken().getJwtToken();
+        const accessToken = result.getAccessToken().getJwtToken();
 
-describe('signIn', () => {
-  it('should log in successfully with correct credentials', async () => {
-    await expect(signIn('test@example.com', 'correct-password')).resolves.toEqual('Login success');
-  });
+        expect(idToken).toMatch(/^eyJhbGciOi/);
+        expect(result.getIdToken().payload['cognito:username']).toBe('testuser');
+        expect(accessToken).toMatch(/^eyJhbGciOi/);
+    });
 
-  it('should fail to log in with incorrect credentials', async () => {
-    await expect(signIn('test@example.com', 'wrong-password')).rejects.toThrow('Login failed');
-  });
+    it('should reject with UserNotFoundException for non-existent users', async () => {
+        await expect(signIn('nonexistent', 'password'))
+            .rejects.toMatchObject({
+                code: 'UserNotFoundException',
+                message: 'User Not Found Exception'
+            });
+    });
+
+    it('should reject with NotAuthorizedException for wrong password', async () => {
+        await expect(signIn('testuser', 'wrongpassword'))
+            .rejects.toMatchObject({
+                code: 'NotAuthorizedException',
+                message: 'Not Authorized Exception'
+            });
+    });
+
+    it('should reject with UserNotConfirmedException for unconfirmed users', async () => {
+        mockAddUser?.('unconfirmed', 'password', false);
+        await expect(signIn('unconfirmed', 'password'))
+            .rejects.toMatchObject({
+                code: 'UserNotConfirmedException',
+                message: 'User Not Confirmed Exception'
+            });
+    });
+
+    it('should include custom attributes in the token payload', async () => {
+        mockAddUser?.('premiumuser', 'password', true, {
+            'custom:subscriptionTier': 'premium'
+        });
+        
+        const result = await signIn('premiumuser', 'password');
+        expect(result.getIdToken().payload['custom:subscriptionTier']).toBe('premium');
+    });
 });
