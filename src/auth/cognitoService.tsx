@@ -75,7 +75,7 @@ export function signIn(username: string, password: string) {
 
 
 // Confirm email function (with async/await wrapped in a promise)
-export function confirmSignUp(email: string, code: string): Promise<string> {
+export function verifySignUp(email: string, code: string): Promise<string> {
     return new Promise((resolve, reject) => {
         const user = new CognitoUser({
             Username: email,

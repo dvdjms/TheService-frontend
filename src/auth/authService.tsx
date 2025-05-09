@@ -2,14 +2,15 @@ import * as realAuth from './cognitoService';
 import * as mockAuth from '../_mocks_/mockCognitoService';
 import type { AuthService } from './authTypes';
 
-const USE_MOCK = true;
+// USE_MOCK is for testing purposes - change to true for testing
+const USE_MOCK = false;
 console.log("USE_MOCK", USE_MOCK)
 
 const auth: AuthService = USE_MOCK ? {
     // Core functions
     signUp: mockAuth.signUp,
     signIn: mockAuth.signIn,
-    confirmSignUp: mockAuth.confirmSignUp,
+    verifySignUp: mockAuth.verifySignUp,
     signOut: mockAuth.signOut,
     
     // Mock helpers
@@ -22,12 +23,12 @@ const auth: AuthService = USE_MOCK ? {
     // Real implementation
     signUp: realAuth.signUp,
     signIn: realAuth.signIn,
-    confirmSignUp: realAuth.confirmSignUp,
+    verifySignUp: realAuth.verifySignUp,
     signOut: realAuth.signOut
 };
 
 // Export core functions
-export const { signUp, signIn, confirmSignUp, signOut } = auth;
+export const { signUp, signIn, verifySignUp, signOut } = auth;
 
 // Type-safe mock helpers export
 export const mockAddUser = USE_MOCK ? mockAuth.mockAddUser : undefined;

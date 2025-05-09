@@ -1,5 +1,5 @@
 import {
-    confirmSignUp,
+    verifySignUp,
     mockAddUser,
     mockSetVerificationCode,
     resetAuthMocks
@@ -19,7 +19,7 @@ describe('confirmSignUp', () => {
         mockAddUser?.(testEmail, testPassword, false, { email: testEmail });
         mockSetVerificationCode?.(testEmail, testCode);
 
-        const result = await confirmSignUp(testEmail, testCode);
+        const result = await verifySignUp(testEmail, testCode);
 
         expect(result).toBe('SUCCESS');
     });
@@ -27,7 +27,7 @@ describe('confirmSignUp', () => {
 
     it('should reject with UserNotFoundException for unknown email', async () => {
 
-        await expect(confirmSignUp('nonexistent@test.com', testCode))
+        await expect(verifySignUp('nonexistent@test.com', testCode))
             .rejects.toMatchObject({
                 code: 'UserNotFoundException',
                 message: 'User does not exist'
@@ -39,7 +39,7 @@ describe('confirmSignUp', () => {
         mockAddUser?.(testEmail, testPassword, true, { email: testEmail });
         mockSetVerificationCode?.(testEmail, testCode);
 
-        await expect(confirmSignUp(testEmail, testCode))
+        await expect(verifySignUp(testEmail, testCode))
             .rejects.toMatchObject({
                 code: 'AlreadyConfirmedException',
                 message: 'User is already confirmed'
@@ -51,7 +51,7 @@ describe('confirmSignUp', () => {
         mockAddUser?.(testEmail, testPassword, false, { email: testEmail });
         mockSetVerificationCode?.(testEmail, testCode);
 
-        await expect(confirmSignUp(testEmail, 'wrong-code'))
+        await expect(verifySignUp(testEmail, 'wrong-code'))
             .rejects.toMatchObject({
                 code: 'CodeMismatchException',
                 message: 'Invalid verification code'
@@ -64,9 +64,9 @@ describe('confirmSignUp', () => {
         mockAddUser?.(testEmail, testPassword, false, { email: testEmail });
         mockSetVerificationCode?.(testEmail, testCode);
 
-        await confirmSignUp(testEmail, testCode);
+        await verifySignUp(testEmail, testCode);
 
-        await expect(confirmSignUp(testEmail, testCode))
+        await expect(verifySignUp(testEmail, testCode))
         .rejects.toMatchObject({
             code: expect.stringMatching(/CodeMismatchException|AlreadyConfirmedException/)
         });
@@ -79,8 +79,8 @@ describe('confirmSignUp', () => {
 
         // Run multiple confirmations simultaneously
         const results = await Promise.allSettled([
-            confirmSignUp(testEmail, testCode),
-            confirmSignUp(testEmail, testCode)
+            verifySignUp(testEmail, testCode),
+            verifySignUp(testEmail, testCode)
         ]);
 
         const fulfilled = results.filter(r => r.status === 'fulfilled');

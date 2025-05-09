@@ -1,10 +1,9 @@
 
-// authTypes.ts
 export interface AuthService {
     // Core functions
     signUp(username: string, password: string, email: string): Promise<any>;
     signIn(username: string, password: string): Promise<any>;
-    confirmSignUp(email: string, code: string): Promise<string>;
+    verifySignUp(email: string, code: string): Promise<string>;
     signOut(): void;
     
     // Mock-only functions

@@ -1,11 +1,11 @@
 import React, { useState } from 'react';
-import { confirmSignUp } from '@/src/auth/authTypes';
+import { verifySignUp } from '@/src/auth/authService';
 import { Text, View, StyleSheet, Button } from "react-native";
 import FormField from "@/src/components/ui/FormField";
 import { useRouter } from 'expo-router';
 import { useAuth } from '@/src/context/authContext';
 
-const VerificationForm = () => {
+const VerifySignUpForm = () => {
     const [error, setError] = useState('');
     const [loading, setLoading] = useState(false);
     const [code, setCode] = useState('');
@@ -17,7 +17,7 @@ const VerificationForm = () => {
         try {
             // const email = searchParams.email as string;
             console.log('email:', email, 'code', code)
-            const result = await confirmSignUp(email, code)
+            const result = await verifySignUp(email, code)
 
             console.log('Verification successful:', result);
             // if (!result.UserConfirmed){
@@ -76,4 +76,4 @@ const styles = StyleSheet.create({
       },
 });
 
-export default VerificationForm;
+export default VerifySignUpForm;

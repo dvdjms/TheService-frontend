@@ -95,7 +95,7 @@ export function signUp(username: string, password: string, email: string): Promi
     });
 }
 
-export function confirmSignUp(email: string, code: string): Promise<string> {
+export function verifySignUp(email: string, code: string): Promise<string> {
     return new Promise((resolve, reject) => {
         setTimeout(() => {
             const user = Object.values(mockUserDatabase).find(u => u.attributes.email === email);

@@ -2,9 +2,9 @@ import { Text, View, StyleSheet, TextInput, Button } from "react-native";
 import { Link } from 'expo-router';
 import { useState } from 'react';
 import ScreenTitle from "@/src/components/ui/ScreenTitle";
-import RegisterForm from "@/src/components/forms/RegisterForm";
+import RegisterForm from "@/src/components/forms/SignUpForm";
 
-export default function RegisterScreen() {
+export default function SignUpScreen() {
 
     return (
         <>

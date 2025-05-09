@@ -1,12 +1,11 @@
-import { View, StyleSheet, TextInput, Button } from "react-native";
+import { View, StyleSheet } from "react-native";
 import { Link } from 'expo-router';
 import { useLocalSearchParams } from 'expo-router';
 import ScreenTitle from "@/src/components/ui/ScreenTitle";
-import RegisterForm from "@/src/components/forms/RegisterForm";
-import VerificationForm from "@/src/components/forms/VerificationForm";
+import VerificationForm from "@/src/components/forms/VerifySignUpForm";
 
 
-export default function VerifyScreen() {
+export default function VerifySignUpScreen() {
 
     const { email } = useLocalSearchParams();
 
