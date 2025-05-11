@@ -1,17 +1,19 @@
 import React, { useState } from 'react';
-import { signIn } from '@/src/auth/authService';
 import { Text, View, StyleSheet, Button } from "react-native";
 import FormField from "@/src/components/ui/FormField";
 import { Link } from 'expo-router';
 import { useRouter } from 'expo-router';
 import { useAuth } from '@/src/context/authContext';
 
+
 const SignInForm = () => {
-    const { email, setEmail } = useAuth();
-    const [password, setPassword] = useState('');
-    const [error, setError] = useState('');
-    const [loading, setLoading] = useState(false);
+    const { signIn } = useAuth();
+    const [email, setEmail] = useState<string>('');
+    const [password, setPassword] = useState<string>('');
+    const [error, setError] = useState<string>('');
+    const [loading, setLoading] = useState<boolean>(false);
     const router = useRouter();
+   
 
     // Function to handle login submission
     const handleSubmit = async () => {
@@ -19,21 +21,22 @@ const SignInForm = () => {
         setError('');
 
         try {
-            const result = await signIn(email, password);
-
-            if (!result.idToken.payload.email_verified){
-                setError('Failed Ohhh nooo.')
+            if (!email || !password) {
+                throw new Error('All fields are required');
             }
-            console.log('Successfully signed in:', result.idToken.payload.email);
- 
-            // Push to authContext
+        
+            if (!email.includes('@')) {
+                throw new Error('Username must be a valid email address');
+            }
+        
+            if (password.length < 8) {
+                throw new Error('Password must be at least 8 characters');
+            }
 
+            await signIn(email, password);
 
-
-
-
-
-            router.push({ pathname: '/', params: { email } });
+            router.push({ pathname: '/(auth)/(signed-in)/(tabs)/home', params: { email } });
+            
         } catch (err) {
             console.error('Sign-in failed:', err);
             setError('Failed to sign in. Please check your credentials.');
@@ -54,7 +57,7 @@ const SignInForm = () => {
                 disabled={loading}
             />
             {error ? <Text style={styles.error}>{error}</Text> : null}
-            <Link href="/register">Register</Link>
+            <Link href="/signup">Register</Link>
         </View>
       </>
   );

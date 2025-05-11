@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { signUp } from '@/src/auth/authService';
+import { signUp } from '@/src/lib/auth/authService';
 import { Text, View, StyleSheet, Button } from "react-native";
 import FormField from "@/src/components/ui/FormField";
 import { useRouter } from 'expo-router';
@@ -17,16 +17,29 @@ const SignUpForm = () => {
     // Function to handle signUp submission
     const handleSubmit = async () => {
       setLoading(true);
-      setError('');
+        setError('');
 
-      try {
+        try {
+
+            if (!email || !password) {
+                throw new Error('All fields are required');
+            }
+        
+            if (!email.includes('@')) {
+                throw new Error('Username must be a valid email address');
+            }
+        
+            if (password.length < 8) {
+                throw new Error('Password must be at least 8 characters');
+            }
+            
             const result = await signUp(email, password, email);
             console.log('Successfully signed in:', result);
 
             if (!result.userConfirmed){
                 setEmail(email);
                 // Navigate to "Enter Code" page, passing the email
-                router.push({ pathname: '/verify', params: { email } }); 
+                router.push({ pathname: '/(auth)/(signed-out)/verify-email', params: { email } }); 
             }
             // Redirect to another screen or handle logged-in state here
       } catch (err) {

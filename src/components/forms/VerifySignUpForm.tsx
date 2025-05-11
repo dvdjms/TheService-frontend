@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { verifySignUp } from '@/src/auth/authService';
+import { verifySignUp } from '@/src/lib/auth/authService';
 import { Text, View, StyleSheet, Button } from "react-native";
 import FormField from "@/src/components/ui/FormField";
 import { useRouter } from 'expo-router';
@@ -25,7 +25,7 @@ const VerifySignUpForm = () => {
             // }
 
             // Redirect to another screen or handle logged-in state here
-            router.push({ pathname: '/', params: { email } });
+            router.push({ pathname: '/(auth)/(signed-in)/(tabs)/home', params: { email } });
                   
         } catch (err) {
             console.error('Sign-in failed:', err);
