@@ -3,19 +3,20 @@ import { useAuth } from '@/src/context/authContext';
 
 
 export default function HomeScreen() {
-    const { firstName, email } = useAuth();
+    const { firstName, email, subscriptionTier } = useAuth();
     return (
 
         <View style={styles.container}>
             <Text>Welcome, {firstName}!</Text>
             <Text>Email: {email}!</Text>
+            <Text>subscriptionTier: {subscriptionTier}!</Text>
+
             <Text style={styles.titleContainer}>The Service</Text>
 
             <TouchableOpacity style={styles.button} onPress={() => alert('Pressed!')}>
                 <Text style={styles.buttonText}>Custom Button</Text>
             </TouchableOpacity>
         </View>
-
 
     );
 }

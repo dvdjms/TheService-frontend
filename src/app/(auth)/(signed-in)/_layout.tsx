@@ -49,8 +49,7 @@ export default function SignedInLayout() {
                         <Ionicons name="settings-outline" size={size} color={color} />
                     ),
                     headerRight: () => (
-                        <HomeIcon onPress={() => navigation.dispatch(DrawerActions.openDrawer())} />
-                    )
+                        <HomeIcon onPress={() => router.push('/home')} />                    )
                 }}
             />
             <Drawer.Screen 
@@ -62,8 +61,7 @@ export default function SignedInLayout() {
                         <Ionicons name="help-circle-outline" size={size} color={color} />
                     ),
                     headerRight: () => (
-                        <HomeIcon onPress={() => navigation.dispatch(DrawerActions.openDrawer())} />
-                    )
+                        <HomeIcon onPress={() => router.push('/home')} />                    )
                 }}
             />
             <Drawer.Screen 
@@ -75,8 +73,7 @@ export default function SignedInLayout() {
                         <Ionicons name="information-circle-outline" size={size} color={color} />
                     ),
                     headerRight: () => (
-                        <HomeIcon onPress={() => navigation.dispatch(DrawerActions.openDrawer())} />
-                    )
+                        <HomeIcon onPress={() => router.push('/home')} />                    )
                 }}
             />
         </Drawer>

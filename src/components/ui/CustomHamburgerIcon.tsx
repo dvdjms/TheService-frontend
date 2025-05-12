@@ -12,7 +12,7 @@ export default function CustomHamburgerIcon({ onPress }: { onPress: () => void }
 
 const styles = StyleSheet.create({
     container: {
-        padding: 8,
+        padding: 7,
         justifyContent: 'center',
     },
     line: {

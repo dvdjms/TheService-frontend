@@ -8,7 +8,6 @@ export default function AppointmentScreen() {
         <ScreenTitle title="Appointments" />
 
         <Link href="/clients">Clients</Link>
-        <Link href="/login">Login</Link>
     </View>
   );
 }

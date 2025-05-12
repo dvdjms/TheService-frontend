@@ -3,6 +3,7 @@ import EncryptedStorage from 'react-native-encrypted-storage';
 import { signIn as cognitoSignIn } from '@/src/lib/auth/cognitoService';
 import { signOut as cognitoSignOut } from '../lib/auth/authService';
 import { router } from 'expo-router';
+import { jwtDecode } from 'jwt-decode';
 
 type AuthContextType = {
     email: string;
@@ -18,6 +19,13 @@ type AuthContextType = {
     isLoading: boolean;
     hasCheckedAuth: boolean;
 };
+
+interface DecodedIdToken {
+    email: string;
+    given_name?: string;
+    ['custom:subscriptionTier']?: 'free' | 'business' | 'premium';
+    [key: string]: any; // optional: allows extra claims without error
+}
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
@@ -40,9 +48,27 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     const checkAuth = async () => {
         try{
             const stored = await EncryptedStorage.getItem('user_session');
-            const isAuth = !!stored;
-            setIsAuthenticated(isAuth)
+            if (!stored) {
+                setIsAuthenticated(false);
+                return;
+            }
 
+            const { idToken } = JSON.parse(stored);
+            const decoded: DecodedIdToken = jwtDecode(idToken);
+
+            // Token expiry check
+            const now = Math.floor(Date.now() / 1000);
+            if (decoded.exp < now) {
+                setIsAuthenticated(false);
+                await EncryptedStorage.removeItem('user_session');
+                return;
+            }
+
+            setEmail(decoded.email);
+            setFirstName(decoded.given_name ?? 'Guest');
+            setSubscriptionTier(decoded['custom:subscriptionTier'] ?? null);
+            setIsAuthenticated(true);
+  
         } catch(error){
             setIsAuthenticated(false);
         } finally {
@@ -75,18 +101,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         router.replace('/signin');
     };
 
-
-    const parseJwt = (token: string) => {
-        try {
-            const base64Payload = token.split('.')[1];
-            if (!base64Payload) return {};
-            const payload = Buffer.from(base64Payload, 'base64').toString('utf-8');
-            return JSON.parse(payload);
-        } catch (e) {
-            console.error('Failed to parse JWT:', e);
-            return {};
-        }
-    };
 
     return (
         <AuthContext.Provider
