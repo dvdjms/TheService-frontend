@@ -1,24 +1,30 @@
-import { Redirect } from 'expo-router';
+import { Redirect, router } from 'expo-router';
 import { useAuth } from '@/src/context/authContext';
 import Drawer from 'expo-router/drawer';
 import { Ionicons } from '@expo/vector-icons';
+import CustomDrawerContent from '@/src/components/ui/CustomDrawer';
+import { useNavigation, DrawerActions } from '@react-navigation/native';
+import { Pressable } from 'react-native';
+import HomeIcon from '@/src/components/ui/HomeIcon';
 
 export default function SignedInLayout() {
     const { isAuthenticated } = useAuth();
+    const navigation = useNavigation();
 
     if (!isAuthenticated) return  <Redirect href="/(auth)/(signed-out)/signin" />;
 
 
     return (
-        <Drawer>
+        <Drawer drawerContent={(props) => <CustomDrawerContent {...props} />}>
             <Drawer.Screen 
                 name="(tabs)" 
                 options={{ 
-                    drawerLabel: "Home",
+                    drawerLabel: "Dashboard",
                     title: "",
                     drawerIcon: ({ size, color }) => (
                         <Ionicons name="home-outline" size={size} color={color} />
-                )}}
+                    )
+                }}
             />
             <Drawer.Screen 
                 name="(drawer)/profile" 
@@ -27,6 +33,9 @@ export default function SignedInLayout() {
                     title: "Profile",
                     drawerIcon: ({ size, color }) => (
                         <Ionicons name="person-outline" size={size} color={color} />
+                    ),
+                    headerRight: () => (
+                        <HomeIcon onPress={() => router.push('/home')} />
                     )
                 }}
             />
@@ -34,9 +43,13 @@ export default function SignedInLayout() {
                 name="(drawer)/settings" 
                 options={{ 
                     drawerLabel: "Settings",
+                    headerShown: false,
                     title: "Settings",
                     drawerIcon: ({ size, color }) => (
                         <Ionicons name="settings-outline" size={size} color={color} />
+                    ),
+                    headerRight: () => (
+                        <HomeIcon onPress={() => navigation.dispatch(DrawerActions.openDrawer())} />
                     )
                 }}
             />
@@ -46,17 +59,23 @@ export default function SignedInLayout() {
                     drawerLabel: "Help",
                     title: "Help",
                     drawerIcon: ({ size, color }) => (
-                            <Ionicons name="help-outline" size={size} color={color} />
+                        <Ionicons name="help-circle-outline" size={size} color={color} />
+                    ),
+                    headerRight: () => (
+                        <HomeIcon onPress={() => navigation.dispatch(DrawerActions.openDrawer())} />
                     )
                 }}
             />
             <Drawer.Screen 
-                name="(drawer)/signout" 
+                name="(drawer)/about" 
                 options={{ 
-                    drawerLabel: "Logout",
-                    title: "Logout",
+                    drawerLabel: "About",
+                    title: "About",
                     drawerIcon: ({ size, color }) => (
-                        <Ionicons name="log-out-outline" size={size} color={color} />
+                        <Ionicons name="information-circle-outline" size={size} color={color} />
+                    ),
+                    headerRight: () => (
+                        <HomeIcon onPress={() => navigation.dispatch(DrawerActions.openDrawer())} />
                     )
                 }}
             />

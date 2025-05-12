@@ -1,17 +1,13 @@
-import { Text, View, StyleSheet, TouchableOpacity } from "react-native";
+import { Text, View, StyleSheet } from "react-native";
 import { useAuth } from "@/src/context/authContext";
 
 
-export default function SignOutScreen() {
-    const { signOut } = useAuth();
+export default function AboutScreen() {
 
     return (
         <View style={styles.container}>
-            <Text style={styles.titleContainer}>Sign Out</Text>
+            <Text style={styles.titleContainer}>About</Text>
 
-            <TouchableOpacity style={styles.button} onPress={() => signOut()}>
-                <Text style={styles.buttonText}>Sign Out</Text>
-            </TouchableOpacity>
         </View>
     );
 }

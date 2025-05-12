@@ -15,7 +15,7 @@ export default function ForgotPassword() {
         <View style={styles.container}>
             <ScreenTitle title="Forgot Password" />
             <VerificationForm />
-            <Link href="/login">Login</Link>
+            <Link href="/signin">Login</Link>
         </View>
       </>
   );

@@ -1,8 +1,8 @@
 import { View, StyleSheet } from "react-native";
-import { Link, Redirect } from 'expo-router';
+import { Link } from 'expo-router';
 import ScreenTitle from "@/src/components/ui/ScreenTitle";
 import SignInForm from "@/src/components/forms/SignInForm";
-import { useAuth } from "@/src/context/authContext";
+
 
 export default function SignInScreen() {
 

@@ -1,12 +1,14 @@
+import ChangePasswordForm from "@/src/components/forms/ChangePasswordForm";
 import { Text, View, StyleSheet } from "react-native";
 
 
-export default function SettingScreen() {
-  return (
-    <View style={styles.container}>
-      <Text style={styles.titleContainer} >Settings</Text>
-    </View>
-  );
+export default function ChangePasswordScreen() {
+    return (
+        <View style={styles.container}>
+            <Text style={styles.titleContainer}>Change Password</Text>
+            <ChangePasswordForm />
+        </View>
+    );
 }
 
 const styles = StyleSheet.create({
@@ -18,8 +20,6 @@ const styles = StyleSheet.create({
     },
     titleContainer: {
         color: 'red',
-        flexDirection: 'row',
-        gap: 8,
         fontSize: 22,
     },
 });

@@ -9,22 +9,20 @@ export default function SignedOutLayout() {
     if (isAuthenticated) return <Redirect href="/home" />;
 
     return (
-    <Stack
-      screenOptions={{
-        headerShown: false, // Hide header globally (optional)
-        // animation: 'slide_from_right', // Smooth transitions
-      }}
-    >
-      <Stack.Screen
-        name="signin"
-        options={{
-          title: 'Sign In', // For accessibility/back button
-        }}
-      />
-      <Stack.Screen name="signup" />
-      <Stack.Screen name="forgot-password" />
-      <Stack.Screen name="verify-email" />
-    </Stack>
+        <Stack
+            screenOptions={{
+                headerShown: false
+            }}>
+            <Stack.Screen
+                name="signin"
+                    options={{
+                    title: 'Sign In',
+                }}
+            />
+            <Stack.Screen name="signup" />
+            <Stack.Screen name="forgot-password" />
+            <Stack.Screen name="verify-email" />
+        </Stack>
 
     )
 }
