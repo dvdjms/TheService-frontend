@@ -1,7 +1,11 @@
 import { createContext, useContext, useState, ReactNode, useEffect, useCallback } from 'react';
 import EncryptedStorage from 'react-native-encrypted-storage';
-import { signIn as cognitoSignIn } from '@/src/lib/auth/cognitoService';
-import { signOut as cognitoSignOut } from '../lib/auth/authService';
+import { 
+    signIn as cognitoSignIn, 
+    signOut as cognitoSignOut,
+    refreshSession,
+    extractTokens,
+ } from '@/src/lib/auth/cognitoService';
 import { router } from 'expo-router';
 import { jwtDecode } from 'jwt-decode';
 
@@ -53,15 +57,18 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
                 return;
             }
 
-            const { idToken } = JSON.parse(stored);
+            const { idToken, refreshToken } = JSON.parse(stored);
             const decoded: DecodedIdToken = jwtDecode(idToken);
-
-            // Token expiry check
             const now = Math.floor(Date.now() / 1000);
-            if (decoded.exp < now) {
-                setIsAuthenticated(false);
-                await EncryptedStorage.removeItem('user_session');
-                return;
+            
+            // If token is expiry, try to refresh
+            if (decoded.exp < now && refreshToken) {
+                const refreshedSession = await refreshSession(refreshToken);
+                if(!refreshedSession) {
+                    setIsAuthenticated(false);
+                    await EncryptedStorage.removeItem('user_session');
+                    return;
+                }
             }
 
             setEmail(decoded.email);

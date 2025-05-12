@@ -1,10 +1,13 @@
+import EncryptedStorage from 'react-native-encrypted-storage';
 import { 
     CognitoUserPool, 
     CognitoUser, 
     AuthenticationDetails, 
     CognitoUserAttribute, 
-    CognitoUserSession } from 'amazon-cognito-identity-js';
-import EncryptedStorage from 'react-native-encrypted-storage';
+    CognitoUserSession,
+    CognitoRefreshToken 
+} from 'amazon-cognito-identity-js';
+
 
 const poolData = {  
     UserPoolId: 'eu-west-2_y541sF3kH',
@@ -132,8 +135,26 @@ export async function getCurrentUser(): Promise<{
     });
 }
 
+
+export function refreshSession(refreshTokenStr: string): Promise<CognitoUserSession | null> {
+  return new Promise((resolve) => {
+    const user = userPool.getCurrentUser();
+    if (!user) return resolve(null);
+
+    const refreshToken = new CognitoRefreshToken({ RefreshToken: refreshTokenStr });
+
+    user.refreshSession(refreshToken, (err, session) => {
+      if (err || !session?.isValid()) {
+        console.error('Failed to refresh session:', err);
+        return resolve(null);
+      }
+      resolve(session);
+    });
+  });
+}
+
   // helper function
-const extractTokens = (session: CognitoUserSession) => {
+export const extractTokens = (session: CognitoUserSession) => {
     return {
         idToken: session.getIdToken().getJwtToken(),
         accessToken: session.getAccessToken().getJwtToken(),
