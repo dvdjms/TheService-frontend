@@ -1,18 +1,22 @@
 import { Text, View, StyleSheet } from "react-native";
-import { Link, Stack } from 'expo-router';
+import { ClientList } from "@/src/components/clients";
+import { ScrollView } from "react-native-gesture-handler";
 
 export default function ClientScreen() {
     return (
-        <View style={styles.container}>
-            <Text style={styles.titleContainer} >Clients</Text>
-            <Link href="/appointments">Appointments</Link>
-        </View>
+
+        <ScrollView contentContainerStyle={{ flexGrow: 1 }}>
+            <View style={styles.container}>
+                <Text style={styles.titleContainer}>Clients</Text>
+                <ClientList />
+            </View>
+        </ScrollView>
     );
 }
 
 const styles = StyleSheet.create({
     container: {
-        flex: 1,
+        // flex: 1,
         backgroundColor: '#f0f0dd',
         justifyContent: 'center',
         alignItems: 'center',

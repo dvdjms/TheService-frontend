@@ -1,31 +1,52 @@
-import { View, TextInput, Text, StyleSheet } from 'react-native';
+import { View, TextInput, Text, StyleSheet, Dimensions, KeyboardTypeOptions, TextInputProps, Platform } from 'react-native';
 
 type FormFieldProps = {
+    autoComplete?: string;
+    autoFocus?: boolean;
+    error?: string;
+    keyboardType?: KeyboardTypeOptions;
     label: string;
-    value: string;
     onChangeText: (text: string) => void;
     placeholder?: string;
     secureTextEntry?: boolean;
-    error?: string;
+    textContentType?: TextInputProps['textContentType'];
+    value: string;
+    width: number;
 };
     
 export default function FormField({
+    autoComplete,
+    autoFocus,
+    error,
+    keyboardType,
     label,
-    value,
     onChangeText,
     placeholder,
     secureTextEntry,
-    error,
+    textContentType,
+    value,
+    width
 }: FormFieldProps) {
+
+        const screenWidth = Dimensions.get('window').width;
+        const dynamicWidth = screenWidth * width;
+
     return (
-        <View style={styles.container}>
+        <View style={[styles.container, {width: dynamicWidth}]} >
             <Text style={styles.label}>{label}</Text>
             <TextInput
-                style={[styles.input, error && styles.errorInput]}
-                value={value}
+                {...(Platform.OS === 'android' ? { autoComplete: autoComplete || 'off' } : {})}
+                autoComplete="off"
+                autoCapitalize="none"
+                autoFocus={autoFocus}
+                importantForAutofill="no"
+                keyboardType={keyboardType || 'default'}
                 onChangeText={onChangeText}
                 placeholder={placeholder}
                 secureTextEntry={secureTextEntry}
+                style={[styles.input, error && styles.errorInput]}
+                textContentType={textContentType || 'none'}
+                value={value}
             />
             {error ? <Text style={styles.error}>{error}</Text> : null}
         </View>
@@ -35,7 +56,7 @@ export default function FormField({
 const styles = StyleSheet.create({
     container: { 
         marginBottom: 16, 
-        width: 250 },
+    },
     label: { 
         marginBottom: 4, 
         fontWeight: 'bold', 

@@ -1,20 +1,20 @@
-import { Text, View, StyleSheet, TextInput, Button } from "react-native";
+import { View, StyleSheet } from "react-native";
 import { Link } from 'expo-router';
-import { useState } from 'react';
 import ScreenTitle from "@/src/components/ui/ScreenTitle";
 import RegisterForm from "@/src/components/forms/SignUpForm";
+import DismissKeyboardView from "@/src/components/ui/DismissKeyboardView";
 
 export default function SignUpScreen() {
 
     return (
-        <>
-        <View style={styles.container}>
-            <ScreenTitle title="Register" />
-            <RegisterForm />
-            <Link href="/signin">Login</Link>
-        </View>
-      </>
-  );
+        <DismissKeyboardView>
+            <View style={styles.container}>
+                <ScreenTitle title="Register" />
+                <RegisterForm />
+                <Link style={styles.link}  href="/signin">Login</Link>
+            </View>
+        </DismissKeyboardView>
+    );
 }
 
 const styles = StyleSheet.create({
@@ -28,4 +28,7 @@ const styles = StyleSheet.create({
         color: 'red',
         flexDirection: 'row',
     },
+    link: {
+        marginTop: 20
+    }
 });

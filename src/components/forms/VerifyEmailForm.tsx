@@ -1,11 +1,13 @@
 import React, { useState } from 'react';
 import { verifySignUp } from '@/src/lib/auth/authService';
-import { Text, View, StyleSheet, Button } from "react-native";
+import { Text, View, StyleSheet, Button, ScrollView } from "react-native";
 import FormField from "@/src/components/ui/FormField";
 import { useRouter } from 'expo-router';
 import { useAuth } from '@/src/context/authContext';
+import DismissKeyboardView from '../ui/DismissKeyboardView';
+import FormButton from '../ui/FormButton';
 
-const VerifySignUpForm = () => {
+const VerifyEmailForm = () => {
     const [error, setError] = useState('');
     const [loading, setLoading] = useState(false);
     const [code, setCode] = useState('');
@@ -36,19 +38,15 @@ const VerifySignUpForm = () => {
     };
 
     return (
-        <>
-        <View style={styles.container}>
-            <FormField label="Enter Code" value={code} onChangeText={setCode} placeholder="Enter Code" secureTextEntry />
+        <ScrollView>
+            <View style={styles.container}>
+                <FormField autoFocus autoComplete="sms-otp" label="Enter Code" value={code} onChangeText={setCode} placeholder="Enter Code" width={0.9} keyboardType="number-pad" textContentType="oneTimeCode" />
+                <FormButton OnPress={handleSubmit} title={loading ? 'Verifying...' : 'Verify'} width={0.4} />
 
-            <Button
-                title={loading ? 'Verifying...' : 'Verify'}
-                onPress={handleSubmit}
-                disabled={loading}
-            />
-            {error ? <Text style={styles.error}>{error}</Text> : null}
-        </View>
-      </>
-  );
+                {error ? <Text style={styles.error}>{error}</Text> : null}
+            </View>
+        </ScrollView>
+    );
 }
 
 const styles = StyleSheet.create({
@@ -76,4 +74,4 @@ const styles = StyleSheet.create({
       },
 });
 
-export default VerifySignUpForm;
+export default VerifyEmailForm;

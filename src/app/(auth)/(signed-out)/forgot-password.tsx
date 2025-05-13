@@ -1,9 +1,9 @@
-import { View, StyleSheet, TextInput, Button } from "react-native";
+import { View, StyleSheet } from "react-native";
 import { Link } from 'expo-router';
 import { useLocalSearchParams } from 'expo-router';
 import ScreenTitle from "@/src/components/ui/ScreenTitle";
-import RegisterForm from "@/src/components/forms/SignUpForm";
-import VerificationForm from "@/src/components/forms/VerifySignUpForm";
+import VerificationForm from "@/src/components/forms/VerifyEmailForm";
+import DismissKeyboardView from "@/src/components/ui/DismissKeyboardView";
 
 
 export default function ForgotPassword() {
@@ -11,14 +11,14 @@ export default function ForgotPassword() {
     const { email } = useLocalSearchParams();
 
     return (
-        <>
-        <View style={styles.container}>
-            <ScreenTitle title="Forgot Password" />
-            <VerificationForm />
-            <Link href="/signin">Login</Link>
-        </View>
-      </>
-  );
+        <DismissKeyboardView>
+            <View style={styles.container}>
+                <ScreenTitle title="Forgot Password" />
+                <VerificationForm />
+                <Link href="/signin">Login</Link>
+            </View>
+        </DismissKeyboardView>
+    );
 }
 
 const styles = StyleSheet.create({

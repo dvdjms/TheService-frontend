@@ -6,11 +6,14 @@ import HomeIcon from '@/src/components/ui/HomeIcon';
 export default function SettingsLayout() {
     const navigation = useNavigation();
     return (
-        <Stack>
+        <Stack 
+        // screenOptions={{ headerShown:true}}
+        >
             {/* <Stack.Screen name="index" options={{ headerShown: true, title: 'Settings' }} /> */}
             <Stack.Screen
                 name="index"
                 options={{
+                    headerShown: true,  
                     title: '',
                     headerLeft: () => (
                         <CustomHamburgerIcon

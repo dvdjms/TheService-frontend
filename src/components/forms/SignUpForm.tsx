@@ -1,9 +1,11 @@
 import React, { useState } from 'react';
 import { signUp } from '@/src/lib/auth/authService';
-import { Text, View, StyleSheet, Button } from "react-native";
+import { Text, View, StyleSheet, ScrollView } from "react-native";
 import FormField from "@/src/components/ui/FormField";
 import { useRouter } from 'expo-router';
 import { useAuth } from '@/src/context/authContext';
+import FormButton from '../ui/FormButton';
+
 
 const SignUpForm = () => {
     const [email, setEmailLocal] = useState('');
@@ -51,26 +53,23 @@ const SignUpForm = () => {
     };
 
     return (
-        <>
-        <View style={styles.container}>
-            <FormField label="Email" value={email} onChangeText={setEmailLocal} placeholder="Enter your email" />
-            <FormField label="Password" value={password} onChangeText={setPassword} placeholder="Enter password" secureTextEntry />
-            <FormField label="Confirm Password" value={confirmPassword} onChangeText={setConfirmPassword} placeholder="Confirm password" secureTextEntry />
-
-            <Button
-                title={loading ? 'Registering...' : 'Register'}
-                onPress={handleSubmit}
-                disabled={loading}
-            />
-            {error ? <Text style={styles.error}>{error}</Text> : null}
-        </View>
-      </>
-  );
+        <ScrollView>
+            <View style={styles.container}>
+                <FormField autoFocus autoComplete="email" label="Email" value={email} onChangeText={setEmailLocal} placeholder="Enter your email" width={0.9} keyboardType="email-address" />
+                <FormField autoComplete="password" label="Password" value={password} onChangeText={setPassword} placeholder="Enter password" width={0.9} secureTextEntry />
+                <FormField autoComplete="password" label="Confirm Password" value={confirmPassword} onChangeText={setConfirmPassword} placeholder="Confirm password" width={0.9} secureTextEntry />
+                
+                <FormButton OnPress={handleSubmit} title={loading ? 'Registering...' : 'Register'} width={0.9}/>
+                
+                {error ? <Text style={styles.error}>{error}</Text> : null}
+            </View>
+        </ScrollView>
+    );
 }
 
 const styles = StyleSheet.create({
     container: {
-        flex: 1,
+        flexGrow: 1,
         backgroundColor: '#f0f0dd',
         justifyContent: 'center',
         alignItems: 'center',

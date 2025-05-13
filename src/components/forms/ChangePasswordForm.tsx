@@ -1,9 +1,11 @@
 import React, { useState } from 'react';
 import { signUp } from '@/src/lib/auth/authService';
-import { Text, View, StyleSheet, Button } from "react-native";
+import { Text, View, StyleSheet } from "react-native";
 import FormField from "@/src/components/ui/FormField";
 import { useRouter } from 'expo-router';
 import { useAuth } from '@/src/context/authContext';
+import FormButton from '../ui/FormButton';
+import { ScrollView } from 'react-native-gesture-handler';
 
 const ChangePasswordForm = () => {
     const [email, setEmailLocal] = useState('');
@@ -43,21 +45,18 @@ const ChangePasswordForm = () => {
     };
 
     return (
-        <>
-        <View style={styles.container}>
-            <FormField label="Old Password" value={password} onChangeText={setPassword} placeholder="Enter old password" secureTextEntry />
-            <FormField label="New Password" value={password} onChangeText={setPassword} placeholder="Enter new password" secureTextEntry />
-            <FormField label="Confirm Password" value={confirmPassword} onChangeText={setConfirmPassword} placeholder="Confirm new password" secureTextEntry />
+        <ScrollView>
+            <View style={styles.container}>
+                <FormField label="Old password" value={password} onChangeText={setPassword} placeholder="Enter old password" width={0.9} secureTextEntry />
+                <FormField label="New password" value={password} onChangeText={setPassword} placeholder="Enter new password" width={0.9} secureTextEntry />
+                <FormField label="Confirm new password" value={confirmPassword} onChangeText={setConfirmPassword} width={0.9} placeholder="Confirm new password" secureTextEntry />
 
-            <Button
-                title={loading ? 'Confirming...' : 'Confirm'}
-                onPress={handleSubmit}
-                disabled={loading}
-            />
-            {error ? <Text style={styles.error}>{error}</Text> : null}
-        </View>
-      </>
-  );
+                <FormButton title={loading ? 'Confirming...' : 'Confirm'} OnPress={handleSubmit} width={0.9} />
+
+                {error ? <Text style={styles.error}>{error}</Text> : null}
+            </View>
+        </ScrollView>
+    );
 }
 
 const styles = StyleSheet.create({

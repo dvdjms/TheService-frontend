@@ -1,8 +1,10 @@
-import { View, StyleSheet } from "react-native";
+import { View, StyleSheet, KeyboardAvoidingView, TouchableWithoutFeedback, Keyboard } from "react-native";
 import { Link } from 'expo-router';
 import { useLocalSearchParams } from 'expo-router';
 import ScreenTitle from "@/src/components/ui/ScreenTitle";
-import VerificationForm from "@/src/components/forms/VerifySignUpForm";
+import VerificationForm from "@/src/components/forms/VerifyEmailForm";
+import DismissKeyboardView from "@/src/components/ui/DismissKeyboardView";
+import FormButton from "@/src/components/ui/FormButton";
 
 
 export default function VerifyEmailScreen() {
@@ -10,14 +12,14 @@ export default function VerifyEmailScreen() {
     const { email } = useLocalSearchParams();
 
     return (
-        <>
-        <View style={styles.container}>
-            <ScreenTitle title="Verification" />
-            <VerificationForm />
-            <Link href="/signin">Login</Link>
-        </View>
-      </>
-  );
+        <DismissKeyboardView>
+            <View style={styles.container}>
+                <ScreenTitle title="Verification" />
+                <VerificationForm />
+                <Link href="/signin">Login</Link>
+            </View>
+        </DismissKeyboardView>
+    );
 }
 
 const styles = StyleSheet.create({

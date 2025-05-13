@@ -1,21 +1,23 @@
-import { StyleSheet, Text, View, TouchableOpacity } from 'react-native';
+import { StyleSheet, Text, View } from 'react-native';
 import { useAuth } from '@/src/context/authContext';
+import FormButton from '@/src/components/ui/FormButton';
 
 
 export default function HomeScreen() {
     const { firstName, email, subscriptionTier } = useAuth();
+
+    const handleSubmit = () => {
+
+
+    }
+    
     return (
 
         <View style={styles.container}>
+            <Text style={styles.titleContainer}>The Service</Text>
             <Text>Welcome, {firstName}!</Text>
             <Text>Email: {email}!</Text>
             <Text>subscriptionTier: {subscriptionTier}!</Text>
-
-            <Text style={styles.titleContainer}>The Service</Text>
-
-            <TouchableOpacity style={styles.button} onPress={() => alert('Pressed!')}>
-                <Text style={styles.buttonText}>Custom Button</Text>
-            </TouchableOpacity>
         </View>
 
     );

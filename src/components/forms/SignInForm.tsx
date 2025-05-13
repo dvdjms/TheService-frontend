@@ -1,9 +1,10 @@
 import React, { useState } from 'react';
-import { Text, View, StyleSheet, Button } from "react-native";
+import { Text, View, StyleSheet } from "react-native";
 import FormField from "@/src/components/ui/FormField";
-import { Link } from 'expo-router';
 import { useRouter } from 'expo-router';
 import { useAuth } from '@/src/context/authContext';
+import FormButton from '../ui/FormButton';
+import { ScrollView } from 'react-native-gesture-handler';
 
 
 const SignInForm = () => {
@@ -32,6 +33,8 @@ const SignInForm = () => {
             if (password.length < 8) {
                 throw new Error('Password must be at least 8 characters');
             }
+            // must include at least one uppercase letter
+            // must include at least one special character
 
             await signIn(email, password);
 
@@ -46,21 +49,17 @@ const SignInForm = () => {
     };
 
     return (
-        <>
-        <View style={styles.container}>
-            <FormField label="Email" value={email} onChangeText={setEmail} placeholder="Enter your email" />
-            <FormField label="Password" value={password} onChangeText={setPassword} placeholder="Enter password" secureTextEntry />
+        <ScrollView>
+            <View style={styles.container}>
+                <FormField autoFocus autoComplete="email" label="Email" value={email} onChangeText={setEmail} placeholder="Enter your email" width={0.9} keyboardType="email-address" />
+                <FormField autoComplete="password" label="Password" value={password} onChangeText={setPassword} placeholder="Enter password" width={0.9} secureTextEntry />
 
-            <Button
-                title={loading ? 'Signing in...' : 'Sign In'}
-                onPress={handleSubmit}
-                disabled={loading}
-            />
-            {error ? <Text style={styles.error}>{error}</Text> : null}
-            <Link href="/signup">Register</Link>
-        </View>
-      </>
-  );
+                <FormButton OnPress={handleSubmit} title={loading ? 'Signing in...' : 'Sign In'} width={0.9} />
+                
+                {error ? <Text style={styles.error}>{error}</Text> : null}
+            </View>
+        </ScrollView>
+    );
 }
 
 const styles = StyleSheet.create({

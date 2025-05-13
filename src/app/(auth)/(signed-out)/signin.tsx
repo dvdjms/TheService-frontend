@@ -2,20 +2,22 @@ import { View, StyleSheet } from "react-native";
 import { Link } from 'expo-router';
 import ScreenTitle from "@/src/components/ui/ScreenTitle";
 import SignInForm from "@/src/components/forms/SignInForm";
+import DismissKeyboardView from "@/src/components/ui/DismissKeyboardView";
 
 
 export default function SignInScreen() {
 
     return (
-        <>
-        <View style={styles.container}>
-            <ScreenTitle title="Login" />
-            <SignInForm />
-            <Link href="/signup">Sign up</Link>
-            <Link href="/home">home</Link>
-        </View>
-      </>
-  );
+        <DismissKeyboardView>
+            <View style={styles.container}>
+                <ScreenTitle title="Sign in" />
+                <SignInForm />
+                <Link style={styles.link} href="/signup">Sign up</Link>
+                <Link style={styles.link} href="/home">home</Link>
+            </View>
+
+        </DismissKeyboardView>
+    );
 }
 
 const styles = StyleSheet.create({
@@ -29,4 +31,7 @@ const styles = StyleSheet.create({
         color: 'red',
         flexDirection: 'row',
     },
+    link: {
+        marginTop: 20
+    }
 });

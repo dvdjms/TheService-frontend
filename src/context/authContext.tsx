@@ -1,10 +1,9 @@
-import { createContext, useContext, useState, ReactNode, useEffect, useCallback } from 'react';
+import { createContext, useContext, useState, ReactNode, useEffect } from 'react';
 import EncryptedStorage from 'react-native-encrypted-storage';
 import { 
     signIn as cognitoSignIn, 
     signOut as cognitoSignOut,
     refreshSession,
-    extractTokens,
  } from '@/src/lib/auth/cognitoService';
 import { router } from 'expo-router';
 import { jwtDecode } from 'jwt-decode';
