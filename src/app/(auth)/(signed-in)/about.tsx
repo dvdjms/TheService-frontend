@@ -1,5 +1,4 @@
 import { Text, View, StyleSheet } from "react-native";
-import { useAuth } from "@/src/context/authContext";
 
 
 export default function AboutScreen() {

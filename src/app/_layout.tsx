@@ -3,9 +3,9 @@ import { Slot } from 'expo-router';
 
 export default function RootLayout() {
 
-  return (
-    <AuthProvider>
-      <Slot />
-    </AuthProvider>
-  );
+    return (
+        <AuthProvider>
+            <Slot />
+        </AuthProvider>
+    );
 }

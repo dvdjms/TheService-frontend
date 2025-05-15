@@ -51,8 +51,24 @@ const SignInForm = () => {
     return (
         <ScrollView>
             <View style={styles.container}>
-                <FormField autoFocus autoComplete="email" label="Email" value={email} onChangeText={setEmail} placeholder="Enter your email" width={0.9} keyboardType="email-address" />
-                <FormField autoComplete="password" label="Password" value={password} onChangeText={setPassword} placeholder="Enter password" width={0.9} secureTextEntry />
+                <FormField 
+                    autoFocus autoComplete="email" 
+                    label="Email" 
+                    value={email} 
+                    onChangeText={setEmail} 
+                    placeholder="Enter your email" 
+                    width={0.9} 
+                    keyboardType="email-address" />
+                <FormField 
+                    autoComplete="password" 
+                    label="Password" 
+                    value={password} 
+                    onChangeText={setPassword} 
+                    placeholder="Enter password" 
+                    width={0.9} 
+                    secureTextEntry
+                    onSubmitEditing={handleSubmit} 
+                    returnKeyType={"done"}/>
 
                 <FormButton OnPress={handleSubmit} title={loading ? 'Signing in...' : 'Sign In'} width={0.9} />
                 

@@ -9,28 +9,28 @@ export default function MoreScreen() {
     <View style={styles.container}>
       <Text style={styles.header}>More</Text>
 
-      <Link href="/more/profile" asChild>
+      <Link href="/profile" asChild>
         <TouchableOpacity style={styles.item}>
           <Ionicons name="person-outline" size={20} style={styles.icon} />
           <Text style={styles.text}>Profile</Text>
         </TouchableOpacity>
       </Link>
 
-      <Link href="/more/settings" asChild>
+      <Link href="/(auth)/(signed-in)/settings" asChild>
         <TouchableOpacity style={styles.item}>
           <Ionicons name="settings-outline" size={20} style={styles.icon} />
           <Text style={styles.text}>Settings</Text>
         </TouchableOpacity>
       </Link>
 
-      <Link href="/more/help" asChild>
+      <Link href="/help" asChild>
         <TouchableOpacity style={styles.item}>
           <Ionicons name="help-circle-outline" size={20} style={styles.icon} />
           <Text style={styles.text}>Help</Text>
         </TouchableOpacity>
       </Link>
 
-        <Link href="/more/signout" asChild>
+        <Link href="/profile" asChild>
         <TouchableOpacity style={styles.item}>
           <Ionicons name="log-out-outline" size={20} style={styles.icon} />
           <Text style={styles.text}>Sign Out</Text>

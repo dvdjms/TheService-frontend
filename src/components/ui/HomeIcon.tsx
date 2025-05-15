@@ -14,6 +14,6 @@ const styles = StyleSheet.create({
         paddingRight: 15, 
     },
     icon: {
-        color: "#3478f7"
+        color: "#D29F80"
     }
 });

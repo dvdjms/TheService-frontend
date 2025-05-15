@@ -7,21 +7,18 @@ export default function SignedOutLayout() {
     const { isAuthenticated } = useAuth();
 
     if (isAuthenticated) return <Redirect href="/home" />;
-
+    // chnage verify email to popup with seperate inputs for each digit.
     return (
-        <Stack
-            screenOptions={{
-                headerShown: false
-            }}>
+        <Stack screenOptions={{ headerShown: false }}>
             <Stack.Screen
                 name="signin"
-                    options={{
+                options={{
                     title: 'Sign In',
                 }}
             />
             <Stack.Screen name="signup" />
             <Stack.Screen name="forgot-password" />
-            <Stack.Screen name="verify-email" />
+            <Stack.Screen name="verify-email" /> 
         </Stack>
 
     )

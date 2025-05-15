@@ -6,6 +6,7 @@ type TabScreen = {
     icon: keyof typeof Ionicons.glyphMap;
 };
 
+// tabs screen items
 export const tabScreens: TabScreen[] = [
     { name: 'home', title: 'Dashboard', icon: 'home-outline' },
     { name: 'appointments/index', title: 'Appointments', icon: 'calendar-outline' },

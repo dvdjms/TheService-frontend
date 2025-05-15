@@ -9,13 +9,14 @@ export default function AuthLayout() {
 
     if (isLoading || !hasCheckedAuth) {
         return (
-        <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
-            <ActivityIndicator size="large" />
-        </View>
+            <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+                <ActivityIndicator size="large" />
+            </View>
         );
     }
 
-    return <Stack screenOptions={{ headerShown: false }}/>;
-
+    return  (
+        <Stack screenOptions={{ headerShown: false }} />
+    );
 }
 

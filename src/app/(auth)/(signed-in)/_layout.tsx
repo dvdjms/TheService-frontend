@@ -1,10 +1,10 @@
-// src/app/(drawer)/_layout.tsx
 import { Redirect } from 'expo-router';
 import Drawer from 'expo-router/drawer';
-import { Ionicons } from '@expo/vector-icons';
 import { useAuth } from '@/src/context/authContext';
 import CustomDrawerContent from '@/src/components/ui/CustomDrawer';
 import { drawerScreens } from '@/src/constants/drawerScreens';
+import { CustomHeaderRight, HamburgerHeaderLeft } from '@/src/components/ui/CustomHeader';
+
 
 export default function SignedInLayout() {
     const { isAuthenticated } = useAuth();
@@ -14,19 +14,36 @@ export default function SignedInLayout() {
     }
 
   return (
-        <Drawer screenOptions={{ headerTitle: "" }} drawerContent={(props) => <CustomDrawerContent children={undefined} {...props} screens={drawerScreens} />}>
-        {drawerScreens.map(({ name, label, icon }) => (
-            <Drawer.Screen
-                key={name}
-                name={name}
-                options={{
-                    drawerLabel: label,
-                    drawerIcon: ({ size, color }) => (
-                    <Ionicons name={icon} size={size} color={color} />
-                    ),
-                }}
-            />
-        ))}
+        <Drawer 
+            drawerContent={(props) => <CustomDrawerContent {...props} 
+                children={undefined} screens={drawerScreens} />
+            } 
+            screenOptions={{ headerShown: false, drawerType: 'slide' }}>
+
+            {drawerScreens.map(({ name, label, icon }) => (
+                <Drawer.Screen
+                    key={name}
+                    name={name}
+                    options={{
+                        headerShown: true,
+                        headerStyle: {
+                            backgroundColor: '#604652'
+                        },
+                        drawerLabel: label,
+                        headerLeft: () => (
+                            <HamburgerHeaderLeft />
+                        ),
+                         ...(name !== '(tabs)' && {
+                            headerRight: () => <CustomHeaderRight />
+                            
+                        }),
+                        headerTintColor: name === '(tabs)' ? 'red' : 'pink', // Title color
+                        headerTitleStyle: {
+                            fontWeight: '600',
+                        }
+                    }}
+                />
+            ))}
         </Drawer>
     );
 }

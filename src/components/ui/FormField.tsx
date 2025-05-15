@@ -7,7 +7,9 @@ type FormFieldProps = {
     keyboardType?: KeyboardTypeOptions;
     label: string;
     onChangeText: (text: string) => void;
+    onSubmitEditing?: () => void;
     placeholder?: string;
+    returnKeyType?: TextInputProps['returnKeyType'];
     secureTextEntry?: boolean;
     textContentType?: TextInputProps['textContentType'];
     value: string;
@@ -21,7 +23,9 @@ export default function FormField({
     keyboardType,
     label,
     onChangeText,
+    onSubmitEditing,
     placeholder,
+    returnKeyType,
     secureTextEntry,
     textContentType,
     value,
@@ -47,6 +51,8 @@ export default function FormField({
                 style={[styles.input, error && styles.errorInput]}
                 textContentType={textContentType || 'none'}
                 value={value}
+                onSubmitEditing={onSubmitEditing}
+                returnKeyType={returnKeyType}
             />
             {error ? <Text style={styles.error}>{error}</Text> : null}
         </View>

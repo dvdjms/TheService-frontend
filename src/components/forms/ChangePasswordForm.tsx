@@ -8,13 +8,13 @@ import FormButton from '../ui/FormButton';
 import { ScrollView } from 'react-native-gesture-handler';
 
 const ChangePasswordForm = () => {
-    const [email, setEmailLocal] = useState('');
-    const [password, setPassword] = useState('');
+    const [oldPassword, setOldPassword] = useState('');
+    const [newPassword, setNewPassword] = useState('');
     const [confirmPassword, setConfirmPassword] = useState('');
     const [error, setError] = useState('');
     const [loading, setLoading] = useState(false);
     const router = useRouter();
-    const { setEmail } = useAuth();
+    const { email, setEmail} = useAuth();
 
     // Function to handle signUp submission
     const handleSubmit = async () => {
@@ -23,11 +23,11 @@ const ChangePasswordForm = () => {
 
         try {
         
-            if (password.length < 8) {
+            if (newPassword.length < 8) {
                 throw new Error('Password must be at least 8 characters');
             }
             
-            const result = await signUp(email, password, email);
+            const result = await signUp(email, newPassword, email);
             console.log('Successfully signed in:', result);
 
             if (!result.userConfirmed){
@@ -47,8 +47,8 @@ const ChangePasswordForm = () => {
     return (
         <ScrollView>
             <View style={styles.container}>
-                <FormField label="Old password" value={password} onChangeText={setPassword} placeholder="Enter old password" width={0.9} secureTextEntry />
-                <FormField label="New password" value={password} onChangeText={setPassword} placeholder="Enter new password" width={0.9} secureTextEntry />
+                <FormField label="Old password" value={oldPassword} onChangeText={setOldPassword} placeholder="Enter old password" width={0.9} secureTextEntry />
+                <FormField label="New password" value={newPassword} onChangeText={setNewPassword} placeholder="Enter new password" width={0.9} secureTextEntry />
                 <FormField label="Confirm new password" value={confirmPassword} onChangeText={setConfirmPassword} width={0.9} placeholder="Confirm new password" secureTextEntry />
 
                 <FormButton title={loading ? 'Confirming...' : 'Confirm'} OnPress={handleSubmit} width={0.9} />

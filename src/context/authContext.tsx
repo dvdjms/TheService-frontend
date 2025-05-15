@@ -60,15 +60,15 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
             const decoded: DecodedIdToken = jwtDecode(idToken);
             const now = Math.floor(Date.now() / 1000);
             
-            // If token is expiry, try to refresh
-            if (decoded.exp < now && refreshToken) {
-                const refreshedSession = await refreshSession(refreshToken);
-                if(!refreshedSession) {
-                    setIsAuthenticated(false);
-                    await EncryptedStorage.removeItem('user_session');
-                    return;
-                }
-            }
+            // If token is expiry, try to refresh - during development so I don't repeat signin
+            // if (decoded.exp < now && refreshToken) {
+            //     const refreshedSession = await refreshSession(refreshToken);
+            //     if(!refreshedSession) {
+            //         setIsAuthenticated(false);
+            //         await EncryptedStorage.removeItem('user_session');
+            //         return;
+            //     }
+            // }
 
             setEmail(decoded.email);
             setFirstName(decoded.given_name ?? 'Guest');
