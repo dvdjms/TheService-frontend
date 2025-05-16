@@ -3,7 +3,6 @@ import { router, useNavigation } from "expo-router";
 import CustomHamburgerIcon from "./CustomHamburgerIcon";
 import { DrawerActions } from "@react-navigation/native";
 
-
 export const CustomHeaderRight = () => (
     <HomeIcon onPress={() => router.push('/home')} />
 );

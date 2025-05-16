@@ -4,6 +4,7 @@ import { useLocalSearchParams } from 'expo-router';
 import ScreenTitle from "@/src/components/ui/ScreenTitle";
 import VerificationForm from "@/src/components/forms/VerifyEmailForm";
 import DismissKeyboardView from "@/src/components/ui/DismissKeyboardView";
+import { colors } from '@/src/styles/globalStyles';
 
 
 export default function ForgotPassword() {
@@ -24,7 +25,7 @@ export default function ForgotPassword() {
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        backgroundColor: '#f0f0dd',
+        backgroundColor: colors.background,
         justifyContent: 'center',
         alignItems: 'center',
     },

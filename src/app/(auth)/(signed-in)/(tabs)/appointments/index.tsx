@@ -1,6 +1,7 @@
 import { Text, View, StyleSheet } from "react-native";
 import { Link } from 'expo-router';
 import ScreenTitle from "@/src/components/ui/ScreenTitle";
+import { colors } from '@/src/styles/globalStyles';
 
 export default function AppointmentScreen() {
   return (
@@ -15,7 +16,7 @@ export default function AppointmentScreen() {
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        backgroundColor: '#f0f0dd',
+        backgroundColor: colors.background,
         justifyContent: 'center',
         alignItems: 'center',
     },

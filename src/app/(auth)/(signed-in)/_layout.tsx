@@ -4,7 +4,7 @@ import { useAuth } from '@/src/context/authContext';
 import CustomDrawerContent from '@/src/components/ui/CustomDrawer';
 import { drawerScreens } from '@/src/constants/drawerScreens';
 import { CustomHeaderRight, HamburgerHeaderLeft } from '@/src/components/ui/CustomHeader';
-
+import { colors } from '@/src/styles/globalStyles';
 
 export default function SignedInLayout() {
     const { isAuthenticated } = useAuth();
@@ -27,7 +27,7 @@ export default function SignedInLayout() {
                     options={{
                         headerShown: true,
                         headerStyle: {
-                            backgroundColor: '#604652'
+                            backgroundColor: colors.backgroundHeaderFooter
                         },
                         drawerLabel: label,
                         headerLeft: () => (

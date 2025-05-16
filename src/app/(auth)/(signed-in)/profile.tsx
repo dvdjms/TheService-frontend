@@ -1,5 +1,5 @@
 import { Text, View, StyleSheet } from "react-native";
-
+import { colors } from '@/src/styles/globalStyles';
 
 export default function ProfileScreen() {
     return (
@@ -12,7 +12,7 @@ export default function ProfileScreen() {
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        backgroundColor: '#f0f0dd',
+        backgroundColor: colors.background,
         justifyContent: 'center',
         alignItems: 'center',
     },

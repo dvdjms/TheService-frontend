@@ -6,6 +6,7 @@ import { useRouter } from 'expo-router';
 import { useAuth } from '@/src/context/authContext';
 import FormButton from '../ui/FormButton';
 import { ScrollView } from 'react-native-gesture-handler';
+import { colors } from '@/src/styles/globalStyles';
 
 const ChangePasswordForm = () => {
     const [oldPassword, setOldPassword] = useState('');

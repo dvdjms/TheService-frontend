@@ -1,11 +1,11 @@
 import React, { useState } from 'react';
 import { verifySignUp } from '@/src/lib/auth/authService';
-import { Text, View, StyleSheet, Button, ScrollView } from "react-native";
+import { Text, View, StyleSheet, ScrollView } from "react-native";
 import FormField from "@/src/components/ui/FormField";
 import { useRouter } from 'expo-router';
 import { useAuth } from '@/src/context/authContext';
-import DismissKeyboardView from '../ui/DismissKeyboardView';
 import FormButton from '../ui/FormButton';
+import { colors } from '@/src/styles/globalStyles';
 
 const VerifyEmailForm = () => {
     const [error, setError] = useState('');
@@ -52,7 +52,7 @@ const VerifyEmailForm = () => {
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        backgroundColor: '#f0f0dd',
+        backgroundColor: colors.background,
         justifyContent: 'center',
         alignItems: 'center',
     },

@@ -10,7 +10,10 @@
     "newArchEnabled": true,
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.dvdjms.frontend"
+      "bundleIdentifier": "com.dvdjms.frontend",
+      "infoPlist": {
+        "NSCameraUsageDescription": "This app requires access to the camera to take photos."
+      }
     },
     "android": {
       "adaptiveIcon": {
@@ -35,7 +38,9 @@
           "resizeMode": "contain",
           "backgroundColor": "#ffffff"
         }
-      ]
+      ],
+      "expo-secure-store",
+      "expo-camera"
     ],
     "experiments": {
       "typedRoutes": true
@@ -45,6 +50,7 @@
       "eas": {
         "projectId": "0312dca1-081b-412e-90ea-8fc9f04609af"
       }
-    }
+    },
+    "owner": "dvdjms"
   }
 }

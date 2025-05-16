@@ -1,4 +1,5 @@
 import { View, StyleSheet, Pressable } from 'react-native';
+import { colors } from '@/src/styles/globalStyles';
 
 export default function CustomHamburgerIcon({ onPress }: { onPress: () => void }) {
     return (
@@ -18,7 +19,7 @@ const styles = StyleSheet.create({
     },
     line: {
         height: 2.3,
-        backgroundColor: '#D29F80',
+        backgroundColor: colors.iconInactive,
         width: 21,
         marginVertical: 2.3,
         borderRadius: 1,

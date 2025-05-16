@@ -1,7 +1,6 @@
 import { StyleSheet, Text, View } from 'react-native';
 import { useAuth } from '@/src/context/authContext';
-import FormButton from '@/src/components/ui/FormButton';
-
+import { colors } from '@/src/styles/globalStyles';
 
 export default function HomeScreen() {
     const { firstName, email, subscriptionTier } = useAuth();
@@ -26,7 +25,7 @@ export default function HomeScreen() {
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        backgroundColor: '#f0f0dd',
+        backgroundColor: colors.background,
         justifyContent: 'center',
         alignItems: 'center',
     },

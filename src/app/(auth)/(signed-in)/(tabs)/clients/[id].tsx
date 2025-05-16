@@ -2,6 +2,7 @@ import { useLocalSearchParams, useRouter } from 'expo-router';
 import { View, Text, Button, StyleSheet } from 'react-native';
 import clients from '../../../../../../assets/mock-clients.json';
 import FormButton from '@/src/components/ui/FormButton';
+import { colors } from '@/src/styles/globalStyles';
 
 export default function ClientDetail() {
     const router = useRouter();
@@ -39,8 +40,10 @@ export default function ClientDetail() {
 const styles = StyleSheet.create({
     container: {
         flex: 1,
+        backgroundColor: colors.background,
         padding: 20,
         justifyContent: 'space-between', // pushes button to bottom
+
     },
     details: {
         flexShrink: 1,

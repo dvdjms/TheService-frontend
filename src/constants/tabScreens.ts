@@ -11,5 +11,7 @@ export const tabScreens: TabScreen[] = [
     { name: 'home', title: 'Dashboard', icon: 'home-outline' },
     { name: 'appointments/index', title: 'Appointments', icon: 'calendar-outline' },
     { name: 'clients', title: 'Clients', icon: 'people-outline' },
+    { name: 'camera/index', title: 'Camera', icon: 'camera-outline' },
+    { name: 'gallery/index', title: 'Gallery', icon: 'image-outline' },
     { name: 'more/index', title: 'More', icon: 'ellipsis-horizontal' },
 ];

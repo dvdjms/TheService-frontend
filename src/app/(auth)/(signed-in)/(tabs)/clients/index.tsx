@@ -1,6 +1,7 @@
 import { Text, View, StyleSheet } from "react-native";
 import { ClientList } from "@/src/components/clients";
 import { ScrollView } from "react-native-gesture-handler";
+import { colors } from '@/src/styles/globalStyles';
 
 export default function ClientScreen() {
     return (
@@ -17,7 +18,7 @@ export default function ClientScreen() {
 const styles = StyleSheet.create({
     container: {
         // flex: 1,
-        backgroundColor: '#f0f0dd',
+        backgroundColor: colors.background,
         justifyContent: 'center',
         alignItems: 'center',
     },

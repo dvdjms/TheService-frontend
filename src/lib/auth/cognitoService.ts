@@ -1,4 +1,5 @@
-import EncryptedStorage from 'react-native-encrypted-storage';
+// import EncryptedStorage from 'react-native-encrypted-storage';
+import * as SecureStore from 'expo-secure-store';
 
 import { 
     CognitoUserPool, 
@@ -63,10 +64,13 @@ export function signIn(username: string, password: string) {
             onSuccess: async (session) => {
                 const { idToken, accessToken, refreshToken } = extractTokens(session);
 
-                await EncryptedStorage.setItem(
+                await SecureStore.setItemAsync(
                     'user_session',
                     JSON.stringify({ idToken, accessToken, refreshToken })
                 );
+
+                // await EncryptedStorage.setItem('user_session', JSON.stringify({ idToken, accessToken, refreshToken }));
+
 
                 resolve(session);
             },

@@ -1,5 +1,7 @@
 import { createContext, useContext, useState, ReactNode, useEffect } from 'react';
-import EncryptedStorage from 'react-native-encrypted-storage';
+// import EncryptedStorage from 'react-native-encrypted-storage';
+import * as SecureStore from 'expo-secure-store';
+
 import { 
     signIn as cognitoSignIn, 
     signOut as cognitoSignOut,
@@ -50,22 +52,34 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
     const checkAuth = async () => {
         try{
-            const stored = await EncryptedStorage.getItem('user_session');
-            if (!stored) {
+            const isAvailable = await SecureStore.isAvailableAsync();
+
+            if (!isAvailable) {
+                alert('SecureStore is not available on this device');
                 setIsAuthenticated(false);
                 return;
             }
 
-            const { idToken, refreshToken } = JSON.parse(stored);
+            const sessionJson = await SecureStore.getItemAsync('user_session');
+            // const sessionJson = await EncryptedStorage.getItem('user_session');
+            const session = sessionJson ? JSON.parse(sessionJson) : null;
+
+            if (!session) {
+                setIsAuthenticated(false);
+                return;
+            }
+
+            const { idToken, refreshToken } = session;
             const decoded: DecodedIdToken = jwtDecode(idToken);
             const now = Math.floor(Date.now() / 1000);
             
-            // If token is expiry, try to refresh - during development so I don't repeat signin
+            //If token is expiry, try to refresh - during development so I don't repeat signin
             // if (decoded.exp < now && refreshToken) {
             //     const refreshedSession = await refreshSession(refreshToken);
             //     if(!refreshedSession) {
+            //         // await EncryptedStorage.removeItem('accessToken');
+            //         await SecureStore.deleteItemAsync('user_session');
             //         setIsAuthenticated(false);
-            //         await EncryptedStorage.removeItem('user_session');
             //         return;
             //     }
             // }
@@ -76,6 +90,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
             setIsAuthenticated(true);
   
         } catch(error){
+            console.error('checkAuth error:', error);
             setIsAuthenticated(false);
         } finally {
             setHasCheckedAuth(true);
@@ -99,7 +114,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
 
     const signOut = async () => {
-        await EncryptedStorage.removeItem('user_session');
+        // await EncryptedStorage.removeItem('user_session');
+        await SecureStore.deleteItemAsync('user_session');
         cognitoSignOut();
         setEmail('');
         setFirstName('Guest');

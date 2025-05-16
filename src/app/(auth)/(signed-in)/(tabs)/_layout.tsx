@@ -3,6 +3,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { tabScreens } from '../../../../constants/tabScreens';
 import { CustomHeaderRight, HamburgerHeaderLeft } from '@/src/components/ui/CustomHeader';
 import { headerConfig } from '@/src/components/utils/navigationTheme';
+import { colors } from '@/src/styles/globalStyles';
 
 export default function TabLayout() {
 
@@ -18,11 +19,11 @@ export default function TabLayout() {
                 route.name === '(tabs)' ? <CustomHeaderRight /> : null
             ),
             tabBarStyle: {
-                backgroundColor: '#604652',
+                backgroundColor: colors.backgroundHeaderFooter,
                 borderTopWidth: 0,
             },
-            tabBarActiveTintColor: '#F4C9A1',
-            tabBarInactiveTintColor: '#D29F80',
+            tabBarActiveTintColor: colors.iconActive,
+            tabBarInactiveTintColor: colors.iconInactive,
 
             ////////////////// Confused by the not equals to tabs
             headerTintColor: route.name !== '(tabs)' ? 'gray' : 'pink', // Title color

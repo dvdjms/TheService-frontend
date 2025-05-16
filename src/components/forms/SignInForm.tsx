@@ -5,6 +5,7 @@ import { useRouter } from 'expo-router';
 import { useAuth } from '@/src/context/authContext';
 import FormButton from '../ui/FormButton';
 import { ScrollView } from 'react-native-gesture-handler';
+import { colors } from '@/src/styles/globalStyles';
 
 
 const SignInForm = () => {
@@ -80,7 +81,7 @@ const SignInForm = () => {
 
 const styles = StyleSheet.create({
     container: {
-        backgroundColor: '#f0f0dd',
+        backgroundColor: colors.background,
         justifyContent: 'center',
         alignItems: 'center',
     },

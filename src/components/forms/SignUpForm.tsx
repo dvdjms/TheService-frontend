@@ -5,6 +5,7 @@ import FormField from "@/src/components/ui/FormField";
 import { useRouter } from 'expo-router';
 import { useAuth } from '@/src/context/authContext';
 import FormButton from '../ui/FormButton';
+import { colors } from '@/src/styles/globalStyles';
 
 
 const SignUpForm = () => {
@@ -70,7 +71,7 @@ const SignUpForm = () => {
 const styles = StyleSheet.create({
     container: {
         flexGrow: 1,
-        backgroundColor: '#f0f0dd',
+        backgroundColor: colors.background,
         justifyContent: 'center',
         alignItems: 'center',
     },

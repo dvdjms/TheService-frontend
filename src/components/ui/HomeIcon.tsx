@@ -1,5 +1,6 @@
 import { Ionicons } from '@expo/vector-icons';
 import { Pressable, StyleSheet } from 'react-native';
+import { colors } from '@/src/styles/globalStyles';
 
 export default function HomeIcon({ onPress }: { onPress: () => void }) {
     return (
@@ -14,6 +15,6 @@ const styles = StyleSheet.create({
         paddingRight: 15, 
     },
     icon: {
-        color: "#D29F80"
+        color: colors.iconInactive
     }
 });

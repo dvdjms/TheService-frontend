@@ -3,7 +3,7 @@ import { Link } from 'expo-router';
 import ScreenTitle from "@/src/components/ui/ScreenTitle";
 import SignInForm from "@/src/components/forms/SignInForm";
 import DismissKeyboardView from "@/src/components/ui/DismissKeyboardView";
-
+import { colors } from '@/src/styles/globalStyles';
 
 export default function SignInScreen() {
 
@@ -23,7 +23,7 @@ export default function SignInScreen() {
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        backgroundColor: '#f0f0dd',
+        backgroundColor: colors.background,
         justifyContent: 'center',
         alignItems: 'center',
     },
