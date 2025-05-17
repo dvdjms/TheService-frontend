@@ -15,13 +15,15 @@ export default function ScreenTitle({ title }: FormFieldProps) {
 const styles = StyleSheet.create({
     container: {
         marginBottom: 2,
-        marginTop: 150,
-        width: 250 },
+        marginTop: 20,
+        width: '100%' },
+
     title: { 
         marginBottom: 4, 
         fontWeight: 'bold', 
         fontSize: 34,
-        color: 'red'
+        color: 'red',
+        textAlign: 'center'
     },
 });
     
