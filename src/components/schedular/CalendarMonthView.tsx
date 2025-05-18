@@ -1,16 +1,16 @@
 import React, { useState } from 'react';
-import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
-import { Calendar, CalendarProps } from 'react-native-calendars';
-import { format } from 'date-fns';
-import { addDays, subDays } from 'date-fns';
-import DayCalendarView from './CalendarDayView';
-import { colors } from '@/src/styles/globalStyles';
+import { View, Text } from 'react-native';
+import { Calendar, CalendarProps  } from 'react-native-calendars';
 
-type ViewMode = 'month' | 'day';
+type CalendarMonthViewProps = {
+    onSelectDate: (date: string) => void;
+    onSwipeUp?: () => void;
+};
 
-export default function CalendarSelector() {
-    const [viewMode, setViewMode] = useState<ViewMode>('month');
+export default function CalendarMonthView({ onSelectDate }: CalendarMonthViewProps) {
     const [selectedDate, setSelectedDate] = useState<string>(getToday());
+
+    //const today = new Date().toISOString().split('T')[0];
 
     function getToday() {
         return new Date().toISOString().split('T')[0];
@@ -18,146 +18,95 @@ export default function CalendarSelector() {
 
     // Handler for day press in calendar
     const onDayPress: CalendarProps['onDayPress'] = (day) => {
+        onSelectDate(day.dateString)
         setSelectedDate(day.dateString);
-        setViewMode('day');
     };
-
-    function goToPreviousDay(): void {
-        const prevDay = subDays(new Date(selectedDate), 1);
-        setSelectedDate(prevDay.toISOString().split('T')[0]);    
-    }
-
-    function goToNextDay(): void {
-        const nextDay = addDays(new Date(selectedDate), 1);
-        setSelectedDate(nextDay.toISOString().split('T')[0]);    
-    }
-
+// https://www.npmjs.com/package/react-native-calendars/v/1.1286.0
     return (
-        <View style={{ flex: 1, padding: 16 }}>
-            {/* Toggle buttons */}
-            <View style={{ flexDirection: 'row', marginBottom: 16 }}>
-                <TouchableOpacity
-                    onPress={() => setViewMode('month')}
-                    style={{
-                        flex: 1,
-                        padding: 12,
-                        backgroundColor: viewMode === 'month' ? '#4ade80' : '#d1d5db',
-                        alignItems: 'center',
-                        borderRadius: 4,
-                        marginRight: 8,
-                    }}
-                >
-                    <Text style={{ fontWeight: 'bold' }}>Month View</Text>
-                </TouchableOpacity>
+        <View style={{ 
+            flex: 1, 
+            backgroundColor: 'white', 
+            shadowColor: 'gray',
+            shadowOffset: { width: 0, height: 2 },
+            shadowOpacity: 0.001,
+            shadowRadius: 3,
+            borderBottomColor: 'grey',
+            marginBottom: 3,
 
-                <TouchableOpacity
-                    onPress={() => setViewMode('day')}
-                    style={{
-                        flex: 1,
-                        padding: 12,
-                        backgroundColor: viewMode === 'day' ? '#4ade80' : '#d1d5db',
-                        alignItems: 'center',
-                        borderRadius: 4,
-                    }}
-                >
-                    <Text style={{ fontWeight: 'bold' }}>Day View</Text>
-                </TouchableOpacity>
-            </View>
+             // Android shadow
+            elevation: 4,
+        }}>
+            <Calendar
+                theme={{    
+                    // Custom style overrides (bypass TS)
+                    ...{
+                        'stylesheet.calendar.main': {
+                            week: {
+                                // height: 37,
+                                marginTop: 4,
+                                marginBottom: 1,
+                                flexDirection: 'row',
+                                justifyContent: 'space-around',
+                                margin: 0
+                            },
+                        },
+                        'stylesheet.day.basic': {
+                            day: {
+                                width: 37,
+                                // height: 37,
+                                // alignItems: 'center',
+                                // justifyContent: 'center',
+                            },
+                        },
+                        'stylesheet.calendar.header': {
+                            header: {
+                                height: 5,
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                                marginHorizontal: 0,  // controls horizontal space between day names
+                                marginVertical: 0,    // controls top/bottom spacing
+                                color: 'gray',
+                            }
+                        },
+                    } as any,
 
-            {viewMode === 'month' ? (
-                <Calendar
-                    theme={{
-                        calendarBackground: 'transparent',
-                        backgroundColor: '#ffffff',
-        
-                        textSectionTitleColor: 'yellow', // days Sun Mon
-                        textSectionTitleDisabledColor: '#d9e1e8',
-                        selectedDayBackgroundColor: '#00adf5',
-                        selectedDayTextColor: '#ffffff',
-             
-                        dayTextColor: 'orange', // days numbered
-                        textDisabledColor: '#d9e1e8',// days disable
+                    calendarBackground: 'white',
+                    backgroundColor: 'blue', // no seen changes
 
-                        arrowColor: 'red',
-                        disabledArrowColor: '#d9e1e8',
+                    textSectionTitleColor: 'black', // days Sun Mon
+                    textSectionTitleDisabledColor: '#d9e1e8',
+                    selectedDayBackgroundColor: '#00adf5',
+                    selectedDayTextColor: '#ffffff',
+            
+                    dayTextColor: 'brown', // days numbered
+                    textDisabledColor: '#d9e1e8',// days disable
 
-                        monthTextColor: 'white', // May 2025
+                    arrowColor: 'gray',
+                    disabledArrowColor: '#d9e1e8',
 
-                        textDayFontWeight: '300',
-                        textMonthFontWeight: 'bold',
-                        textDayHeaderFontWeight: '300',
-                        textDayFontSize: 16, // day numbers
-                        textMonthFontSize: 14, // may 2025
-                        textDayHeaderFontSize: 12 // days Sun Mon
-      
-                
-                    }}
-                    
-                    style={ styles.calendar }
-                    onDayPress={onDayPress}
-                    markedDates={{
-                        [selectedDate]: { selected: true, selectedColor: '#4ade80' },
-                    }}
-                    />
-                ) : (
-                <View style={{ flex: 1 }}>
-                    <View style={styles.dayHeader}>
-                        <TouchableOpacity onPress={goToPreviousDay} style={styles.arrow}>
-                            <Text style={styles.arrowText}>←</Text>
-                        </TouchableOpacity>
+                    monthTextColor: 'gray', // May 2025
 
-                        <Text style={styles.dateText}>
-                            {format(selectedDate, 'EEEE dd MMM yyy')}
-                        </Text>
+                    textDayFontWeight: '300',
+                    textMonthFontWeight: 'bold',
+                    textDayHeaderFontWeight: '300',
+                    textDayFontSize: 14, // day numbers
+                    textMonthFontSize: 14, // may 2025
+                    textDayHeaderFontSize: 12, // days Sun Mon
+                }}
+                enableSwipeMonths={true}
+                onDayPress={onDayPress}
+                markedDates={{
+                    [selectedDate]: { selected: true, selectedColor: '#4ade80' },
+                }}
 
-                        <TouchableOpacity onPress={goToNextDay} style={styles.arrow}>
-                            <Text style={styles.arrowText}>→</Text>
-                        </TouchableOpacity>
-                    </View>
+                hideExtraDays={true}
 
-                    <DayCalendarView
-                        date={selectedDate}
-                        onSwipeLeft={goToNextDay}
-                        onSwipeRight={goToPreviousDay}
-                    />
-                </View>
-            )}
+                hideArrows={true}  
+                renderHeader={date => {
+                    return null //<Text>S M T W T F S</Text>
+                }}
+
+            />
         </View>
     );
 }
-
-
-const styles = StyleSheet.create({
-    container: {
-        flex: 1,
-    },
-    header: {
-        flexDirection: 'row',
-        justifyContent: 'space-between',
-        alignItems: 'center',
-        padding: 16,
-    },
-    dayHeader: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        justifyContent: 'space-between',
-        marginVertical: 12,
-        paddingHorizontal: 16,
-    },
-    dateText: {
-        fontWeight: 'bold',
-        fontSize: 16,
-        textAlign: 'center',
-        flex: 1,
-    },
-    arrow: {
-        padding: 12,
-    },
-    arrowText: {
-        fontSize: 20,
-    },
-    calendar: {
-        backgroundColor: 'gray', //colors.backgroundHeaderFooter,
-        borderRadius: 3,
-    }
-});

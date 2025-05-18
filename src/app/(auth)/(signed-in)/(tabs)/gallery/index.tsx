@@ -54,7 +54,7 @@ export default function GalleryScreen() {
         <View style={styles.container}>
             <View style={styles.topBar}>
                 <TouchableOpacity onPress={() => setSelectMode((prev) => !prev)}>
-                    <Text style={styles.topBarText}>{selectMode ? 'Select' : 'Cancel'}</Text>
+                    <Text style={styles.topBarText}>{selectMode ? 'Cancel' : 'Select'}</Text>
                 </TouchableOpacity>
             </View>
 
