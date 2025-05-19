@@ -1,16 +1,18 @@
 import React, { useState } from 'react';
-import { View, Text } from 'react-native';
+import { View } from 'react-native';
 import { Calendar, CalendarProps  } from 'react-native-calendars';
+import { format, startOfMonth } from 'date-fns';
+import MonthScroller from './MonthScroller';
 
 type CalendarMonthViewProps = {
     onSelectDate: (date: string) => void;
     onSwipeUp?: () => void;
+    onMonthChange: (newMonth: Date) => void;
 };
 
-export default function CalendarMonthView({ onSelectDate }: CalendarMonthViewProps) {
+export default function CalendarMonthView({ onSelectDate, onMonthChange }: CalendarMonthViewProps) {
     const [selectedDate, setSelectedDate] = useState<string>(getToday());
-
-    //const today = new Date().toISOString().split('T')[0];
+    const [currentMonth, setCurrentMonth] = useState(startOfMonth(new Date()));
 
     function getToday() {
         return new Date().toISOString().split('T')[0];
@@ -21,41 +23,66 @@ export default function CalendarMonthView({ onSelectDate }: CalendarMonthViewPro
         onSelectDate(day.dateString)
         setSelectedDate(day.dateString);
     };
+
+    const updateMonthPreservingDay = (newMonthDate: Date) => {
+        const currentDay = new Date(selectedDate).getDate();
+        const year = newMonthDate.getFullYear();
+        const month = newMonthDate.getMonth();
+
+        const tentativeDate = new Date(year, month, currentDay);
+        const fallbackDate = startOfMonth(newMonthDate);
+        const validDate = tentativeDate.getMonth() === month ? tentativeDate : fallbackDate;
+
+        const formatted = format(validDate, 'yyyy-MM-dd');
+        
+        setSelectedDate(formatted);
+        onSelectDate(formatted);
+        setCurrentMonth(startOfMonth(newMonthDate));
+    };
+    
+
 // https://www.npmjs.com/package/react-native-calendars/v/1.1286.0
     return (
-        <View style={{ 
-            flex: 1, 
-            backgroundColor: 'white', 
-            shadowColor: 'gray',
-            shadowOffset: { width: 0, height: 2 },
-            shadowOpacity: 0.001,
-            shadowRadius: 3,
-            borderBottomColor: 'grey',
-            marginBottom: 3,
-
-             // Android shadow
-            elevation: 4,
-        }}>
+        <>
+        <View   
+            style={{ 
+                flex: 1,
+                // height is 267 cannot be changed
+                maxHeight: 870,
+                backgroundColor: 'white', 
+                shadowColor: 'gray',
+                shadowOffset: { width: 0, height: 2 },
+                shadowOpacity: 0.001,
+                shadowRadius: 3,
+                borderBottomColor: 'grey',
+                marginBottom: 3,
+                // Android shadow
+                elevation: 4,
+            }}>
             <Calendar
+                key={format(currentMonth, 'yyyy-MM')} // force rerender when month changes
+                current={format(currentMonth, 'yyyy-MM-dd')}
+                onMonthChange={(month) => updateMonthPreservingDay(new Date(month.dateString))}
                 theme={{    
                     // Custom style overrides (bypass TS)
                     ...{
                         'stylesheet.calendar.main': {
+                            container: {
+                                // minHeight: 360,
+                                // height: 360,
+                                // backgroundColor: 'transparant'
+                            },
                             week: {
-                                // height: 37,
                                 marginTop: 4,
                                 marginBottom: 1,
                                 flexDirection: 'row',
                                 justifyContent: 'space-around',
-                                margin: 0
+                                margin: 0,
                             },
                         },
                         'stylesheet.day.basic': {
                             day: {
                                 width: 37,
-                                // height: 37,
-                                // alignItems: 'center',
-                                // justifyContent: 'center',
                             },
                         },
                         'stylesheet.calendar.header': {
@@ -70,22 +97,17 @@ export default function CalendarMonthView({ onSelectDate }: CalendarMonthViewPro
                         },
                     } as any,
 
-                    calendarBackground: 'white',
+                    calendarBackground: 'transparent',
                     backgroundColor: 'blue', // no seen changes
-
                     textSectionTitleColor: 'black', // days Sun Mon
                     textSectionTitleDisabledColor: '#d9e1e8',
                     selectedDayBackgroundColor: '#00adf5',
                     selectedDayTextColor: '#ffffff',
-            
                     dayTextColor: 'brown', // days numbered
                     textDisabledColor: '#d9e1e8',// days disable
-
                     arrowColor: 'gray',
                     disabledArrowColor: '#d9e1e8',
-
                     monthTextColor: 'gray', // May 2025
-
                     textDayFontWeight: '300',
                     textMonthFontWeight: 'bold',
                     textDayHeaderFontWeight: '300',
@@ -98,15 +120,18 @@ export default function CalendarMonthView({ onSelectDate }: CalendarMonthViewPro
                 markedDates={{
                     [selectedDate]: { selected: true, selectedColor: '#4ade80' },
                 }}
-
                 hideExtraDays={true}
-
                 hideArrows={true}  
                 renderHeader={date => {
-                    return null //<Text>S M T W T F S</Text>
+                    return null;
                 }}
-
             />
+             {/* Unsure where to place this - maybe in the parent  */}
+            <MonthScroller
+                currentMonth={currentMonth}
+                onMonthPress={(month) => updateMonthPreservingDay(new Date(month))}
+            /> 
         </View>
+        </>
     );
 }

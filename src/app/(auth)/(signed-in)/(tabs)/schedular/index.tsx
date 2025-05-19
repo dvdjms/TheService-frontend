@@ -3,7 +3,6 @@ import React, { useRef, useState } from 'react';
 import CalendarMonthView from "@/src/components/schedular/CalendarMonthView";
 import CalendarDayView from "@/src/components/schedular/CalendarDayView";
 import { addDays, format, subDays } from "date-fns";
-import MonthSelector from "@/src/components/schedular/TimeBlockSelector";
 import { Ionicons } from '@expo/vector-icons';
 
 export default function SchedularScreen() {
@@ -60,7 +59,11 @@ export default function SchedularScreen() {
         })
     ).current;
 
-
+    const handleMonthChange = (newDate: Date) => {
+        // setShorterMonth(startOfMonth(newDate));
+        setSelectedDate(newDate.toISOString().split('T')[0]);
+    };
+    
     return (
         <View style={{ flex: 1 }} >
             {/* Toggle Button */}
@@ -78,8 +81,11 @@ export default function SchedularScreen() {
                 // pointerEvents={isMonthVisible ? 'auto' : 'none'}
             >
                 <CalendarMonthView
+                    onMonthChange={handleMonthChange}
+                    // shorterMonth={selectedDate}
                     onSelectDate={(date) => {
                         setSelectedDate(date);
+                        // setVisibleMonth(date)
                     }}
                 />
             </Animated.View>
@@ -91,7 +97,8 @@ export default function SchedularScreen() {
 
             {/* Day View below */}
             <CalendarDayView
-                date={selectedDate}
+                date={format(selectedDate, 'yyy-MM-dd')}
+                
                 onSwipeLeft={goToNextDay}
                 onSwipeRight={goToPreviousDay}
                 onSwipeUp={collapseMonth}
@@ -126,7 +133,6 @@ const styles = StyleSheet.create({
         borderBottomColor: '#eee', 
         borderBottomWidth: 1
     },
-
     dayName: {
         backgroundColor: "transparent",
         paddingTop: 7,
@@ -137,7 +143,6 @@ const styles = StyleSheet.create({
         borderRightColor: '#eeeeee',
         borderRightWidth: 1,
         fontWeight: 500
-        
     },
     dayNumber: {
         backgroundColor: "white",
@@ -148,17 +153,11 @@ const styles = StyleSheet.create({
         paddingBottom: 3,
         fontWeight: 500
     },
-    spacer: {
-        marginTop: 0,
-        borderTopWidth: 1,
-        borderColor: '#cccccc',
-        marginHorizontal: 10,
-        paddingTop: 5,
-    },
     dateHeader: {
-        fontSize: 18,
+        height: 30,
+        fontSize: 16,
         textAlign: 'center',
-        padding: 12,
+        padding: 4,
         backgroundColor: '#f2f2f2',
         borderBottomWidth: 1,
         borderColor: '#ccc',
