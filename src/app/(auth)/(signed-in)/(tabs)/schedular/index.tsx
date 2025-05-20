@@ -5,8 +5,9 @@ import CalendarDayView from "@/src/components/schedular/CalendarDayView";
 import { addDays, format, subDays } from "date-fns";
 import { Ionicons } from '@expo/vector-icons';
 
+
 export default function SchedularScreen() {
-    const [selectedDate, setSelectedDate] = useState<string>(getToday());
+    const [currentDate, setCurrentDate] = useState<string>(getToday())
     const [isMonthVisible, setIsMonthVisible] = useState(false);
     const monthHeight = useRef(new Animated.Value(0)).current;
     const monthMaxHeight = 270;
@@ -16,13 +17,15 @@ export default function SchedularScreen() {
     }
 
     const goToPreviousDay = (): void => {
-        const prevDay = subDays(new Date(selectedDate), 1);
-        setSelectedDate(prevDay.toISOString().split('T')[0]);
+        console.log("goToPreviousDay")
+        const prevDay = subDays(new Date(currentDate), 1);
+        setCurrentDate(prevDay.toISOString().split('T')[0]);
     }
 
     const goToNextDay = (): void => {
-        const nextDay = addDays(new Date(selectedDate), 1);
-        setSelectedDate(nextDay.toISOString().split('T')[0]);
+        console.log("goToNextDay")
+        const nextDay = addDays(new Date(currentDate), 1);
+        setCurrentDate(nextDay.toISOString().split('T')[0]);
     }
 
     const toggleMonth = () => {
@@ -38,6 +41,7 @@ export default function SchedularScreen() {
 
     const collapseMonth = () =>  {
         if (isMonthVisible) {
+            console.log("collapseMonth")
             Animated.timing(monthHeight, {
                 toValue: 0,
                 duration: 300,
@@ -49,10 +53,10 @@ export default function SchedularScreen() {
     const panResponder = useRef(
         PanResponder.create({
             onMoveShouldSetPanResponder: (_, gestureState) => {
-                return gestureState.dy < -10; // detect swipe up
+                return isMonthVisible && gestureState.dy < -10; // detect swipe up
             },
             onPanResponderRelease: (_, gestureState) => {
-                if (gestureState.dy < -50 && isMonthVisible) {
+                if (isMonthVisible && gestureState.dy < -50 ) {
                     toggleMonth();
                 }
             },
@@ -60,50 +64,44 @@ export default function SchedularScreen() {
     ).current;
 
     const handleMonthChange = (newDate: Date) => {
-        // setShorterMonth(startOfMonth(newDate));
-        setSelectedDate(newDate.toISOString().split('T')[0]);
+        setCurrentDate(newDate.toISOString().split('T')[0]);
     };
     
     return (
-        <View style={{ flex: 1 }} >
+        <View style={styles.container}>
             {/* Toggle Button */}
             <TouchableOpacity onPress={toggleMonth}>
                 <Text style={styles.dateHeader}>
-                    {format(selectedDate, 'MMM yyyy')} {' '}
+                    {format(new Date(currentDate), 'MMM yyyy')} {' '}
                     <Ionicons name={isMonthVisible ? 'chevron-up' : 'chevron-down' } size={18} color="gray" />
                 </Text>
             </TouchableOpacity>
 
             {/* Sliding Month View */}
             <Animated.View
-                style={{ height: monthHeight, overflow: 'hidden' }}
-                {...panResponder.panHandlers}
-                // pointerEvents={isMonthVisible ? 'auto' : 'none'}
-            >
+                style={{ height: monthHeight, overflow: 'hidden' }}>
                 <CalendarMonthView
                     onMonthChange={handleMonthChange}
-                    // shorterMonth={selectedDate}
-                    onSelectDate={(date) => {
-                        setSelectedDate(date);
-                        // setVisibleMonth(date)
-                    }}
+                    onSelectDate={(date) => setCurrentDate(date)}
                 />
             </Animated.View>
 
-            <View style={ !isMonthVisible && styles.dayContainer ? styles.dayContainer : styles.dayContainer2}>
-                <Text style={ styles.dayName }>{format(selectedDate, 'EEE' ).toUpperCase()}</Text>
-                <Text style={ styles.dayNumber }>{format(selectedDate, 'dd')}</Text>
+            <View style={ isMonthVisible ? styles.dayContainer2 : styles.dayContainer}>
+                <Text style={ styles.dayName }>{format(new Date(currentDate), 'EEE' ).toUpperCase()}</Text>
+                <Text style={ styles.dayNumber }>{format(new Date(currentDate), 'dd')}</Text>
             </View>
 
             {/* Day View below */}
-            <CalendarDayView
-                date={format(selectedDate, 'yyy-MM-dd')}
-                
-                onSwipeLeft={goToNextDay}
-                onSwipeRight={goToPreviousDay}
-                onSwipeUp={collapseMonth}
-                onTap={collapseMonth}
-            />
+            <View style={{ flex: 1 }}>
+                <CalendarDayView
+                    currentDate={format(currentDate, 'yyy-MM-dd')}
+                    isMonthVisible={isMonthVisible}
+                    onSwipeLeft={goToNextDay}
+                    onSwipeRight={goToPreviousDay}
+                    onSwipeUp={collapseMonth}
+                    onTap={collapseMonth}
+                />
+            </View>
         </View>
     );
 }
@@ -111,9 +109,6 @@ export default function SchedularScreen() {
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        backgroundColor: 'white',//colors.background,
-        padding: 2,
-        overflow: 'hidden'
     },
     dayContainer: {
         backgroundColor: "white",
