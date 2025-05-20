@@ -13,10 +13,14 @@ import {
     View,
     StyleSheet,
     Dimensions,
+    NativeSyntheticEvent,
+    NativeScrollEvent,
 } from 'react-native';
 
 
 const screenWidth = Dimensions.get('window').width;
+const HOUR_HEIGHT = 60;
+const START_HOUR = 8;
 
 interface CalendarDayViewProps {
     currentDate: string;
@@ -29,20 +33,30 @@ interface CalendarDayViewProps {
 
 export default function CalendarDayView({ currentDate, isMonthVisible, onSwipeLeft, onSwipeRight, onSwipeUp, onTap }: CalendarDayViewProps) {
     const HOURS = Array.from({ length: 24 }, (_, i) => i);
-    const listRef = useRef<FlatList>(null);
+    const centerListRef = useRef<FlatList>(null);
+    const prevListRef = useRef<FlatList>(null);
+    const nextListRef = useRef<FlatList>(null);
+
     const [displayDate, setDisplayDate] = useState(currentDate);
     const [nextDate, setNextDate] = useState('');
     const [prevDate, setPrevDate] = useState('');
-    
+    const [scrollOffset, setScrollOffset] = useState(8 * HOUR_HEIGHT);
+
     const translateX = useSharedValue(0);
     const isSwiping = useSharedValue(false);
 
     useEffect(() => {
         const date = new Date(currentDate);
         setDisplayDate(currentDate);
+
         setNextDate(new Date(date.setDate(date.getDate() + 1)).toISOString().split('T')[0]);
         setPrevDate(new Date(date.setDate(date.getDate() - 2)).toISOString().split('T')[0]);
-        listRef.current?.scrollToOffset({ offset: 8 * 60, animated: false });
+
+        setTimeout(() => {
+            centerListRef.current?.scrollToOffset({ offset: scrollOffset, animated: false });
+            prevListRef.current?.scrollToOffset({ offset: scrollOffset, animated: false });
+            nextListRef.current?.scrollToOffset({ offset: scrollOffset, animated: false });
+        }, 50);
     }, [currentDate]);
 
     const panGesture = Gesture.Pan()
@@ -116,13 +130,23 @@ export default function CalendarDayView({ currentDate, isMonthVisible, onSwipeLe
         };
     });
 
+    // Track scroll position changes
+    const handleScroll = (e: NativeSyntheticEvent<NativeScrollEvent>) => {
+        const offset = e.nativeEvent.contentOffset.y;
+        setScrollOffset(offset); // Save current scroll position
+        
+        // Sync other lists
+        prevListRef.current?.scrollToOffset({ offset, animated: false });
+        nextListRef.current?.scrollToOffset({ offset, animated: false });
+    };
+
     return (
         <GestureDetector gesture={Gesture.Simultaneous(panGesture, tapGesture)}>
             <View style={{ flex: 1, overflow: 'hidden' }}>
                 {/* Previous Day (left) */}
                 <Animated.View style={[StyleSheet.absoluteFill, prevDayStyle]}>
                     <FlatList
-                        ref={listRef}
+                        ref={prevListRef}
                         data={HOURS}
                         keyExtractor={(item) => `prev-${item}`}
                         renderItem={({ item }) => (
@@ -131,13 +155,16 @@ export default function CalendarDayView({ currentDate, isMonthVisible, onSwipeLe
                             <Text style={{ color: '#aaa' }}>{prevDate}</Text>
                         </View>
                         )}
+                        getItemLayout={(data, index) => (
+                            { length: HOUR_HEIGHT, offset: HOUR_HEIGHT * index, index }
+                        )}
                     />
                 </Animated.View>
 
                 {/* Current Day (center) */}
                 <Animated.View style={[StyleSheet.absoluteFill, animatedStyle]}>
                     <FlatList
-                        ref={listRef}
+                        ref={centerListRef}
                         data={HOURS}
                         keyExtractor={(item) => `curr-${item}`}
                         renderItem={({ item }) => (
@@ -146,13 +173,19 @@ export default function CalendarDayView({ currentDate, isMonthVisible, onSwipeLe
                             <Text style={{ color: '#666' }}>{displayDate}</Text>
                         </View>
                         )}
+                        getItemLayout={(data, index) => (
+                            { length: HOUR_HEIGHT, offset: HOUR_HEIGHT * index, index }
+                        )}
+                        onScroll={handleScroll}
+                        scrollEventThrottle={16}
+                        // initialScrollIndex={START_HOUR}
                     />
                 </Animated.View>
 
                 {/* Next Day (right) */}
                 <Animated.View style={[StyleSheet.absoluteFill, nextDayStyle]}>
                     <FlatList
-                        ref={listRef}
+                        ref={nextListRef}
                         data={HOURS}
                         keyExtractor={(item) => `next-${item}`}
                         renderItem={({ item }) => (
@@ -160,6 +193,9 @@ export default function CalendarDayView({ currentDate, isMonthVisible, onSwipeLe
                             <Text>{`${item}:00`}</Text>
                             <Text style={{ color: '#aaa' }}>{nextDate}</Text>
                         </View>
+                        )}
+                        getItemLayout={(data, index) => (
+                            { length: HOUR_HEIGHT, offset: HOUR_HEIGHT * index, index }
                         )}
                     />
                 </Animated.View>

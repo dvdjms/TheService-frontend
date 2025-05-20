@@ -17,13 +17,11 @@ export default function SchedularScreen() {
     }
 
     const goToPreviousDay = (): void => {
-        console.log("goToPreviousDay")
         const prevDay = subDays(new Date(currentDate), 1);
         setCurrentDate(prevDay.toISOString().split('T')[0]);
     }
 
     const goToNextDay = (): void => {
-        console.log("goToNextDay")
         const nextDay = addDays(new Date(currentDate), 1);
         setCurrentDate(nextDay.toISOString().split('T')[0]);
     }
