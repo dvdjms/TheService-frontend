@@ -1,50 +1,78 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { Dispatch, SetStateAction, useEffect, useRef, useState } from 'react';
 import { GestureDetector, Gesture } from 'react-native-gesture-handler';
 import Animated, { 
     useSharedValue, 
     useAnimatedStyle,
     withTiming,
     runOnJS,
-    Easing
+    Easing,
+    useAnimatedReaction
 } from 'react-native-reanimated';
 import {
     FlatList,
-    Text,
     View,
     StyleSheet,
     Dimensions,
     NativeSyntheticEvent,
     NativeScrollEvent,
 } from 'react-native';
-
+import { DayColumn } from './DayColumn';
+import { TimeBlock } from '@/src/app/(auth)/(signed-in)/(tabs)/schedular';
 
 const screenWidth = Dimensions.get('window').width;
-const HOUR_HEIGHT = 60;
-const START_HOUR = 8;
 
 interface CalendarDayViewProps {
     currentDate: string;
     isMonthVisible: boolean;
     onSwipeLeft: () => void;
     onSwipeRight: () => void;
-    onSwipeUp: () => void;
-    onTap: () => void;
+    collapseMonth: () => void;
+    selectedHour: number | null;
+    setSelectedHour: Dispatch<SetStateAction<number | null>>;
+    selectedTimeBlock: TimeBlock | null;
+    setSelectedTimeBlock: React.Dispatch<React.SetStateAction<TimeBlock | null>>; 
+    setIsModalVisible: Dispatch<SetStateAction<boolean>>;
+    HOUR_HEIGHT: number;
 }
 
-export default function CalendarDayView({ currentDate, isMonthVisible, onSwipeLeft, onSwipeRight, onSwipeUp, onTap }: CalendarDayViewProps) {
-    const HOURS = Array.from({ length: 24 }, (_, i) => i);
-    const centerListRef = useRef<FlatList>(null);
-    const prevListRef = useRef<FlatList>(null);
-    const nextListRef = useRef<FlatList>(null);
+export default function CalendarDayView({ 
+    currentDate, 
+    isMonthVisible, 
+    onSwipeLeft, 
+    onSwipeRight, 
+    collapseMonth,
+    selectedHour,
+    setSelectedHour,
+    selectedTimeBlock,
+    setSelectedTimeBlock,
+    setIsModalVisible,
+    HOUR_HEIGHT,
+}: CalendarDayViewProps) {
+
+
+
+    const centerListRef = useRef<FlatList<number>>(null);
+    const prevListRef = useRef<FlatList<number>>(null);
+    const nextListRef = useRef<FlatList<number>>(null);
 
     const [displayDate, setDisplayDate] = useState(currentDate);
     const [nextDate, setNextDate] = useState('');
     const [prevDate, setPrevDate] = useState('');
+
     const [scrollOffset, setScrollOffset] = useState(8 * HOUR_HEIGHT);
-
-    const translateX = useSharedValue(0);
+    const [isSwipingState, setIsSwipingState] = useState(false);
+    
     const isSwiping = useSharedValue(false);
-
+    const translateX = useSharedValue(0);
+    const translateY = useSharedValue(0);
+  
+    useAnimatedReaction(
+        () => isSwiping.value,
+        (swiping) => {
+            runOnJS(setIsSwipingState)(swiping);
+        }
+    );
+    
     useEffect(() => {
         const date = new Date(currentDate);
         setDisplayDate(currentDate);
@@ -59,58 +87,75 @@ export default function CalendarDayView({ currentDate, isMonthVisible, onSwipeLe
         }, 50);
     }, [currentDate]);
 
+    
+    // Swipe left or right for next or previous day, swipe up to close month
     const panGesture = Gesture.Pan()
         .onBegin(() => {
             isSwiping.value = true;
         })
         .onUpdate((e) => {
-            translateX.value = e.translationX;
+            if (isMonthVisible && Math.abs(e.translationX) > Math.abs(e.translationY)) {
+                translateY.value = e.translationY;
+                translateX.value = 0;
+            } else {
+                 translateX.value = e.translationX;
+            }
         })
         .onEnd((e) => {
             const swipeThreshold = screenWidth * 0.25;
+            const verticalThreshold = 60;
             const velocityThreshold = 500;
 
-        // Swipe right (go to previous day)
-        if (e.translationX > swipeThreshold || e.velocityX > velocityThreshold) {
-            translateX.value = withTiming(
-                screenWidth,
-                { duration: 300, easing: Easing.bezier(0.25, 0.1, 0.25, 1) },
-                (finished) => {
-                    'worklet';
-                    if (finished) {
-                        runOnJS(onSwipeRight)();
-                        translateX.value = 0;
-                        isSwiping.value = false;
+            // Vertical swipe up
+            if (isMonthVisible && e.translationY < -verticalThreshold || e.velocityY < -velocityThreshold) {
+                runOnJS(collapseMonth)();
+                return;
+            } 
+            // Swipe right (go to previous day)
+            else if (e.translationX > swipeThreshold || e.velocityX > velocityThreshold) {
+                translateX.value = withTiming(
+                    screenWidth,
+                    { duration: 300, easing: Easing.bezier(0.25, 0.1, 0.25, 1) },
+                    (finished) => {
+                        'worklet';
+                        if (finished) {
+                            runOnJS(onSwipeRight)();
+                            translateX.value = 0;
+                            isSwiping.value = false;
+                        }
                     }
-                }
-            );
-        } 
-        // Swipe left (go to next day)
-        else if (e.translationX < -swipeThreshold || e.velocityX < -velocityThreshold) {
-            translateX.value = withTiming(
-            -screenWidth,
-            { duration: 300, easing: Easing.bezier(0.25, 0.1, 0.25, 1) },
-            (finished) => {
-                'worklet';
-                if (finished) {
-                    runOnJS(onSwipeLeft)();
-                    translateX.value = 0;
-                    isSwiping.value = false;
-                }
+                );
+            } 
+            // Swipe left (go to next day)
+            else if (e.translationX < -swipeThreshold || e.velocityX < -velocityThreshold) {
+                translateX.value = withTiming(
+                    -screenWidth,
+                    { duration: 300, easing: Easing.bezier(0.25, 0.1, 0.25, 1) },
+                    (finished) => {
+                        'worklet';
+                        if (finished) {
+                            runOnJS(onSwipeLeft)();
+                            translateX.value = 0;
+                            isSwiping.value = false;
+                        }
+                    }
+                );
+            }    
+            else {
+                translateX.value = withTiming(0, { duration: 200 });
+                translateY.value = withTiming(0, { duration: 200 });
+                isSwiping.value = false;
             }
-            );
         }
-        else {
-            translateX.value = withTiming(0, { duration: 200 });
-            isSwiping.value = false;
-        }
-    });
+    );
 
+    // closes Month on tap
     const tapGesture = Gesture.Tap()
         .enabled(isMonthVisible)
         .onEnd(() => {
-            runOnJS(onTap)();
+            runOnJS(collapseMonth)();
     });
+
 
     const animatedStyle = useAnimatedStyle(() => {
         return {
@@ -131,7 +176,7 @@ export default function CalendarDayView({ currentDate, isMonthVisible, onSwipeLe
     });
 
     // Track scroll position changes
-    const handleScroll = (e: NativeSyntheticEvent<NativeScrollEvent>) => {
+    const handleLeftRightScroll = (e: NativeSyntheticEvent<NativeScrollEvent>) => {
         const offset = e.nativeEvent.contentOffset.y;
         setScrollOffset(offset); // Save current scroll position
         
@@ -141,108 +186,64 @@ export default function CalendarDayView({ currentDate, isMonthVisible, onSwipeLe
     };
 
     return (
-        <GestureDetector gesture={Gesture.Simultaneous(panGesture, tapGesture)}>
-            <View style={{ flex: 1, overflow: 'hidden' }}>
+        <GestureDetector gesture={Gesture.Exclusive(tapGesture, panGesture)}>
+            <View 
+                style={{ flex: 1, overflow: 'hidden' }} 
+                pointerEvents={isMonthVisible ? "box-only" : "auto"}
+            >
                 {/* Previous Day (left) */}
                 <Animated.View style={[StyleSheet.absoluteFill, prevDayStyle]}>
-                    <FlatList
-                        ref={prevListRef}
-                        data={HOURS}
-                        keyExtractor={(item) => `prev-${item}`}
-                        renderItem={({ item }) => (
-                        <View style={styles.hourBlock}>
-                            <Text>{`${item}:00`}</Text>
-                            <Text style={{ color: '#aaa' }}>{prevDate}</Text>
-                        </View>
-                        )}
-                        getItemLayout={(data, index) => (
-                            { length: HOUR_HEIGHT, offset: HOUR_HEIGHT * index, index }
-                        )}
+                    <DayColumn
+                        date={prevDate}
+                        listRef={prevListRef}
+                        setIsModalVisible={setIsModalVisible}
+                        HOUR_HEIGHT={HOUR_HEIGHT}
+                        isSwipingState={!isSwipingState}
+                        isMonthVisible={isMonthVisible}
+                        setSelectedHour={setSelectedHour}
+                        selectedTimeBlock={selectedTimeBlock}
+                        setSelectedTimeBlock={setSelectedTimeBlock}
                     />
                 </Animated.View>
 
-                {/* Current Day (center) */}
                 <Animated.View style={[StyleSheet.absoluteFill, animatedStyle]}>
-                    <FlatList
-                        ref={centerListRef}
-                        data={HOURS}
-                        keyExtractor={(item) => `curr-${item}`}
-                        renderItem={({ item }) => (
-                        <View style={styles.hourBlock}>
-                            <Text>{`${item}:00`}</Text>
-                            <Text style={{ color: '#666' }}>{displayDate}</Text>
-                        </View>
-                        )}
-                        getItemLayout={(data, index) => (
-                            { length: HOUR_HEIGHT, offset: HOUR_HEIGHT * index, index }
-                        )}
-                        onScroll={handleScroll}
-                        scrollEventThrottle={16}
-                        // initialScrollIndex={START_HOUR}
+                    <DayColumn
+                        date={displayDate}
+                        listRef={centerListRef}
+                        isCurrentDay
+                        selectedHour={selectedHour}
+                        onHourPress={(hour: any) => {
+                            if(!isMonthVisible){
+                                setSelectedHour(hour);
+                                setIsModalVisible(true);
+                            }
+                        }}
+                        onLeftRightScroll={handleLeftRightScroll}
+                        setIsModalVisible={setIsModalVisible}
+                        HOUR_HEIGHT={HOUR_HEIGHT}
+                        isSwipingState={!isSwipingState}
+                        isMonthVisible={isMonthVisible}
+                        setSelectedHour={setSelectedHour}
+                        selectedTimeBlock={selectedTimeBlock}
+                        setSelectedTimeBlock={setSelectedTimeBlock}
                     />
                 </Animated.View>
 
-                {/* Next Day (right) */}
                 <Animated.View style={[StyleSheet.absoluteFill, nextDayStyle]}>
-                    <FlatList
-                        ref={nextListRef}
-                        data={HOURS}
-                        keyExtractor={(item) => `next-${item}`}
-                        renderItem={({ item }) => (
-                        <View style={styles.hourBlock}>
-                            <Text>{`${item}:00`}</Text>
-                            <Text style={{ color: '#aaa' }}>{nextDate}</Text>
-                        </View>
-                        )}
-                        getItemLayout={(data, index) => (
-                            { length: HOUR_HEIGHT, offset: HOUR_HEIGHT * index, index }
-                        )}
+                    <DayColumn
+                        date={nextDate}
+                        listRef={nextListRef}
+                        setIsModalVisible={setIsModalVisible}
+                        HOUR_HEIGHT={HOUR_HEIGHT}
+                        isSwipingState={isSwipingState}
+                        isMonthVisible={isMonthVisible}
+                        setSelectedHour={setSelectedHour}
+                        selectedTimeBlock={selectedTimeBlock}
+                        setSelectedTimeBlock={setSelectedTimeBlock}
                     />
                 </Animated.View>
+
             </View>
         </GestureDetector>
     );
 }
-
-
-const styles = StyleSheet.create({
-    hourBlock: {
-        height: 60,
-        borderBottomWidth: 1,
-        borderRightWidth: 1,
-        borderColor: '#eee',
-        justifyContent: 'center',
-        paddingHorizontal: 10,
-        backgroundColor: '#fff',
-    },
-    absoluteFill: {
-        ...StyleSheet.absoluteFillObject,
-    },
-    dateHeader: {
-        fontSize: 18,
-        textAlign: 'center',
-        padding: 12,
-        backgroundColor: '#f2f2f2',
-        borderBottomWidth: 1,
-        borderColor: '#ccc',
-},
-    dayHeader: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        justifyContent: 'space-between',
-        marginVertical: 12,
-        paddingHorizontal: 16,
-    },
-    dateText: {
-        fontWeight: 'bold',
-        fontSize: 16,
-        textAlign: 'center',
-        flex: 1,
-    },
-    arrow: {
-        padding: 12,
-    },
-    arrowText: {
-        fontSize: 20,
-    },
-});

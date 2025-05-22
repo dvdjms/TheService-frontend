@@ -1,16 +1,29 @@
-import { View, StyleSheet, Animated, TouchableOpacity, Text, PanResponder } from "react-native";
+import { View, StyleSheet, Animated, TouchableOpacity, Text } from "react-native";
 import React, { useRef, useState } from 'react';
 import CalendarMonthView from "@/src/components/schedular/CalendarMonthView";
 import CalendarDayView from "@/src/components/schedular/CalendarDayView";
 import { addDays, format, subDays } from "date-fns";
 import { Ionicons } from '@expo/vector-icons';
+import AppointmentBlock from "@/src/components/schedular/AppointmentBlock";
 
+export type TimeBlock = {
+    startMinutes: number;
+    endMinutes: number;
+} | null;
 
 export default function SchedularScreen() {
     const [currentDate, setCurrentDate] = useState<string>(getToday())
     const [isMonthVisible, setIsMonthVisible] = useState(false);
+    const [isModalVisible, setIsModalVisible] = useState(false);
+    const [selectedHour, setSelectedHour] = useState<number | null>(null);
+
+    const [selectedTimeBlock, setSelectedTimeBlock] = useState<TimeBlock | null>(null)
+    const [selectedStartY, setSelectedStartY] = useState<number | null>(null);
+    const [selectedEndY, setSelectedEndY] = useState<number | null>(null);
+
     const monthHeight = useRef(new Animated.Value(0)).current;
     const monthMaxHeight = 270;
+    const HOUR_HEIGHT = 60;
 
     function getToday() {
         return new Date().toISOString().split('T')[0];
@@ -39,7 +52,6 @@ export default function SchedularScreen() {
 
     const collapseMonth = () =>  {
         if (isMonthVisible) {
-            console.log("collapseMonth")
             Animated.timing(monthHeight, {
                 toValue: 0,
                 duration: 300,
@@ -48,24 +60,12 @@ export default function SchedularScreen() {
         }
     }
 
-    const panResponder = useRef(
-        PanResponder.create({
-            onMoveShouldSetPanResponder: (_, gestureState) => {
-                return isMonthVisible && gestureState.dy < -10; // detect swipe up
-            },
-            onPanResponderRelease: (_, gestureState) => {
-                if (isMonthVisible && gestureState.dy < -50 ) {
-                    toggleMonth();
-                }
-            },
-        })
-    ).current;
-
     const handleMonthChange = (newDate: Date) => {
         setCurrentDate(newDate.toISOString().split('T')[0]);
     };
     
     return (
+        <>
         <View style={styles.container}>
             {/* Toggle Button */}
             <TouchableOpacity onPress={toggleMonth}>
@@ -96,11 +96,35 @@ export default function SchedularScreen() {
                     isMonthVisible={isMonthVisible}
                     onSwipeLeft={goToNextDay}
                     onSwipeRight={goToPreviousDay}
-                    onSwipeUp={collapseMonth}
-                    onTap={collapseMonth}
-                />
+                    collapseMonth={collapseMonth}
+                    selectedHour={selectedHour}
+                    setSelectedHour={setSelectedHour}
+                    selectedTimeBlock={selectedTimeBlock}
+                    setSelectedTimeBlock={setSelectedTimeBlock}
+                    setIsModalVisible={setIsModalVisible}
+                    HOUR_HEIGHT={HOUR_HEIGHT}
+              />
             </View>
         </View>
+
+
+        <AppointmentBlock
+            visible={isModalVisible}
+            hour={selectedHour || 0}
+            selectedStartY={selectedStartY}
+            selectedEndY={selectedEndY}
+            selectedTimeBlock={selectedTimeBlock}
+
+            onClose={() => {
+                setSelectedHour(null);
+                setIsModalVisible(false);
+            }}
+            onSave={(title) => {
+                // Handle saving the appointment
+                console.log(`Saved appointment for ${selectedHour}:00 - ${title}`);
+            }}
+        />
+        </>
     );
 }
 
