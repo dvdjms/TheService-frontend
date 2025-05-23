@@ -5,6 +5,7 @@ import CalendarDayView from "@/src/components/schedular/CalendarDayView";
 import { addDays, format, subDays } from "date-fns";
 import { Ionicons } from '@expo/vector-icons';
 import AppointmentBlock from "@/src/components/schedular/AppointmentBlock";
+import { useSharedValue } from "react-native-reanimated";
 
 export type TimeBlock = {
     startMinutes: number;
@@ -15,13 +16,14 @@ export default function SchedularScreen() {
     const [currentDate, setCurrentDate] = useState<string>(getToday())
     const [isMonthVisible, setIsMonthVisible] = useState(false);
     const [isModalVisible, setIsModalVisible] = useState(false);
-    const [selectedHour, setSelectedHour] = useState<number | null>(null);
 
-    const [selectedTimeBlock, setSelectedTimeBlock] = useState<TimeBlock | null>(null)
     const [selectedStartY, setSelectedStartY] = useState<number | null>(null);
     const [selectedEndY, setSelectedEndY] = useState<number | null>(null);
 
     const monthHeight = useRef(new Animated.Value(0)).current;
+
+    const selectedTimeBlock = useSharedValue<TimeBlock | null>(null)
+    
     const monthMaxHeight = 270;
     const HOUR_HEIGHT = 60;
 
@@ -97,10 +99,7 @@ export default function SchedularScreen() {
                     onSwipeLeft={goToNextDay}
                     onSwipeRight={goToPreviousDay}
                     collapseMonth={collapseMonth}
-                    selectedHour={selectedHour}
-                    setSelectedHour={setSelectedHour}
                     selectedTimeBlock={selectedTimeBlock}
-                    setSelectedTimeBlock={setSelectedTimeBlock}
                     setIsModalVisible={setIsModalVisible}
                     HOUR_HEIGHT={HOUR_HEIGHT}
               />
@@ -110,18 +109,16 @@ export default function SchedularScreen() {
 
         <AppointmentBlock
             visible={isModalVisible}
-            hour={selectedHour || 0}
             selectedStartY={selectedStartY}
             selectedEndY={selectedEndY}
             selectedTimeBlock={selectedTimeBlock}
 
             onClose={() => {
-                setSelectedHour(null);
                 setIsModalVisible(false);
             }}
             onSave={(title) => {
                 // Handle saving the appointment
-                console.log(`Saved appointment for ${selectedHour}:00 - ${title}`);
+                console.log(`Saved appointment for ${selectedTimeBlock.value?.startMinutes}:00 - ${title}`);
             }}
         />
         </>

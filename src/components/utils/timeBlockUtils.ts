@@ -3,17 +3,25 @@ export type TimeBlock = {
     endMinutes: number;
 };
 
-export const getTimeBlockFromY = (
-    y: number,
-    HOUR_HEIGHT: number
-): TimeBlock => {
-    'worklet'; 
-    const minutesPerPixel = 60 / HOUR_HEIGHT;
-    const startMinutes = Math.floor(y * minutesPerPixel / 15) * 15;
-    return {
-        startMinutes,
-        endMinutes: startMinutes + 60, // Default 1 hour block
-    };
+// export const getTimeBlockFromY = (
+//     y: number,
+//     HOUR_HEIGHT: number
+// ): TimeBlock => {
+//     'worklet'; 
+//     const minutesPerPixel = 60 / HOUR_HEIGHT;
+//     const startMinutes = Math.floor(y * minutesPerPixel / 15) * 15;
+//     return {
+//         startMinutes,
+//         endMinutes: startMinutes + 60, // Default 1 hour block
+//     };
+// };
+
+export const getTimeBlockFromY = (y: number, hourHeight: number) => {
+    'worklet';
+    const interval = 15;
+    const startMinutes = Math.floor((y / hourHeight) * 60 / interval) * interval;
+    const endMinutes = startMinutes + interval * 4;
+    return { startMinutes, endMinutes };
 };
 
 export const getYFromTimeBlock = (

@@ -6,7 +6,8 @@ import Animated, {
     withTiming,
     runOnJS,
     Easing,
-    useAnimatedReaction
+    useAnimatedReaction,
+    SharedValue
 } from 'react-native-reanimated';
 import {
     FlatList,
@@ -27,10 +28,7 @@ interface CalendarDayViewProps {
     onSwipeLeft: () => void;
     onSwipeRight: () => void;
     collapseMonth: () => void;
-    selectedHour: number | null;
-    setSelectedHour: Dispatch<SetStateAction<number | null>>;
-    selectedTimeBlock: TimeBlock | null;
-    setSelectedTimeBlock: React.Dispatch<React.SetStateAction<TimeBlock | null>>; 
+    selectedTimeBlock: SharedValue<TimeBlock | null>;
     setIsModalVisible: Dispatch<SetStateAction<boolean>>;
     HOUR_HEIGHT: number;
 }
@@ -41,16 +39,10 @@ export default function CalendarDayView({
     onSwipeLeft, 
     onSwipeRight, 
     collapseMonth,
-    selectedHour,
-    setSelectedHour,
     selectedTimeBlock,
-    setSelectedTimeBlock,
     setIsModalVisible,
     HOUR_HEIGHT,
 }: CalendarDayViewProps) {
-
-
-
     const centerListRef = useRef<FlatList<number>>(null);
     const prevListRef = useRef<FlatList<number>>(null);
     const nextListRef = useRef<FlatList<number>>(null);
@@ -200,9 +192,7 @@ export default function CalendarDayView({
                         HOUR_HEIGHT={HOUR_HEIGHT}
                         isSwipingState={!isSwipingState}
                         isMonthVisible={isMonthVisible}
-                        setSelectedHour={setSelectedHour}
                         selectedTimeBlock={selectedTimeBlock}
-                        setSelectedTimeBlock={setSelectedTimeBlock}
                     />
                 </Animated.View>
 
@@ -211,21 +201,12 @@ export default function CalendarDayView({
                         date={displayDate}
                         listRef={centerListRef}
                         isCurrentDay
-                        selectedHour={selectedHour}
-                        onHourPress={(hour: any) => {
-                            if(!isMonthVisible){
-                                setSelectedHour(hour);
-                                setIsModalVisible(true);
-                            }
-                        }}
                         onLeftRightScroll={handleLeftRightScroll}
                         setIsModalVisible={setIsModalVisible}
                         HOUR_HEIGHT={HOUR_HEIGHT}
                         isSwipingState={!isSwipingState}
                         isMonthVisible={isMonthVisible}
-                        setSelectedHour={setSelectedHour}
                         selectedTimeBlock={selectedTimeBlock}
-                        setSelectedTimeBlock={setSelectedTimeBlock}
                     />
                 </Animated.View>
 
@@ -237,9 +218,7 @@ export default function CalendarDayView({
                         HOUR_HEIGHT={HOUR_HEIGHT}
                         isSwipingState={isSwipingState}
                         isMonthVisible={isMonthVisible}
-                        setSelectedHour={setSelectedHour}
                         selectedTimeBlock={selectedTimeBlock}
-                        setSelectedTimeBlock={setSelectedTimeBlock}
                     />
                 </Animated.View>
 
