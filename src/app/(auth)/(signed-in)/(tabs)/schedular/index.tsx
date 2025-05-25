@@ -1,70 +1,72 @@
-import { View, StyleSheet, Animated, TouchableOpacity, Text } from "react-native";
-import React, { useRef, useState } from 'react';
+import { View, StyleSheet, TouchableOpacity, Text } from "react-native";
+import React, { useCallback, useRef, useState } from 'react';
 import CalendarMonthView from "@/src/components/schedular/CalendarMonthView";
-import CalendarDayView from "@/src/components/schedular/CalendarDayView";
+import CalendarDayView, { CalendarDayViewHandle } from "@/src/components/schedular/CalendarDayView";
 import { addDays, format, subDays } from "date-fns";
 import { Ionicons } from '@expo/vector-icons';
 import AppointmentBlock from "@/src/components/schedular/AppointmentBlock";
-import { useSharedValue } from "react-native-reanimated";
+import Animated, { runOnJS, useSharedValue, withTiming, Easing, useAnimatedStyle } from "react-native-reanimated";
+import { TimeBlock } from '@/src/components/utils/timeBlockUtils';
+import { getToday } from "@/src/components/utils/timeUtils";
 
-export type TimeBlock = {
-    startMinutes: number;
-    endMinutes: number;
-} | null;
+
 
 export default function SchedularScreen() {
     const [currentDate, setCurrentDate] = useState<string>(getToday())
     const [isMonthVisible, setIsMonthVisible] = useState(false);
     const [isModalVisible, setIsModalVisible] = useState(false);
+ 
+    const monthHeight = useSharedValue(0);
 
-    const [selectedStartY, setSelectedStartY] = useState<number | null>(null);
-    const [selectedEndY, setSelectedEndY] = useState<number | null>(null);
+    const selectedTimeBlock = useSharedValue<TimeBlock>({
+        startMinutes: null,
+        endMinutes: null,
+        date: currentDate
+    });
 
-    const monthHeight = useRef(new Animated.Value(0)).current;
+    const calendarDayViewRef = useRef<CalendarDayViewHandle>(null);
 
-    const selectedTimeBlock = useSharedValue<TimeBlock | null>(null)
-    
-    const monthMaxHeight = 270;
-    const HOUR_HEIGHT = 60;
+    const goToDate = useCallback((dateString: string) => {
+            setCurrentDate(dateString);
+    }, []);
 
-    function getToday() {
-        return new Date().toISOString().split('T')[0];
-    }
+    const goToPreviousDay = useCallback(() => {
+    const prevDay = subDays(new Date(currentDate), 1);
+        goToDate(prevDay.toISOString().split('T')[0]);
+    }, [currentDate, goToDate]);
 
-    const goToPreviousDay = (): void => {
-        const prevDay = subDays(new Date(currentDate), 1);
-        setCurrentDate(prevDay.toISOString().split('T')[0]);
-    }
-
-    const goToNextDay = (): void => {
+    const goToNextDay = useCallback(() => {
         const nextDay = addDays(new Date(currentDate), 1);
-        setCurrentDate(nextDay.toISOString().split('T')[0]);
-    }
+        goToDate(nextDay.toISOString().split('T')[0]);
+    }, [currentDate, goToDate]);
+
+
+
 
     const toggleMonth = () => {
+        const monthMaxHeight = 270;
         const toValue = isMonthVisible ? 0 : monthMaxHeight;
-        Animated.timing(monthHeight, {
-            toValue,
-            duration: 300,
-            useNativeDriver: false,
-        }).start(() => {
-            setIsMonthVisible(!isMonthVisible);
+        monthHeight.value = withTiming(toValue, { duration: 300, easing: Easing.inOut(Easing.ease) }, () => {
+            runOnJS(setIsMonthVisible)(!isMonthVisible);
         });
     };
 
     const collapseMonth = () =>  {
         if (isMonthVisible) {
-            Animated.timing(monthHeight, {
-                toValue: 0,
-                duration: 300,
-                useNativeDriver: false,
-            }).start(() => setIsMonthVisible(false));
+            monthHeight.value = withTiming(0, { duration: 300, easing: Easing.inOut(Easing.ease) }, () => {
+                runOnJS(setIsMonthVisible)(false);
+            });
         }
     }
 
-    const handleMonthChange = (newDate: Date) => {
-        setCurrentDate(newDate.toISOString().split('T')[0]);
+    const handleSelectedDate = (date: string) => {
+        console.log('calendarDayViewRef.current:', calendarDayViewRef.current);
+        if (calendarDayViewRef.current) {
+            calendarDayViewRef.current?.swipeToDateImpl(date);
+        }
+        setCurrentDate(date);
     };
+
     
     return (
         <>
@@ -79,40 +81,34 @@ export default function SchedularScreen() {
 
             {/* Sliding Month View */}
             <Animated.View
-                style={{ height: monthHeight, overflow: 'hidden' }}>
+                style={[{ overflow: 'hidden' }, useAnimatedStyle(() => ({ height: withTiming(monthHeight.value, { duration: 300 },)}))]}>
                 <CalendarMonthView
-                    onMonthChange={handleMonthChange}
-                    onSelectDate={(date) => setCurrentDate(date)}
+                    currentDate={currentDate}
+                    onSelectDate={handleSelectedDate}
                 />
             </Animated.View>
-
-            <View style={ isMonthVisible ? styles.dayContainer2 : styles.dayContainer}>
-                <Text style={ styles.dayName }>{format(new Date(currentDate), 'EEE' ).toUpperCase()}</Text>
-                <Text style={ styles.dayNumber }>{format(new Date(currentDate), 'dd')}</Text>
-            </View>
-
             {/* Day View below */}
-            <View style={{ flex: 1 }}>
+            <Animated.View style={{ flex: 1 }}>
                 <CalendarDayView
-                    currentDate={format(currentDate, 'yyy-MM-dd')}
+                    // currentDate={format(currentDate, 'yyy-MM-dd')}
+                    ref={calendarDayViewRef}
+                    currentDate={currentDate}
+                    setCurrentDate={setCurrentDate}
                     isMonthVisible={isMonthVisible}
-                    onSwipeLeft={goToNextDay}
-                    onSwipeRight={goToPreviousDay}
+                    goToPreviousDay={goToPreviousDay}
+                    goToNextDay={goToNextDay}
                     collapseMonth={collapseMonth}
                     selectedTimeBlock={selectedTimeBlock}
                     setIsModalVisible={setIsModalVisible}
-                    HOUR_HEIGHT={HOUR_HEIGHT}
               />
-            </View>
+            </Animated.View>
         </View>
 
 
         <AppointmentBlock
             visible={isModalVisible}
-            selectedStartY={selectedStartY}
-            selectedEndY={selectedEndY}
             selectedTimeBlock={selectedTimeBlock}
-
+            currentDate={currentDate}
             onClose={() => {
                 setIsModalVisible(false);
             }}
@@ -140,7 +136,7 @@ const styles = StyleSheet.create({
         borderBottomColor: 'grey',
         zIndex: 1,
         // Android shadow (elevation = spread + blur approximation)
-        elevation: 4,
+        elevation: 4
     },
     dayContainer2:{
         backgroundColor: 'white',  
@@ -151,7 +147,7 @@ const styles = StyleSheet.create({
         backgroundColor: "transparent",
         paddingTop: 7,
         paddingBottom: 3,
-        width: 70,
+        width: 60,
         textAlign: 'center',
         fontSize: 12,
         borderRightColor: '#eeeeee',
@@ -160,7 +156,7 @@ const styles = StyleSheet.create({
     },
     dayNumber: {
         backgroundColor: "white",
-        width: 70,
+        width: 60,
         textAlign: 'center',
         borderRightColor: '#eeeeee',
         borderRightWidth: 1,

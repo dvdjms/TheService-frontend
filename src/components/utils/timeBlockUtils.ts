@@ -1,6 +1,9 @@
+import { SharedValue } from "react-native-reanimated";
+
 export type TimeBlock = {
-    startMinutes: number; // e.g. 60 = 1:00 AM
-    endMinutes: number;
+    startMinutes: number | null;
+    endMinutes: number | null;
+    date: string
 };
 
 // export const getTimeBlockFromY = (
@@ -16,25 +19,40 @@ export type TimeBlock = {
 //     };
 // };
 
-export const getTimeBlockFromY = (y: number, hourHeight: number) => {
+export const getTimeBlockFromY = (y: number, hourHeight: number, date: string) => {
     'worklet';
     const interval = 15;
     const startMinutes = Math.floor((y / hourHeight) * 60 / interval) * interval;
     const endMinutes = startMinutes + interval * 4;
-    return { startMinutes, endMinutes };
+    return { startMinutes, endMinutes, date };
 };
 
-export const getYFromTimeBlock = (
-    block: TimeBlock,
-    HOUR_HEIGHT: number
-): { top: number; height: number } => {
-    const pixelsPerMinute = HOUR_HEIGHT / 60;
-    const top = block.startMinutes * pixelsPerMinute;
-    const height = (block.endMinutes - block.startMinutes) * pixelsPerMinute;
-    return { top, height };
-};
+// export const getYFromTimeBlock = (
+//     block: TimeBlock,
+//     HOUR_HEIGHT: number
+// ): { top: number; height: number } => {
+//     const pixelsPerMinute = HOUR_HEIGHT / 60;
+//     const top = block.startMinutes * pixelsPerMinute;
+//     const height = (block.endMinutes - block.startMinutes) * pixelsPerMinute;
+//     return { top, height };
+// };
 
 export const roundMinutesTo15 = (min: number) => {
     'worklet'; 
     Math.round(min / 15) * 15;
 }
+
+
+export const updateTimeBlockDate = (
+    selectedTimeBlock: SharedValue<TimeBlock>,
+    newDate: string
+) => {
+    'worklet';
+    const block = selectedTimeBlock.value;
+    if (block) {
+        selectedTimeBlock.value = {
+            ...block,
+            date: newDate,
+        };
+    }
+};

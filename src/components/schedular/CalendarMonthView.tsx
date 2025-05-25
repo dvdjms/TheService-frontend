@@ -1,25 +1,32 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { View } from 'react-native';
 import { Calendar, CalendarProps  } from 'react-native-calendars';
 import { format, startOfMonth } from 'date-fns';
 import MonthScroller from './MonthScroller';
+import { getToday } from '../utils/timeUtils';
 
 type CalendarMonthViewProps = {
+    currentDate: string;
     onSelectDate: (date: string) => void;
-    onSwipeUp?: () => void;
-    onMonthChange: (newMonth: Date) => void;
 };
 
-export default function CalendarMonthView({ onSelectDate, onMonthChange }: CalendarMonthViewProps) {
+export default function CalendarMonthView({ onSelectDate, currentDate }: CalendarMonthViewProps) {
     const [selectedDate, setSelectedDate] = useState<string>(getToday());
-    const [currentMonth, setCurrentMonth] = useState(startOfMonth(new Date()));
+    const [currentMonth, setCurrentMonth] = useState(startOfMonth(new Date(currentDate)));
 
-    function getToday() {
-        return new Date().toISOString().split('T')[0];
-    }
+    useEffect(() => {
+        setSelectedDate(currentDate);
+        setCurrentMonth(startOfMonth(new Date(currentDate)));
+    }, [currentDate]);
+
+
+    const today = getToday();
+
+    const highlightedDate = currentDate === today ? today : selectedDate;
 
     // Handler for day press in calendar
     const onDayPress: CalendarProps['onDayPress'] = (day) => {
+        console.log('day', day)
         onSelectDate(day.dateString)
         setSelectedDate(day.dateString);
     };
@@ -118,7 +125,7 @@ export default function CalendarMonthView({ onSelectDate, onMonthChange }: Calen
                 enableSwipeMonths={true}
                 onDayPress={onDayPress}
                 markedDates={{
-                    [selectedDate]: { selected: true, selectedColor: '#4ade80' },
+                    [highlightedDate]: { selected: true, selectedColor: '#4ade80' },
                 }}
                 hideExtraDays={true}
                 hideArrows={true}  

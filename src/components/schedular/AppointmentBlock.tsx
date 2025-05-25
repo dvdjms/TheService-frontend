@@ -1,9 +1,9 @@
 import { useEffect, useRef, useState } from "react";
 import { View, StyleSheet, TextInput, Button, Text, Animated, Dimensions } from "react-native";
 import { yToTime, yToTime11 } from '../utils/timeUtils';
-import { TimeBlock } from "@/src/app/(auth)/(signed-in)/(tabs)/schedular";
-import { getYFromTimeBlock } from "../utils/timeBlockUtils";
+import { TimeBlock } from "@/src/components/utils/timeBlockUtils"
 import { runOnJS, SharedValue, useAnimatedReaction, useAnimatedStyle } from "react-native-reanimated";
+import { format } from "date-fns";
 
 const SCREEN_HEIGHT = Dimensions.get('window').height;
 
@@ -11,15 +11,14 @@ interface AppointmentBlockProps {
     visible: boolean;
     onClose: () => void;
     onSave: (title: string) => void;
-    selectedStartY: number | null;
-    selectedEndY: number | null;
-    selectedTimeBlock: SharedValue<TimeBlock | null>;
+    selectedTimeBlock: SharedValue<TimeBlock>;
+    currentDate: string;
 }   
 
-const AppointmentBlock = ({ visible, onClose, onSave, selectedTimeBlock }: AppointmentBlockProps) => {
+const AppointmentBlock = ({ visible, onClose, onSave, currentDate, selectedTimeBlock }: AppointmentBlockProps) => {
     const translateY = useRef(new Animated.Value(SCREEN_HEIGHT)).current;
     const [title, setTitle] = useState('');
-    const [displayBlock, setDisplayBlock] = useState<TimeBlock | null>(null);
+    const [displayBlock, setDisplayBlock] = useState<TimeBlock>();
 
     useEffect(() => {
         Animated.timing(translateY, {
@@ -46,16 +45,18 @@ const AppointmentBlock = ({ visible, onClose, onSave, selectedTimeBlock }: Appoi
     );
 
 
-
     return (
         <Animated.View style={[styles.modalOverlay, animatedStyle, { transform: [{ translateY }] }]}>
             <View style={styles.modalContainer}>
+                {/* //////// testing //////// */}
+                {/* <Text style={ styles.label }>{displayDate.value ? displayDate.value : "blank"}</Text> */}
+                {/* //////// testing //////// */}
+                <Text style={ styles.label }>CurrentDate  {format(currentDate, 'eeee dd MMM yyyy')}</Text>
+                <Text style={ styles.label }>DisplayBlock {displayBlock ? format(displayBlock.date, 'eeee dd MMM yyyy') : ""}</Text>
+                <Text>Start: {displayBlock?.startMinutes  ? yToTime11(displayBlock.startMinutes) : '--:--'}</Text>
+                <Text>End: {displayBlock?.endMinutes ? yToTime11(displayBlock.endMinutes) : '--:--'}</Text>
 
-                <Text style={ styles.label }>Selected Time</Text>
-                <Text>Start: {displayBlock  ? yToTime11(displayBlock.startMinutes) : '--:--'}</Text>
-                <Text>End: {displayBlock ? yToTime11(displayBlock.endMinutes) : '--:--'}</Text>
-
-                <Text style={styles.modalTitle}>New Appointment at {displayBlock?.startMinutes}:00</Text>
+                <Text style={styles.modalTitle}>New Appointment at {displayBlock?.startMinutes  ? yToTime11(displayBlock.startMinutes) : '--:--'}</Text>
                 <TextInput
                     style={styles.input}
                     placeholder="Appointment title"

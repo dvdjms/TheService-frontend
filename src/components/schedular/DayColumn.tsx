@@ -1,37 +1,45 @@
-import React, { Dispatch, RefObject, SetStateAction, useEffect, useMemo, useRef, useState } from 'react';
-import { FlatList, Text, View, Vibration, StyleSheet, NativeSyntheticEvent, NativeScrollEvent} from 'react-native';
+import React, { Dispatch, SetStateAction, useEffect, useMemo, useRef, useState } from 'react';
+import { Text, View, StyleSheet} from 'react-native';
 import { Gesture, GestureDetector } from 'react-native-gesture-handler';
-import Animated, { runOnJS, SharedValue, useAnimatedReaction, useAnimatedStyle, useSharedValue, withTiming } from 'react-native-reanimated';
-import { getTimeBlockFromY, TimeBlock } from '../utils/timeBlockUtils';
+import Animated, { runOnJS, SharedValue, useAnimatedReaction, useAnimatedStyle, useSharedValue, AnimatedRef, runOnUI } from 'react-native-reanimated';
+import { getTimeBlockFromY, TimeBlock } from '@/src/components/utils/timeBlockUtils';
+import { format } from 'date-fns';
 
 const MINUTES_PER_STEP = 15;
 const MINUTES_IN_HOUR = 60;
-const PIXELS_PER_MINUTE = 60 / MINUTES_IN_HOUR;
+const HOUR_HEIGHT = 60
+const PIXELS_PER_MINUTE = HOUR_HEIGHT / MINUTES_IN_HOUR;
 
 interface DayColumnProps {
     date: string;
-    listRef: RefObject<FlatList<number> | null>;
+    centerListRef: AnimatedRef<Animated.FlatList<number>>;
+    prevListRef: AnimatedRef<Animated.FlatList<number>>;
+    nextListRef: AnimatedRef<Animated.FlatList<number>>;
+    position: 'prev' | 'center' | 'next';
+    scrollHandler?: any;
     onLeftRightScroll?: (e: any) => void;
+    scrollOffset: SharedValue<number>
     getItemLayout?: (data: any, index: number) => { length: number; offset: number; index: number };
     isCurrentDay?: boolean;
-    selectedTimeBlock: SharedValue<TimeBlock | null>;
+    selectedTimeBlock: SharedValue<TimeBlock>;
     setIsModalVisible: Dispatch<SetStateAction<boolean>>;
-    HOUR_HEIGHT: number;
-    isSwipingState: boolean;
     isMonthVisible: boolean;
+    currentDate: string;
 }
 
 export const DayColumn: React.FC<DayColumnProps> = ({
     date,
-    listRef,
-    onLeftRightScroll,
-    getItemLayout,
+    centerListRef,
+    prevListRef,
+    nextListRef,
+    position,
+    scrollHandler,
     isCurrentDay = false,
     selectedTimeBlock,
     setIsModalVisible,
-    HOUR_HEIGHT,
-    isSwipingState,
     isMonthVisible,
+    currentDate,
+    scrollOffset
 }) => {
     const appointmentTitle = "Appointment 1" // temporary marker
     
@@ -42,11 +50,15 @@ export const DayColumn: React.FC<DayColumnProps> = ({
     const [isBlockRenderable, setIsBlockRenderable] = useState(false);
     const containerRef = useRef<View>(null);
 
-    const scrollOffset = useSharedValue(0);
     const initialStart = useSharedValue(0);
     const initialEnd = useSharedValue(0);
     const topInitialStart = useSharedValue(0);
     const bottomInitialEnd = useSharedValue(0);
+    const initialOffset = 8 * 60;
+
+    const height = useSharedValue(0);
+    const startHeight = useSharedValue(height.value);
+
 
     useEffect(() => {
         setTimeout(() => {
@@ -54,6 +66,9 @@ export const DayColumn: React.FC<DayColumnProps> = ({
                 containerRef.current.measure((x, y, width, height, pageX, pageY) => {
                     setDayColumnY(pageY);
                 });
+            }
+            if (centerListRef.current) {
+                centerListRef.current.scrollToOffset({ offset: initialOffset, animated: false });
             }
         }, 0);
     }, []);
@@ -63,7 +78,7 @@ export const DayColumn: React.FC<DayColumnProps> = ({
         const block = selectedTimeBlock.value;
         return {
             top: (block?.startMinutes ?? 0) * HOUR_HEIGHT / 60 - scrollOffset.value,
-            height: block ? (block.endMinutes - block.startMinutes) * HOUR_HEIGHT / 60 : 0,
+            height: block.endMinutes && block.startMinutes? (block.endMinutes - block.startMinutes) * HOUR_HEIGHT / 60 : 0,
         };
     });
 
@@ -76,33 +91,20 @@ export const DayColumn: React.FC<DayColumnProps> = ({
     },[]);
 
 
-    const onScroll = (event: NativeSyntheticEvent<NativeScrollEvent>) => {
-        onLeftRightScroll?.(event);
-        const yOffset = event.nativeEvent.contentOffset.y;
-        scrollOffset.value = (yOffset)
-    };
-
     const tapTimeBlockGesture = useMemo(() => 
         Gesture.Tap()
         .onEnd((e) => {
             'worklet';
             if (!isMonthVisible){
                 const tappedY = e.absoluteY - dayColumnY + scrollOffset.value;
-                const block = getTimeBlockFromY(tappedY, HOUR_HEIGHT)
-                console.log("Tapped Y:", tappedY, "Block:", block);
-                
+                const block = getTimeBlockFromY(tappedY, HOUR_HEIGHT, currentDate)
+                // console.log("Tapped Y:", tappedY, "Block:", block);
                 selectedTimeBlock.value = block;
                 runOnJS(setIsModalVisible)(true);
-                console.log({
-                    absoluteY: e.absoluteY,
-                    dayColumnY,
-                    scrollOffset: scrollOffset.value,
-                    tappedY,
-                    block,
-                });
             }
         }),[dayColumnY, isMonthVisible]
     );
+
     const snapToStep = (pixels: number) => {
         'worklet';
         const minutes = pixels / PIXELS_PER_MINUTE;
@@ -115,13 +117,13 @@ export const DayColumn: React.FC<DayColumnProps> = ({
         .onBegin(() => {
             'worklet';
             const block = selectedTimeBlock.value;
-            if (!block) return;
-                topInitialStart.value = block.startMinutes;
+            if (!block.startMinutes) return;
+            topInitialStart.value = block.startMinutes;
         })
         .onUpdate(e => {
             'worklet';
             const block = selectedTimeBlock.value;
-            if (!block) return;
+            if (!block.endMinutes || !block.startMinutes) return;
 
             const delta = Math.round((e.translationY * 60) / HOUR_HEIGHT);
             const newStart = topInitialStart.value + delta;
@@ -131,6 +133,7 @@ export const DayColumn: React.FC<DayColumnProps> = ({
                 selectedTimeBlock.value = {
                     startMinutes: newStart,
                     endMinutes: block.endMinutes,
+                    date: currentDate
                 };
             }
 
@@ -138,13 +141,14 @@ export const DayColumn: React.FC<DayColumnProps> = ({
         .onEnd(() => {
             'worklet';
             const block = selectedTimeBlock.value;
-            if (!block) return;
+            if (!block.startMinutes) return;
 
             const snappedStart = snapToStep(block.startMinutes);
             selectedTimeBlock.value = {
                 startMinutes: snappedStart,
                 endMinutes: block.endMinutes,
-        }}),[HOUR_HEIGHT, selectedTimeBlock]
+                date: currentDate,
+        }}),[HOUR_HEIGHT, selectedTimeBlock, currentDate]
     );
 
 
@@ -153,13 +157,13 @@ export const DayColumn: React.FC<DayColumnProps> = ({
         .onBegin(() => {
             'worklet';
             const block = selectedTimeBlock.value;
-            if (!block) return;
+            if (!block.endMinutes) return;
             bottomInitialEnd.value = block.endMinutes;
         })
         .onUpdate(e => {
             'worklet';
             const block = selectedTimeBlock.value;
-            if (!block) return;
+            if (!block.startMinutes) return;
 
             const delta = Math.round((e.translationY * 60) / HOUR_HEIGHT);
             const newEnd = bottomInitialEnd.value + delta;
@@ -169,35 +173,33 @@ export const DayColumn: React.FC<DayColumnProps> = ({
                 selectedTimeBlock.value = {
                     startMinutes: block.startMinutes,
                     endMinutes: newEnd,
+                    date: currentDate,
                 };
             }
         }) .onEnd(() => {
             'worklet';
             const block = selectedTimeBlock.value;
-            if (!block) return;
+            if (!block.endMinutes) return;
 
             const snappedEnd = snapToStep(block.endMinutes);
             selectedTimeBlock.value = {
                 startMinutes: block.startMinutes,
                 endMinutes: snappedEnd,
+                date: currentDate,
             };
-        }),[HOUR_HEIGHT, selectedTimeBlock]
+        }),[HOUR_HEIGHT, selectedTimeBlock, currentDate]
     );
     
 
-
-    const height = useSharedValue(0);
-    const startHeight = useSharedValue(height.value);
-
-
-
     const moveGesture = useMemo(() => {
         return Gesture.Pan()
-        .onStart(() => startHeight.value = height.value)
+        .onStart(() => {
+            startHeight.value = height.value;
+        })
         .onBegin(() => {
             'worklet';
             const block = selectedTimeBlock.value;
-            if (!block) return;
+            if (!block.startMinutes || !block.endMinutes) return;
 
             initialStart.value = block.startMinutes;
             initialEnd.value = block.endMinutes;
@@ -213,12 +215,12 @@ export const DayColumn: React.FC<DayColumnProps> = ({
                 selectedTimeBlock.value = {
                     startMinutes: newStart,
                     endMinutes: newEnd,
+                    date: currentDate,
                 };
             }
-            console.log("selectedTimeBlock", selectedTimeBlock)
         }).onEnd(() => {
             'worklet';
-            if (!selectedTimeBlock.value) return;
+            if (!selectedTimeBlock.value.startMinutes || !selectedTimeBlock.value.endMinutes) return;
 
             const snappedStart = snapToStep(selectedTimeBlock.value.startMinutes);
             const snappedEnd = snapToStep(selectedTimeBlock.value.endMinutes);
@@ -226,9 +228,10 @@ export const DayColumn: React.FC<DayColumnProps> = ({
             selectedTimeBlock.value = {
                 startMinutes: snappedStart,
                 endMinutes: snappedEnd,
+                date: currentDate,
             };
         })
-    }, [HOUR_HEIGHT, selectedTimeBlock]);
+    }, [HOUR_HEIGHT, selectedTimeBlock, currentDate]);
 
 
     return (
@@ -238,17 +241,28 @@ export const DayColumn: React.FC<DayColumnProps> = ({
                 pointerEvents="auto"
                 ref={containerRef} 
                 >
+
+                <View style={ isMonthVisible ? styles.dayContainer2 : styles.dayContainer}>
+                    <Text style={ styles.dayName }>{format(date, 'EEE' ).toUpperCase()}</Text>
+                    <Text style={ styles.dayNumber }>{format(date, 'dd')}</Text>
+                </View>
+
                 <GestureDetector gesture={tapTimeBlockGesture}> 
-                    <FlatList
-                        ref={listRef}
+                    <Animated.FlatList
+                        ref={position === 'prev' ? prevListRef : position === 'center' ? centerListRef : nextListRef}
                         data={ListHours}
-                        keyExtractor={item => `${isCurrentDay ? 'curr' : date}-${item}`}
-                        getItemLayout={getItemLayout}
-                        onScroll={onScroll}
-                        scrollEnabled={isSwipingState}
+                        keyExtractor={item => `${isCurrentDay ? 'curr' : isCurrentDay}-${item}`}
+        
+                        onScroll={scrollHandler}
                         scrollEventThrottle={16}
                         style={{ flex: 1, backgroundColor: '#fff' }}
     
+                        getItemLayout={(_, index) => ({
+                            length: 60,
+                            offset: 60 * index,
+                            index,
+                        })}
+
                         renderItem={({ item: hour }) => {
                             return (
                                 <Animated.View
@@ -360,4 +374,56 @@ const styles = StyleSheet.create({
         backgroundColor: 'rgba(255, 0, 0, 0.2)', 
         zIndex: 10,
     },
+
+        container: {
+        flex: 1,
+    },
+    dayContainer: {
+        backgroundColor: "white",
+        borderRadius: 2,
+        // iOS shadow
+        shadowColor: 'gray',
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.2,
+        shadowRadius: 3,
+        borderBottomColor: 'grey',
+        zIndex: 1,
+        // Android shadow (elevation = spread + blur approximation)
+        elevation: 4
+    },
+    dayContainer2:{
+        backgroundColor: 'white',  
+        borderBottomColor: '#eee', 
+        borderBottomWidth: 1
+    },
+    dayName: {
+        backgroundColor: "transparent",
+        paddingTop: 7,
+        paddingBottom: 3,
+        width: 60,
+        textAlign: 'center',
+        fontSize: 12,
+        borderRightColor: '#eeeeee',
+        borderRightWidth: 1,
+        fontWeight: 500
+    },
+    dayNumber: {
+        backgroundColor: "white",
+        width: 60,
+        textAlign: 'center',
+        borderRightColor: '#eeeeee',
+        borderRightWidth: 1,
+        paddingBottom: 3,
+        fontWeight: 500
+    },
+    dateHeader: {
+        height: 30,
+        fontSize: 16,
+        textAlign: 'center',
+        padding: 4,
+        backgroundColor: '#f2f2f2',
+        borderBottomWidth: 1,
+        borderColor: '#ccc',
+    },
 });
+

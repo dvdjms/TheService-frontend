@@ -1,4 +1,4 @@
-import React, { Dispatch, SetStateAction, useEffect, useRef, useState } from 'react';
+import React, { Dispatch, SetStateAction, useState, forwardRef, useImperativeHandle  } from 'react';
 import { GestureDetector, Gesture } from 'react-native-gesture-handler';
 import Animated, { 
     useSharedValue, 
@@ -6,80 +6,88 @@ import Animated, {
     withTiming,
     runOnJS,
     Easing,
-    useAnimatedReaction,
-    SharedValue
+    SharedValue,
+    useAnimatedRef,
+    useAnimatedScrollHandler,
+    scrollTo,
+    useAnimatedReaction
 } from 'react-native-reanimated';
 import {
-    FlatList,
     View,
     StyleSheet,
     Dimensions,
-    NativeSyntheticEvent,
-    NativeScrollEvent,
 } from 'react-native';
 import { DayColumn } from './DayColumn';
-import { TimeBlock } from '@/src/app/(auth)/(signed-in)/(tabs)/schedular';
+import { TimeBlock, updateTimeBlockDate } from '@/src/components/utils/timeBlockUtils';
+import { useAdjacentDates } from '../utils/timeUtils';
 
 const screenWidth = Dimensions.get('window').width;
+
+
+export type CalendarDayViewHandle = {
+    swipeToDateImpl: (date: string) => void;
+};
 
 interface CalendarDayViewProps {
     currentDate: string;
     isMonthVisible: boolean;
-    onSwipeLeft: () => void;
-    onSwipeRight: () => void;
+    goToNextDay: () => void;
+    goToPreviousDay: () => void;
     collapseMonth: () => void;
-    selectedTimeBlock: SharedValue<TimeBlock | null>;
+    selectedTimeBlock: SharedValue<TimeBlock>;
     setIsModalVisible: Dispatch<SetStateAction<boolean>>;
-    HOUR_HEIGHT: number;
+    setCurrentDate: Dispatch<SetStateAction<string>>;
 }
 
-export default function CalendarDayView({ 
+const CalendarDayView = forwardRef<CalendarDayViewHandle, CalendarDayViewProps>(({ 
     currentDate, 
     isMonthVisible, 
-    onSwipeLeft, 
-    onSwipeRight, 
+    goToNextDay, 
+    goToPreviousDay, 
     collapseMonth,
     selectedTimeBlock,
     setIsModalVisible,
-    HOUR_HEIGHT,
-}: CalendarDayViewProps) {
-    const centerListRef = useRef<FlatList<number>>(null);
-    const prevListRef = useRef<FlatList<number>>(null);
-    const nextListRef = useRef<FlatList<number>>(null);
+    setCurrentDate
+}, ref)  => {
+    const centerListRef = useAnimatedRef<Animated.FlatList<any>>();
+    const prevListRef = useAnimatedRef<Animated.FlatList<any>>();
+    const nextListRef = useAnimatedRef<Animated.FlatList<any>>();
 
-    const [displayDate, setDisplayDate] = useState(currentDate);
-    const [nextDate, setNextDate] = useState('');
-    const [prevDate, setPrevDate] = useState('');
+    const scrollOffset = useSharedValue(0);
 
-    const [scrollOffset, setScrollOffset] = useState(8 * HOUR_HEIGHT);
-    const [isSwipingState, setIsSwipingState] = useState(false);
-    
     const isSwiping = useSharedValue(false);
     const translateX = useSharedValue(0);
     const translateY = useSharedValue(0);
-  
+    const previewDateValue = useSharedValue(currentDate); 
+
+    const [previewDate, setPreviewDate] = useState(currentDate);
+
+    const swipeThreshold = screenWidth * 0.25;
+    const verticalThreshold = 60;
+    const velocityThreshold = 500;
+
+    const { prevDate, nextDate } = useAdjacentDates(currentDate);
+
+
+    // Exposes swipeToDate function to parent
+    useImperativeHandle(ref, () => ({
+        swipeToDateImpl: (targetDate: string) => {
+            swipeToDate(targetDate);
+        },
+    }));
+
+
+    // Sync the shared value to React state
     useAnimatedReaction(
-        () => isSwiping.value,
-        (swiping) => {
-            runOnJS(setIsSwipingState)(swiping);
-        }
+        () => previewDateValue.value,
+        (value, prev) => {
+            if (value !== prev) {
+                runOnJS(setPreviewDate)(value);
+            }
+        },[]
     );
-    
-    useEffect(() => {
-        const date = new Date(currentDate);
-        setDisplayDate(currentDate);
 
-        setNextDate(new Date(date.setDate(date.getDate() + 1)).toISOString().split('T')[0]);
-        setPrevDate(new Date(date.setDate(date.getDate() - 2)).toISOString().split('T')[0]);
 
-        setTimeout(() => {
-            centerListRef.current?.scrollToOffset({ offset: scrollOffset, animated: false });
-            prevListRef.current?.scrollToOffset({ offset: scrollOffset, animated: false });
-            nextListRef.current?.scrollToOffset({ offset: scrollOffset, animated: false });
-        }, 50);
-    }, [currentDate]);
-
-    
     // Swipe left or right for next or previous day, swipe up to close month
     const panGesture = Gesture.Pan()
         .onBegin(() => {
@@ -92,12 +100,19 @@ export default function CalendarDayView({
             } else {
                  translateX.value = e.translationX;
             }
+
+            const previewThreshold = screenWidth * 0.01;
+
+            if (Math.abs(e.translationX) > previewThreshold) {
+                const newPreview = e.translationX > 0 ? prevDate : nextDate;
+                // if (previewDateValue.value !== newPreview) {
+                previewDateValue.value = newPreview;
+            } else {
+                 previewDateValue.value = currentDate
+            }
+
         })
         .onEnd((e) => {
-            const swipeThreshold = screenWidth * 0.25;
-            const verticalThreshold = 60;
-            const velocityThreshold = 500;
-
             // Vertical swipe up
             if (isMonthVisible && e.translationY < -verticalThreshold || e.velocityY < -velocityThreshold) {
                 runOnJS(collapseMonth)();
@@ -105,13 +120,14 @@ export default function CalendarDayView({
             } 
             // Swipe right (go to previous day)
             else if (e.translationX > swipeThreshold || e.velocityX > velocityThreshold) {
+                updateTimeBlockDate(selectedTimeBlock, prevDate);
+                runOnJS(goToPreviousDay)();
                 translateX.value = withTiming(
                     screenWidth,
                     { duration: 300, easing: Easing.bezier(0.25, 0.1, 0.25, 1) },
                     (finished) => {
                         'worklet';
                         if (finished) {
-                            runOnJS(onSwipeRight)();
                             translateX.value = 0;
                             isSwiping.value = false;
                         }
@@ -120,13 +136,14 @@ export default function CalendarDayView({
             } 
             // Swipe left (go to next day)
             else if (e.translationX < -swipeThreshold || e.velocityX < -velocityThreshold) {
+                updateTimeBlockDate(selectedTimeBlock, nextDate);
+                runOnJS(goToNextDay)();
                 translateX.value = withTiming(
                     -screenWidth,
                     { duration: 300, easing: Easing.bezier(0.25, 0.1, 0.25, 1) },
                     (finished) => {
                         'worklet';
                         if (finished) {
-                            runOnJS(onSwipeLeft)();
                             translateX.value = 0;
                             isSwiping.value = false;
                         }
@@ -140,6 +157,7 @@ export default function CalendarDayView({
             }
         }
     );
+
 
     // closes Month on tap
     const tapGesture = Gesture.Tap()
@@ -167,62 +185,102 @@ export default function CalendarDayView({
         };
     });
 
-    // Track scroll position changes
-    const handleLeftRightScroll = (e: NativeSyntheticEvent<NativeScrollEvent>) => {
-        const offset = e.nativeEvent.contentOffset.y;
-        setScrollOffset(offset); // Save current scroll position
-        
-        // Sync other lists
-        prevListRef.current?.scrollToOffset({ offset, animated: false });
-        nextListRef.current?.scrollToOffset({ offset, animated: false });
+
+    const scrollHandler = useAnimatedScrollHandler({
+        onScroll: (event) => {
+            const y = event.contentOffset.y;
+            scrollOffset.value = y;
+
+            if (prevListRef) {
+                scrollTo(prevListRef, 0, y, false);
+            }
+            if (centerListRef) {
+                scrollTo(centerListRef, 0, y, false);
+            }
+            if (nextListRef) {
+                scrollTo(nextListRef, 0, y, false);
+            }
+        },
+    });
+
+
+    // swipe function referenced in CalendarMonthView
+    const swipeToDate = (targetDateString: string) => {
+        const current = new Date(currentDate);
+        const target = new Date(targetDateString);
+
+        if (current.toISOString().split('T')[0] === target.toISOString().split('T')[0]) return;
+
+        const isForward = target > current;
+        const directionMultiplier = isForward ? -1 : 1;
+
+        isSwiping.value = true;
+        previewDateValue.value = targetDateString;
+
+        translateX.value = withTiming(
+            directionMultiplier * screenWidth,
+            { duration: 300, easing: Easing.bezier(0.25, 0.1, 0.25, 1) },
+            (finished) => {
+                'worklet';
+                if (finished) {
+                    runOnJS(setCurrentDate)(targetDateString);
+                    translateX.value = 0;
+                    isSwiping.value = false;
+                }
+            }
+        );
+    };
+
+
+    const sharedProps = {
+        setIsModalVisible,
+        isMonthVisible,
+        selectedTimeBlock,
+        currentDate,
+        scrollOffset,
+        prevListRef,
+        centerListRef,
+        nextListRef,
+        scrollHandler
     };
 
     return (
         <GestureDetector gesture={Gesture.Exclusive(tapGesture, panGesture)}>
             <View 
-                style={{ flex: 1, overflow: 'hidden' }} 
+                style={{ flex: 1, overflow: 'hidden' }}
                 pointerEvents={isMonthVisible ? "box-only" : "auto"}
             >
                 {/* Previous Day (left) */}
                 <Animated.View style={[StyleSheet.absoluteFill, prevDayStyle]}>
                     <DayColumn
-                        date={prevDate}
-                        listRef={prevListRef}
-                        setIsModalVisible={setIsModalVisible}
-                        HOUR_HEIGHT={HOUR_HEIGHT}
-                        isSwipingState={!isSwipingState}
-                        isMonthVisible={isMonthVisible}
-                        selectedTimeBlock={selectedTimeBlock}
+                        date={previewDate }
+                        position={'prev'}
+                        {...sharedProps}
                     />
                 </Animated.View>
 
+                {/* Center Day (main) */}
                 <Animated.View style={[StyleSheet.absoluteFill, animatedStyle]}>
                     <DayColumn
-                        date={displayDate}
-                        listRef={centerListRef}
-                        isCurrentDay
-                        onLeftRightScroll={handleLeftRightScroll}
-                        setIsModalVisible={setIsModalVisible}
-                        HOUR_HEIGHT={HOUR_HEIGHT}
-                        isSwipingState={!isSwipingState}
-                        isMonthVisible={isMonthVisible}
-                        selectedTimeBlock={selectedTimeBlock}
+                        date={currentDate}
+                        position={'center'}
+                        {...sharedProps}
                     />
                 </Animated.View>
 
+                {/* Next Day (right) */}
                 <Animated.View style={[StyleSheet.absoluteFill, nextDayStyle]}>
                     <DayColumn
-                        date={nextDate}
-                        listRef={nextListRef}
-                        setIsModalVisible={setIsModalVisible}
-                        HOUR_HEIGHT={HOUR_HEIGHT}
-                        isSwipingState={isSwipingState}
-                        isMonthVisible={isMonthVisible}
-                        selectedTimeBlock={selectedTimeBlock}
+                        // date={previewDate ? previewDate : nextDate }
+                        date={previewDate }
+                        position={'next'}
+                        {...sharedProps}
                     />
                 </Animated.View>
 
             </View>
         </GestureDetector>
     );
-}
+})
+
+export default CalendarDayView;

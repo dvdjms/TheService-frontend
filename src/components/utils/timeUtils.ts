@@ -1,8 +1,15 @@
+import { addDays, subDays } from "date-fns";
+import { useMemo } from "react";
 
 export const HOUR_HEIGHT = 60;
 
 const MINUTES_IN_HOUR = 60;
 const ROUND_TO_MINUTES = 15;
+
+
+export const getToday = () => {
+    return new Date().toISOString().split('T')[0];
+}
 
 export const timeToY = (date: Date): number => {
     const hours = date.getHours();
@@ -36,4 +43,19 @@ export const yToTime11 = (minutes: number): string => {
 export const formatTime = ({ hours, minutes }: { hours: number; minutes: number }): string =>{
     const pad = (n: number) => n.toString().padStart(2, '0');
     return `${pad(hours)}:${pad(minutes)}`;
+}
+
+
+// export const useAdjacentDates = (baseDate: string) => {
+//     const prevDate = subDays(new Date(baseDate), 1).toISOString().split('T')[0];
+//     const nextDate = addDays(new Date(baseDate), 1).toISOString().split('T')[0];
+//     return { prevDate, nextDate };
+// }
+
+export const useAdjacentDates = (baseDate: string) => {
+    return useMemo(() => {
+        const prevDate = subDays(new Date(baseDate), 1).toISOString().split('T')[0];
+        const nextDate = addDays(new Date(baseDate), 1).toISOString().split('T')[0];
+        return { prevDate, nextDate };
+    }, [baseDate]);
 }
