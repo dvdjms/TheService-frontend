@@ -104,7 +104,6 @@ export default function SchedularScreen() {
             </Animated.View>
         </View>
 
-
         <AppointmentBlock
             visible={isModalVisible}
             selectedTimeBlock={selectedTimeBlock}

@@ -1,9 +1,10 @@
 import { useEffect, useRef, useState } from "react";
-import { View, StyleSheet, TextInput, Button, Text, Animated, Dimensions } from "react-native";
+import { View, StyleSheet, TextInput, Button, Text, Animated, Dimensions, TouchableOpacity } from "react-native";
 import { yToTime, yToTime11 } from '../utils/timeUtils';
 import { TimeBlock } from "@/src/components/utils/timeBlockUtils"
 import { runOnJS, SharedValue, useAnimatedReaction, useAnimatedStyle } from "react-native-reanimated";
 import { format } from "date-fns";
+import { Ionicons } from "@expo/vector-icons";
 
 const SCREEN_HEIGHT = Dimensions.get('window').height;
 
@@ -48,21 +49,29 @@ const AppointmentBlock = ({ visible, onClose, onSave, currentDate, selectedTimeB
     return (
         <Animated.View style={[styles.modalOverlay, animatedStyle, { transform: [{ translateY }] }]}>
             <View style={styles.modalContainer}>
-                {/* //////// testing //////// */}
-                {/* <Text style={ styles.label }>{displayDate.value ? displayDate.value : "blank"}</Text> */}
-                {/* //////// testing //////// */}
-                <Text style={ styles.label }>CurrentDate  {format(currentDate, 'eeee dd MMM yyyy')}</Text>
-                <Text style={ styles.label }>DisplayBlock {displayBlock ? format(displayBlock.date, 'eeee dd MMM yyyy') : ""}</Text>
-                <Text>Start: {displayBlock?.startMinutes  ? yToTime11(displayBlock.startMinutes) : '--:--'}</Text>
-                <Text>End: {displayBlock?.endMinutes ? yToTime11(displayBlock.endMinutes) : '--:--'}</Text>
 
-                <Text style={styles.modalTitle}>New Appointment at {displayBlock?.startMinutes  ? yToTime11(displayBlock.startMinutes) : '--:--'}</Text>
+                <Text style={ styles.label }>
+                    {format(currentDate, 'eeee dd MMM yyy')}
+                    {"  •  "}
+                    {displayBlock?.startMinutes  ? yToTime11(displayBlock.startMinutes) : '--:--'}
+                    {" – "}
+                    {displayBlock?.endMinutes ? yToTime11(displayBlock.endMinutes) : '--:--'}
+                </Text>
+                {/* <Text>End: {displayBlock?.endMinutes ? yToTime11(displayBlock.endMinutes) : '--:--'}</Text> */}
+
                 <TextInput
                     style={styles.input}
                     placeholder="Appointment title"
                     value={title}
                     onChangeText={setTitle}
                 />
+
+                <TouchableOpacity style={ styles.addClientContainer }>
+                    <Ionicons name="people-outline" size={18} />
+                    <Text style={ styles.label }>Add client</Text>
+                </TouchableOpacity>
+
+
                 <View style={styles.modalButtons}>
                     <Button title="Cancel" onPress={onClose} />
                     <Button title="Save" onPress={() => {
@@ -96,9 +105,10 @@ const styles = StyleSheet.create({
         elevation: 10,
     },
     label: {
-        fontSize: 16,
-        marginBottom: 6,
-        fontWeight: '600',
+        fontSize: 14,
+        fontWeight: '400',
+        paddingLeft: 20,
+        paddingBottom: 10
     },
     modalTitle: {
         fontSize: 18,
@@ -124,6 +134,10 @@ const styles = StyleSheet.create({
         right: 0,
         backgroundColor: 'transparent',
         zIndex: 10, // make sure it's on top
+    },
+    addClientContainer: {
+      flexDirection: 'row',
+      paddingLeft: 20
     },
 });
 

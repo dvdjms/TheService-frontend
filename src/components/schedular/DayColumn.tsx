@@ -260,11 +260,11 @@ export const DayColumn: React.FC<DayColumnProps> = ({
                         showsVerticalScrollIndicator={false}
                         style={{ flex: 1, backgroundColor: '#fff' }}
     
-                        getItemLayout={(_, index) => ({
-                            length: 60,
-                            offset: 60 * index,
-                            index,
-                        })}
+                        // getItemLayout={(_, index) => ({
+                        //     length: 60,
+                        //     offset: 60 * index,
+                        //     index,
+                        // })}
 
                         renderItem={({ item: hour }) => {
                             return (
