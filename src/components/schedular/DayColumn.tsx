@@ -1,7 +1,7 @@
 import React, { Dispatch, SetStateAction, useEffect, useMemo, useRef, useState } from 'react';
 import { Text, View, StyleSheet} from 'react-native';
 import { Gesture, GestureDetector } from 'react-native-gesture-handler';
-import Animated, { runOnJS, SharedValue, useAnimatedReaction, useAnimatedStyle, useSharedValue, AnimatedRef, runOnUI } from 'react-native-reanimated';
+import Animated, { runOnJS, SharedValue, useAnimatedReaction, useAnimatedStyle, useSharedValue, AnimatedRef, runOnUI, Layout, useAnimatedScrollHandler } from 'react-native-reanimated';
 import { getTimeBlockFromY, TimeBlock } from '@/src/components/utils/timeBlockUtils';
 import { format } from 'date-fns';
 
@@ -234,6 +234,7 @@ export const DayColumn: React.FC<DayColumnProps> = ({
     }, [HOUR_HEIGHT, selectedTimeBlock, currentDate]);
 
 
+
     return (
             <View 
                 style={{ flex: 1 }} 
@@ -252,9 +253,11 @@ export const DayColumn: React.FC<DayColumnProps> = ({
                         ref={position === 'prev' ? prevListRef : position === 'center' ? centerListRef : nextListRef}
                         data={ListHours}
                         keyExtractor={item => `${isCurrentDay ? 'curr' : isCurrentDay}-${item}`}
-        
+                        bounces={true}
+                        overScrollMode="always"
                         onScroll={scrollHandler}
                         scrollEventThrottle={16}
+                        showsVerticalScrollIndicator={false}
                         style={{ flex: 1, backgroundColor: '#fff' }}
     
                         getItemLayout={(_, index) => ({
@@ -328,15 +331,17 @@ const styles = StyleSheet.create({
     },
     hourBlock: {
         flex: 5,  
-        borderBottomWidth: 1,
+        borderBottomWidth: .5,
+        borderTopWidth: 1,
         borderColor: '#eee',
         alignItems: 'stretch' 
     },
     hourBlockDivider: {
         marginLeft: 5,
         width: 5, 
-        borderRightWidth: 1, 
-        borderBottomWidth: 1, 
+        borderRightWidth: 1,
+        borderTopWidth: .5,
+        borderBottomWidth: .5, 
         borderColor: '#eee' 
     },
     appointmentTitle: {
@@ -375,7 +380,7 @@ const styles = StyleSheet.create({
         zIndex: 10,
     },
 
-        container: {
+    container: {
         flex: 1,
     },
     dayContainer: {

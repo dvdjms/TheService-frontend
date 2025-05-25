@@ -194,15 +194,11 @@ const CalendarDayView = forwardRef<CalendarDayViewHandle, CalendarDayViewProps>(
             if (prevListRef) {
                 scrollTo(prevListRef, 0, y, false);
             }
-            if (centerListRef) {
-                scrollTo(centerListRef, 0, y, false);
-            }
             if (nextListRef) {
                 scrollTo(nextListRef, 0, y, false);
             }
         },
     });
-
 
     // swipe function referenced in CalendarMonthView
     const swipeToDate = (targetDateString: string) => {
