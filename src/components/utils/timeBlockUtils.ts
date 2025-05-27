@@ -1,25 +1,9 @@
 import { SharedValue } from "react-native-reanimated";
+import { TimeBlock } from "../types/Service";
 
-export type TimeBlock = {
-    startMinutes: number | null;
-    endMinutes: number | null;
-    date: string
-};
 
-// export const getTimeBlockFromY = (
-//     y: number,
-//     HOUR_HEIGHT: number
-// ): TimeBlock => {
-//     'worklet'; 
-//     const minutesPerPixel = 60 / HOUR_HEIGHT;
-//     const startMinutes = Math.floor(y * minutesPerPixel / 15) * 15;
-//     return {
-//         startMinutes,
-//         endMinutes: startMinutes + 60, // Default 1 hour block
-//     };
-// };
 
-export const getTimeBlockFromY = (y: number, hourHeight: number, date: string) => {
+export const getTimeBlockFromY = (y: number, hourHeight: number, date: Date) => {
     'worklet';
     const interval = 15;
     const startMinutes = Math.floor((y / hourHeight) * 60 / interval) * interval;
@@ -45,14 +29,47 @@ export const roundMinutesTo15 = (min: number) => {
 
 export const updateTimeBlockDate = (
     selectedTimeBlock: SharedValue<TimeBlock>,
-    newDate: string
+    newDate: Date
 ) => {
     'worklet';
     const block = selectedTimeBlock.value;
     if (block) {
+        const isoDate = newDate
         selectedTimeBlock.value = {
             ...block,
-            date: newDate,
+            date: isoDate,
         };
     }
+};
+
+
+
+const timeBlockToSerialized = (block: TimeBlock) => ({
+  ...block,
+  date: block.date.toISOString(),
+});
+
+const serializedToTimeBlock = (data: any): TimeBlock => ({
+  ...data,
+  date: new Date(data.date),
+});
+
+// const MINUTES_PER_STEP = 15;
+// const MINUTES_IN_HOUR = 60;
+// const HOUR_HEIGHT = 60
+// const PIXELS_PER_MINUTE = HOUR_HEIGHT / MINUTES_IN_HOUR;
+
+//  export const snapToStep = (pixels: number) => {
+//         'worklet';
+//         const minutes = pixels / PIXELS_PER_MINUTE;
+//         const snappedMinutes = Math.round(minutes / MINUTES_PER_STEP) * MINUTES_PER_STEP;
+//         return snappedMinutes * PIXELS_PER_MINUTE;
+//     };
+
+
+export const snapToStep = (pixels: number, PIXELS_PER_MINUTE: number, MINUTES_PER_STEP: number) => {
+  'worklet';
+  const minutes = pixels / PIXELS_PER_MINUTE;
+  const snappedMinutes = Math.round(minutes / MINUTES_PER_STEP) * MINUTES_PER_STEP;
+  return snappedMinutes * PIXELS_PER_MINUTE;
 };

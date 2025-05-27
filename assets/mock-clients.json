@@ -5,11 +5,22 @@
     "lastName": "Smith",
     "email": "alice@example.com",
     "phone": "123-456-7890",
-    "appointments":{
-        "appointment_title": "appointment 53",
-        "startMinutes": "selectedTimeBlock.startMinutes",
-        "endMinutes": "selectedTimeBlock.endMinutes"
-    }
+    "appointments":[
+        {
+            "id": "1",
+            "appointment_title": "appointment 6",
+            "date": "26-05-2025",
+            "start_minutes": "850",
+            "end_minutes": "950"
+        },
+        {
+            "id": "2",
+            "appointment_title": "appointment 7",
+            "date": "27-05-2025",
+            "start_minutes": "1250",
+            "end_minutes": "1450"
+        }
+    ]
     },
   {
     "id": "2",
@@ -17,52 +28,159 @@
     "lastName": "Johnson",
     "email": "bob@example.com",
     "phone": "987-654-3210",
-    "appointments":{
-        "appointment_title": "appointment 54",
-        "startMinutes": "selectedTimeBlock.startMinutes",
-        "endMinutes": "selectedTimeBlock.endMinutes"
-    }
+    "appointments":[
+        {
+            "id": "3",
+            "appointment_title": "appointment 8",
+            "date": "26-05-2025",
+            "start_minutes": "950",
+            "end_minutes": "1050"
+        },
+        {
+            "id": "4",
+            "appointment_title": "appointment 9",
+            "date": "27-05-2025",
+            "start_minutes": "1450",
+            "end_minutes": "1650"
+        }
+    ]
   },
     {
     "id": "3",
     "firstName": "Alice",
     "lastName": "Smith",
     "email": "alice@example.com",
-    "phone": "123-456-7890"
+    "phone": "123-456-7890",
+        "appointments":[
+        {
+            "id": "3",
+            "appointment_title": "appointment 8",
+            "date": "26-05-2025",
+            "start_minutes": "950",
+            "end_minutes": "1050"
+        },
+        {
+            "id": "4",
+            "appointment_title": "appointment 9",
+            "date": "27-05-2025",
+            "start_minutes": "1450",
+            "end_minutes": "1650"
+        }
+    ]
   },
   {
     "id": "4",
     "firstName": "Bob",
     "lastName": "Johnson",
     "email": "bob@example.com",
-    "phone": "987-654-3210"
+    "phone": "987-654-3210",
+        "appointments":[
+        {
+            "id": "3",
+            "appointment_title": "appointment 8",
+            "date": "26-05-2025",
+            "start_minutes": "950",
+            "end_minutes": "1050"
+        },
+        {
+            "id": "4",
+            "appointment_title": "appointment 9",
+            "date": "27-05-2025",
+            "start_minutes": "1450",
+            "end_minutes": "1650"
+        }
+    ]
   },
     {
     "id": "5",
     "firstName": "Alice",
     "lastName": "Smith",
     "email": "alice@example.com",
-    "phone": "123-456-7890"
+    "phone": "123-456-7890",
+        "appointments":[
+        {
+            "id": "3",
+            "appointment_title": "appointment 8",
+            "date": "26-05-2025",
+            "start_minutes": "950",
+            "end_minutes": "1050"
+        },
+        {
+            "id": "4",
+            "appointment_title": "appointment 9",
+            "date": "27-05-2025",
+            "start_minutes": "1450",
+            "end_minutes": "1650"
+        }
+    ]
   },
   {
     "id": "6",
     "firstName": "Bob",
     "lastName": "Johnson",
     "email": "bob@example.com",
-    "phone": "987-654-3210"
+    "phone": "987-654-3210",
+        "appointments":[
+        {
+            "id": "3",
+            "appointment_title": "appointment 8",
+            "date": "26-05-2025",
+            "start_minutes": "950",
+            "end_minutes": "1050"
+        },
+        {
+            "id": "4",
+            "appointment_title": "appointment 9",
+            "date": "27-05-2025",
+            "start_minutes": "1450",
+            "end_minutes": "1650"
+        }
+    ]
   },
     {
     "id": "7",
     "firstName": "Alice",
     "lastName": "Smith",
     "email": "alice@example.com",
-    "phone": "123-456-7890"
+    "phone": "123-456-7890",
+        "appointments":[
+        {
+            "id": "3",
+            "appointment_title": "appointment 8",
+            "date": "26-05-2025",
+            "start_minutes": "950",
+            "end_minutes": "1050"
+        },
+        {
+            "id": "4",
+            "appointment_title": "appointment 9",
+            "date": "27-05-2025",
+            "start_minutes": "1450",
+            "end_minutes": "1650"
+        }
+    ]
   },
   {
     "id": "8",
     "firstName": "Bob",
     "lastName": "Johnson",
     "email": "bob@example.com",
-    "phone": "987-654-3210"
+    "phone": "987-654-3210",
+        "appointments":[
+        {
+            "id": "3",
+            "appointment_title": "appointment 8",
+            "date": "26-05-2025",
+            "start_minutes": "950",
+            "end_minutes": "1050"
+        },
+        {
+            "id": "4",
+            "appointment_title": "appointment 9",
+            "date": "27-05-2025",
+            "start_minutes": "1450",
+            "end_minutes": "1650"
+        }
+    ]
   }
 ]

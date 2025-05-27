@@ -1,17 +1,22 @@
-import React, { Dispatch, SetStateAction, useEffect, useMemo, useRef, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { Text, View, StyleSheet} from 'react-native';
-import { Gesture, GestureDetector } from 'react-native-gesture-handler';
-import Animated, { runOnJS, SharedValue, useAnimatedReaction, useAnimatedStyle, useSharedValue, AnimatedRef, runOnUI, Layout, useAnimatedScrollHandler } from 'react-native-reanimated';
-import { getTimeBlockFromY, TimeBlock } from '@/src/components/utils/timeBlockUtils';
+import { GestureDetector } from 'react-native-gesture-handler';
+import Animated, { runOnJS, SharedValue, useAnimatedReaction, useAnimatedStyle, useSharedValue, AnimatedRef } from 'react-native-reanimated';
 import { format } from 'date-fns';
+import { TimeBlock, Appointment } from '../types/Service';
+import { useTimeBlockGestures } from '@/src/components/hooks/useTimeBlockGestures';
 
 const MINUTES_PER_STEP = 15;
 const MINUTES_IN_HOUR = 60;
 const HOUR_HEIGHT = 60
 const PIXELS_PER_MINUTE = HOUR_HEIGHT / MINUTES_IN_HOUR;
+const MIN_DURATION = 15;
+const MINUTES_IN_DAY = 1440;
+
 
 interface DayColumnProps {
-    date: string;
+    currentDate: Date;
+    previewDate: Date;
     centerListRef: AnimatedRef<Animated.FlatList<number>>;
     prevListRef: AnimatedRef<Animated.FlatList<number>>;
     nextListRef: AnimatedRef<Animated.FlatList<number>>;
@@ -22,13 +27,14 @@ interface DayColumnProps {
     getItemLayout?: (data: any, index: number) => { length: number; offset: number; index: number };
     isCurrentDay?: boolean;
     selectedTimeBlock: SharedValue<TimeBlock>;
-    setIsModalVisible: Dispatch<SetStateAction<boolean>>;
     isMonthVisible: boolean;
-    currentDate: string;
+    isModalVisible:  SharedValue<boolean>;
+    // appointment: SharedValue<Appointment[]>
 }
 
 export const DayColumn: React.FC<DayColumnProps> = ({
-    date,
+    currentDate,
+    previewDate,
     centerListRef,
     prevListRef,
     nextListRef,
@@ -36,14 +42,13 @@ export const DayColumn: React.FC<DayColumnProps> = ({
     scrollHandler,
     isCurrentDay = false,
     selectedTimeBlock,
-    setIsModalVisible,
     isMonthVisible,
-    currentDate,
+    isModalVisible,
     scrollOffset
 }) => {
     const appointmentTitle = "Appointment 1" // temporary marker
-    
-    const MIN_DURATION = 15;
+
+
     const ListHours = Array.from({ length: 24 }, (_, i) => i);
     
     const [dayColumnY, setDayColumnY] = useState(0);
@@ -58,6 +63,40 @@ export const DayColumn: React.FC<DayColumnProps> = ({
 
     const height = useSharedValue(0);
     const startHeight = useSharedValue(height.value);
+
+const {
+    tapTimeBlockGesture,
+    topResizeGesture,
+    bottomResizeGesture,
+    moveGesture,
+} = useTimeBlockGestures({
+        HOUR_HEIGHT,
+        MINUTES_PER_STEP,
+        PIXELS_PER_MINUTE,
+        MIN_DURATION,
+        MINUTES_IN_DAY,
+        dayColumnY,
+        scrollOffset,
+        selectedTimeBlock,
+        isMonthVisible,
+        currentDate,
+        isModalVisible,
+        topInitialStart,
+        bottomInitialEnd,
+        initialStart,
+        initialEnd,
+        height,
+        startHeight,
+        setIsBlockRenderable,
+    });
+
+
+    const baseDate = useSharedValue('2025-05-26');
+
+    const visibleOffsets = [-2, -1, 0, 1, 2];
+
+
+
 
 
     useEffect(() => {
@@ -91,161 +130,16 @@ export const DayColumn: React.FC<DayColumnProps> = ({
     },[]);
 
 
-    const tapTimeBlockGesture = useMemo(() => 
-        Gesture.Tap()
-        .onEnd((e) => {
-            'worklet';
-            if (!isMonthVisible){
-                const tappedY = e.absoluteY - dayColumnY + scrollOffset.value;
-                const block = getTimeBlockFromY(tappedY, HOUR_HEIGHT, currentDate)
-                // console.log("Tapped Y:", tappedY, "Block:", block);
-                selectedTimeBlock.value = block;
-                runOnJS(setIsModalVisible)(true);
-            }
-        }),[dayColumnY, isMonthVisible]
-    );
-
-    const snapToStep = (pixels: number) => {
-        'worklet';
-        const minutes = pixels / PIXELS_PER_MINUTE;
-        const snappedMinutes = Math.round(minutes / MINUTES_PER_STEP) * MINUTES_PER_STEP;
-        return snappedMinutes * PIXELS_PER_MINUTE;
-    };
-
-    const topResizeGesture = useMemo(() =>
-        Gesture.Pan()
-        .onBegin(() => {
-            'worklet';
-            const block = selectedTimeBlock.value;
-            if (!block.startMinutes) return;
-            topInitialStart.value = block.startMinutes;
-        })
-        .onUpdate(e => {
-            'worklet';
-            const block = selectedTimeBlock.value;
-            if (!block.endMinutes || !block.startMinutes) return;
-
-            const delta = Math.round((e.translationY * 60) / HOUR_HEIGHT);
-            const newStart = topInitialStart.value + delta;
-
-            // Clamp to not exceed end or go below 0
-            if (newStart >= 0 && newStart <= block.endMinutes - MIN_DURATION) {
-                selectedTimeBlock.value = {
-                    startMinutes: newStart,
-                    endMinutes: block.endMinutes,
-                    date: currentDate
-                };
-            }
-
-        })
-        .onEnd(() => {
-            'worklet';
-            const block = selectedTimeBlock.value;
-            if (!block.startMinutes) return;
-
-            const snappedStart = snapToStep(block.startMinutes);
-            selectedTimeBlock.value = {
-                startMinutes: snappedStart,
-                endMinutes: block.endMinutes,
-                date: currentDate,
-        }}),[HOUR_HEIGHT, selectedTimeBlock, currentDate]
-    );
-
-
-    const bottomResizeGesture = useMemo(() =>
-        Gesture.Pan()
-        .onBegin(() => {
-            'worklet';
-            const block = selectedTimeBlock.value;
-            if (!block.endMinutes) return;
-            bottomInitialEnd.value = block.endMinutes;
-        })
-        .onUpdate(e => {
-            'worklet';
-            const block = selectedTimeBlock.value;
-            if (!block.startMinutes) return;
-
-            const delta = Math.round((e.translationY * 60) / HOUR_HEIGHT);
-            const newEnd = bottomInitialEnd.value + delta;
-
-            // Clamp to not go below start or exceed 1440 (end of day)
-            if (newEnd <= 1440 && newEnd >= block.startMinutes + MIN_DURATION) {
-                selectedTimeBlock.value = {
-                    startMinutes: block.startMinutes,
-                    endMinutes: newEnd,
-                    date: currentDate,
-                };
-            }
-        }) .onEnd(() => {
-            'worklet';
-            const block = selectedTimeBlock.value;
-            if (!block.endMinutes) return;
-
-            const snappedEnd = snapToStep(block.endMinutes);
-            selectedTimeBlock.value = {
-                startMinutes: block.startMinutes,
-                endMinutes: snappedEnd,
-                date: currentDate,
-            };
-        }),[HOUR_HEIGHT, selectedTimeBlock, currentDate]
-    );
-    
-
-    const moveGesture = useMemo(() => {
-        return Gesture.Pan()
-        .onStart(() => {
-            startHeight.value = height.value;
-        })
-        .onBegin(() => {
-            'worklet';
-            const block = selectedTimeBlock.value;
-            if (!block.startMinutes || !block.endMinutes) return;
-
-            initialStart.value = block.startMinutes;
-            initialEnd.value = block.endMinutes;
-        })
-        .onUpdate(e => {
-            'worklet';
-            const offsetMinutes = Math.round((e.translationY * 60) / HOUR_HEIGHT);
-
-            const newStart = initialStart.value + offsetMinutes;
-            const newEnd = initialEnd.value + offsetMinutes;
-
-            if (newStart >= 0 && newEnd <= 1440) {
-                selectedTimeBlock.value = {
-                    startMinutes: newStart,
-                    endMinutes: newEnd,
-                    date: currentDate,
-                };
-            }
-        }).onEnd(() => {
-            'worklet';
-            if (!selectedTimeBlock.value.startMinutes || !selectedTimeBlock.value.endMinutes) return;
-
-            const snappedStart = snapToStep(selectedTimeBlock.value.startMinutes);
-            const snappedEnd = snapToStep(selectedTimeBlock.value.endMinutes);
-
-            selectedTimeBlock.value = {
-                startMinutes: snappedStart,
-                endMinutes: snappedEnd,
-                date: currentDate,
-            };
-        })
-    }, [HOUR_HEIGHT, selectedTimeBlock, currentDate]);
-
-
-
     return (
             <View 
                 style={{ flex: 1 }} 
-                // collapsable={true} 
                 pointerEvents="auto"
                 ref={containerRef} 
                 >
 
                 <View style={ isMonthVisible ? styles.dayContainer2 : styles.dayContainer}>
-                    <Text style={ styles.dayName }>{format(date, 'EEE' ).toUpperCase()}</Text>
-                    <Text style={ styles.dayNumber }>{format(date, 'dd')}</Text>
+                    <Text style={ styles.dayName }>{format(previewDate, 'EEE' ).toUpperCase()}</Text>
+                    <Text style={ styles.dayNumber }>{format(previewDate, 'dd')}</Text>
                 </View>
 
                 <GestureDetector gesture={tapTimeBlockGesture}> 
@@ -259,12 +153,6 @@ export const DayColumn: React.FC<DayColumnProps> = ({
                         scrollEventThrottle={16}
                         showsVerticalScrollIndicator={false}
                         style={{ flex: 1, backgroundColor: '#fff' }}
-    
-                        // getItemLayout={(_, index) => ({
-                        //     length: 60,
-                        //     offset: 60 * index,
-                        //     index,
-                        // })}
 
                         renderItem={({ item: hour }) => {
                             return (
@@ -291,7 +179,8 @@ export const DayColumn: React.FC<DayColumnProps> = ({
                     />
                 </GestureDetector>
 
-                {isBlockRenderable && (
+                {/* {isBlockRenderable && ( */}
+                    {isBlockRenderable && (
                     <Animated.View
                         pointerEvents="auto"
                         style={[styles.selectedTimeBlock, animatedStyle]}

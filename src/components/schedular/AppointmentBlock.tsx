@@ -1,42 +1,30 @@
-import { useEffect, useRef, useState } from "react";
+import { useState } from "react";
 import { View, StyleSheet, TextInput, Button, Text, Animated, Dimensions, TouchableOpacity } from "react-native";
 import { yToTime, yToTime11 } from '../utils/timeUtils';
-import { TimeBlock } from "@/src/components/utils/timeBlockUtils"
-import { runOnJS, SharedValue, useAnimatedReaction, useAnimatedStyle } from "react-native-reanimated";
+import { TimeBlock } from "../types/Service";
+
+import { runOnJS, SharedValue, useAnimatedReaction } from "react-native-reanimated";
 import { format } from "date-fns";
 import { Ionicons } from "@expo/vector-icons";
 
 const SCREEN_HEIGHT = Dimensions.get('window').height;
 
 interface AppointmentBlockProps {
-    visible: boolean;
     onClose: () => void;
     onSave: (title: string) => void;
     selectedTimeBlock: SharedValue<TimeBlock>;
-    currentDate: string;
+    currentDate: Date;
 }   
 
-const AppointmentBlock = ({ visible, onClose, onSave, currentDate, selectedTimeBlock }: AppointmentBlockProps) => {
-    const translateY = useRef(new Animated.Value(SCREEN_HEIGHT)).current;
+const AppointmentBlock = ({ onClose, onSave, currentDate, selectedTimeBlock }: AppointmentBlockProps) => {
     const [title, setTitle] = useState('');
     const [displayBlock, setDisplayBlock] = useState<TimeBlock>();
 
-    useEffect(() => {
-        Animated.timing(translateY, {
-            toValue: visible ? 0 : SCREEN_HEIGHT,
-            duration: 300,
-            useNativeDriver: true,
-        }).start();
-    }, [visible])
+    const currentDateString = currentDate.toISOString().split("T")[0];
+    // console.log("displayBlock?.date", displayBlock?.date)
 
-
-    const animatedStyle = useAnimatedStyle(() => ({
-        opacity: selectedTimeBlock.value ? 1 : 0,
-        transform: [{
-            translateY: selectedTimeBlock.value?.startMinutes || 0,
-        }],
-    }));
-
+    // const displayDateString = displayDate?.toISOString().split("T")[0];
+        const displayDateString = currentDate.toISOString().split("T")[0];
 
     useAnimatedReaction(
         () => selectedTimeBlock.value,
@@ -45,19 +33,18 @@ const AppointmentBlock = ({ visible, onClose, onSave, currentDate, selectedTimeB
         }
     );
 
-
     return (
-        <Animated.View style={[styles.modalOverlay, animatedStyle, { transform: [{ translateY }] }]}>
+        <Animated.View style={styles.modalOverlay}>
             <View style={styles.modalContainer}>
 
                 <Text style={ styles.label }>
-                    {format(currentDate, 'eeee dd MMM yyy')}
+                    {format(currentDateString, 'eeee dd MMM yyy')}
                     {"  •  "}
                     {displayBlock?.startMinutes  ? yToTime11(displayBlock.startMinutes) : '--:--'}
                     {" – "}
                     {displayBlock?.endMinutes ? yToTime11(displayBlock.endMinutes) : '--:--'}
                 </Text>
-                {/* <Text>End: {displayBlock?.endMinutes ? yToTime11(displayBlock.endMinutes) : '--:--'}</Text> */}
+                {/* <Text>selectedTimeBlock: {displayDateString ? displayDateString : '--:--'}</Text> */}
 
                 <TextInput
                     style={styles.input}
@@ -87,20 +74,20 @@ const AppointmentBlock = ({ visible, onClose, onSave, currentDate, selectedTimeB
 
 const styles = StyleSheet.create({
     modalOverlay: {
-        position: 'absolute',
         bottom: 0,
         left: 0,
         right: 0,
         zIndex: 100,
+        backgroundColor: 'transparent', // white
     },
     modalContainer: {
         backgroundColor: '#ddd',
         padding: 20,
         borderTopLeftRadius: 30,
         borderTopRightRadius: 30,
-        shadowColor: '#000',
-        shadowOffset: { width: 0, height: -3 },
-        shadowOpacity: 0.1,
+        // shadowColor: '#000',
+        // shadowOffset: { width: 0, height: -3 },
+        // shadowOpacity: 0.1,
         shadowRadius: 10,
         elevation: 10,
     },
@@ -136,8 +123,8 @@ const styles = StyleSheet.create({
         zIndex: 10, // make sure it's on top
     },
     addClientContainer: {
-      flexDirection: 'row',
-      paddingLeft: 20
+        flexDirection: 'row',
+        paddingLeft: 20
     },
 });
 

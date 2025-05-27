@@ -1,46 +1,63 @@
 import { View, StyleSheet, TouchableOpacity, Text } from "react-native";
-import React, { useCallback, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import CalendarMonthView from "@/src/components/schedular/CalendarMonthView";
-import CalendarDayView, { CalendarDayViewHandle } from "@/src/components/schedular/CalendarDayView";
-import { addDays, format, subDays } from "date-fns";
+import CalendarDayView from "@/src/components/schedular/CalendarDayView";
+import { addDays, subDays } from "date-fns";
 import { Ionicons } from '@expo/vector-icons';
 import AppointmentBlock from "@/src/components/schedular/AppointmentBlock";
-import Animated, { runOnJS, useSharedValue, withTiming, Easing, useAnimatedStyle } from "react-native-reanimated";
-import { TimeBlock } from '@/src/components/utils/timeBlockUtils';
-import { getToday } from "@/src/components/utils/timeUtils";
+import Animated, { runOnJS, useSharedValue, withTiming, Easing, useAnimatedStyle, useAnimatedReaction } from "react-native-reanimated";
+import { TimeBlock, Appointment, CalendarDayViewHandle } from '@/src/components/types/Service';
+import dummyAppointments from "@/assets/mock-clients.json";
 
 
-
-export default function SchedularScreen() {
-    const [currentDate, setCurrentDate] = useState<string>(getToday())
+export default function SchedularScreen( ) {
+    const [currentDate, setCurrentDate] = useState(new Date())
     const [isMonthVisible, setIsMonthVisible] = useState(false);
-    const [isModalVisible, setIsModalVisible] = useState(false);
- 
-    const monthHeight = useSharedValue(0);
+    const calendarDayViewRef = useRef<CalendarDayViewHandle>(null);
+    const monthHeight = useSharedValue<number>(0);
+    const isModalVisible = useSharedValue(false);
+    const MODAL_HEIGHT = 200;
+    const appointments = useSharedValue<Appointment[]>([]);
 
     const selectedTimeBlock = useSharedValue<TimeBlock>({
         startMinutes: null,
         endMinutes: null,
-        date: currentDate
-    });
+        date: new Date(),
+    })
 
-    const calendarDayViewRef = useRef<CalendarDayViewHandle>(null);
+    const visibleDates = ['2025-05-25', '2025-05-26', '2025-05-27'];
 
-    const goToDate = useCallback((dateString: string) => {
-            setCurrentDate(dateString);
+    useEffect(() => {
+        const flattened = dummyAppointments.flatMap((user) =>
+            user.appointments.map((appt) => ({
+                ...appt,
+                id: appt.id,
+                appointment_title: appt.appointment_title,
+                date: appt.date,
+                startMinutes: appt.start_minutes,
+                endMinutes: appt.end_minutes
+            }))
+        );
+        appointments.value = flattened;
     }, []);
 
+
+
+    const goToDate = useCallback((date: Date) => {
+            setCurrentDate(date);
+    }, []);
+
+
     const goToPreviousDay = useCallback(() => {
-    const prevDay = subDays(new Date(currentDate), 1);
-        goToDate(prevDay.toISOString().split('T')[0]);
+        const prevDay = subDays(currentDate, 1);
+        goToDate(prevDay);
     }, [currentDate, goToDate]);
+
 
     const goToNextDay = useCallback(() => {
-        const nextDay = addDays(new Date(currentDate), 1);
-        goToDate(nextDay.toISOString().split('T')[0]);
+        const nextDay = addDays(currentDate, 1);
+        goToDate(nextDay);
     }, [currentDate, goToDate]);
-
-
 
 
     const toggleMonth = () => {
@@ -59,22 +76,43 @@ export default function SchedularScreen() {
         }
     }
 
-    const handleSelectedDate = (date: string) => {
-        console.log('calendarDayViewRef.current:', calendarDayViewRef.current);
+    const handleSelectedDate = (date: Date) => {
         if (calendarDayViewRef.current) {
             calendarDayViewRef.current?.swipeToDateImpl(date);
         }
         setCurrentDate(date);
     };
 
-    
+
+    useAnimatedReaction(
+        () => selectedTimeBlock.value,
+        (block) => {
+            const isValid =
+            block?.startMinutes !== null &&
+            block?.endMinutes !== null;
+            isModalVisible.value = isValid;
+        }
+    );
+
+
+    const animatedStyleModal = useAnimatedStyle(() => {
+        const isVisible = isModalVisible.value;
+        return {
+            opacity: withTiming(isVisible ? 1 : 0, { duration: 300 }),
+            height: withTiming(isVisible ? MODAL_HEIGHT : 0, { duration: 300 }),
+            overflow: 'hidden',
+        };
+    });
+
+
     return (
         <>
+    
         <View style={styles.container}>
             {/* Toggle Button */}
             <TouchableOpacity onPress={toggleMonth}>
                 <Text style={styles.dateHeader}>
-                    {format(new Date(currentDate), 'MMM yyyy')} {' '}
+                    {/* {format(currentDate, 'MMM yyyy')} {' '} */}
                     <Ionicons name={isMonthVisible ? 'chevron-up' : 'chevron-down' } size={18} color="gray" />
                 </Text>
             </TouchableOpacity>
@@ -87,7 +125,8 @@ export default function SchedularScreen() {
                     onSelectDate={handleSelectedDate}
                 />
             </Animated.View>
-            {/* Day View below */}
+
+            {/* Calendar Day View */}
             <Animated.View style={{ flex: 1 }}>
                 <CalendarDayView
                     // currentDate={format(currentDate, 'yyy-MM-dd')}
@@ -99,23 +138,29 @@ export default function SchedularScreen() {
                     goToNextDay={goToNextDay}
                     collapseMonth={collapseMonth}
                     selectedTimeBlock={selectedTimeBlock}
-                    setIsModalVisible={setIsModalVisible}
+                    isModalVisible={isModalVisible}
+                    appointments={appointments}
               />
             </Animated.View>
         </View>
 
-        <AppointmentBlock
-            visible={isModalVisible}
-            selectedTimeBlock={selectedTimeBlock}
-            currentDate={currentDate}
-            onClose={() => {
-                setIsModalVisible(false);
-            }}
-            onSave={(title) => {
-                // Handle saving the appointment
-                console.log(`Saved appointment for ${selectedTimeBlock.value?.startMinutes}:00 - ${title}`);
-            }}
-        />
+          {/* Sliding Appointment View */}
+        <Animated.View
+            style={[{ overflow: 'hidden'}, animatedStyleModal]}
+            >
+            <AppointmentBlock
+                selectedTimeBlock={selectedTimeBlock}
+                currentDate={currentDate}
+                onClose={() => {
+                    isModalVisible.value = false;
+                }}
+                onSave={(title) => {
+                    // Handle saving the appointment
+                    // console.log(`Saved appointment for ${selectedTimeBlock.value?.startMinutes}:00 - ${title}`);
+                }}
+            >
+            </AppointmentBlock>
+        </Animated.View>
         </>
     );
 }
@@ -123,44 +168,6 @@ export default function SchedularScreen() {
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-    },
-    dayContainer: {
-        backgroundColor: "white",
-        borderRadius: 2,
-        // iOS shadow
-        shadowColor: 'gray',
-        shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.2,
-        shadowRadius: 3,
-        borderBottomColor: 'grey',
-        zIndex: 1,
-        // Android shadow (elevation = spread + blur approximation)
-        elevation: 4
-    },
-    dayContainer2:{
-        backgroundColor: 'white',  
-        borderBottomColor: '#eee', 
-        borderBottomWidth: 1
-    },
-    dayName: {
-        backgroundColor: "transparent",
-        paddingTop: 7,
-        paddingBottom: 3,
-        width: 60,
-        textAlign: 'center',
-        fontSize: 12,
-        borderRightColor: '#eeeeee',
-        borderRightWidth: 1,
-        fontWeight: 500
-    },
-    dayNumber: {
-        backgroundColor: "white",
-        width: 60,
-        textAlign: 'center',
-        borderRightColor: '#eeeeee',
-        borderRightWidth: 1,
-        paddingBottom: 3,
-        fontWeight: 500
     },
     dateHeader: {
         height: 30,

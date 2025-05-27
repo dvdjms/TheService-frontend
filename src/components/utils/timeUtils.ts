@@ -46,16 +46,27 @@ export const formatTime = ({ hours, minutes }: { hours: number; minutes: number 
 }
 
 
-// export const useAdjacentDates = (baseDate: string) => {
-//     const prevDate = subDays(new Date(baseDate), 1).toISOString().split('T')[0];
-//     const nextDate = addDays(new Date(baseDate), 1).toISOString().split('T')[0];
-//     return { prevDate, nextDate };
-// }
+export const getISODateStringOffset = (baseDateStr: string, offset: number): string => {
+    'worklet';
+    const base = new Date(baseDateStr);
+    base.setDate(base.getDate() + offset);
+    return base.toISOString().split('T')[0]; // 'YYYY-MM-DD'
+};
 
-export const useAdjacentDates = (baseDate: string) => {
+
+export const useAdjacentDates = (baseDate: Date) => {
     return useMemo(() => {
-        const prevDate = subDays(new Date(baseDate), 1).toISOString().split('T')[0];
-        const nextDate = addDays(new Date(baseDate), 1).toISOString().split('T')[0];
+        const prevDate = subDays(baseDate, 1);
+        const nextDate = addDays(baseDate, 1);
+        return { prevDate, nextDate };
+    }, [baseDate.getDate()]);
+}
+
+
+export const useAdjacentDatesNumber = (baseDate: Date) => {
+    return useMemo(() => {
+        const prevDate = subDays(new Date(baseDate), 1).getTime();
+        const nextDate = addDays(new Date(baseDate), 1).getTime();
         return { prevDate, nextDate };
     }, [baseDate]);
 }

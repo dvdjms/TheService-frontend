@@ -1,49 +1,48 @@
 import React, { useEffect, useState } from 'react';
 import { View } from 'react-native';
 import { Calendar, CalendarProps  } from 'react-native-calendars';
-import { format, startOfMonth } from 'date-fns';
+import { format, isValid, startOfMonth } from 'date-fns';
 import MonthScroller from './MonthScroller';
-import { getToday } from '../utils/timeUtils';
 
 type CalendarMonthViewProps = {
-    currentDate: string;
-    onSelectDate: (date: string) => void;
+    currentDate: Date;
+    onSelectDate: (date: Date) => void;
 };
 
 export default function CalendarMonthView({ onSelectDate, currentDate }: CalendarMonthViewProps) {
-    const [selectedDate, setSelectedDate] = useState<string>(getToday());
+    const [selectedDate, setSelectedDate] = useState<Date | null>(null);
     const [currentMonth, setCurrentMonth] = useState(startOfMonth(new Date(currentDate)));
+
 
     useEffect(() => {
         setSelectedDate(currentDate);
-        setCurrentMonth(startOfMonth(new Date(currentDate)));
+        setCurrentMonth(startOfMonth(currentDate));
     }, [currentDate]);
 
+  
+    const currentDateStr = isValid(currentDate) ? format(currentDate, 'yyyy-MM-dd') : '';
+    const selectedStr = selectedDate ? format(selectedDate, 'yyyy-MM-dd') : null;
+    const highlightedDate = selectedStr ?? currentDateStr;
 
-    const today = getToday();
-
-    const highlightedDate = currentDate === today ? today : selectedDate;
 
     // Handler for day press in calendar
     const onDayPress: CalendarProps['onDayPress'] = (day) => {
-        console.log('day', day)
-        onSelectDate(day.dateString)
-        setSelectedDate(day.dateString);
+        const selectedDate = new Date(day.dateString);
+        onSelectDate(selectedDate)
+        setSelectedDate(selectedDate);
     };
 
     const updateMonthPreservingDay = (newMonthDate: Date) => {
-        const currentDay = new Date(selectedDate).getDate();
+        const day = selectedDate?.getDate();
         const year = newMonthDate.getFullYear();
         const month = newMonthDate.getMonth();
 
-        const tentativeDate = new Date(year, month, currentDay);
+        const tentativeDate = new Date(year, month, day);
         const fallbackDate = startOfMonth(newMonthDate);
         const validDate = tentativeDate.getMonth() === month ? tentativeDate : fallbackDate;
 
-        const formatted = format(validDate, 'yyyy-MM-dd');
-        
-        setSelectedDate(formatted);
-        onSelectDate(formatted);
+        setSelectedDate(validDate);
+        onSelectDate(validDate);
         setCurrentMonth(startOfMonth(newMonthDate));
     };
     
