@@ -1,0 +1,94 @@
+[
+  {
+    "PK": "USER#1",
+    "SK": "PROFILE",
+    "userId": "1",
+    "firstName": "Test",
+    "lastName": "User",
+    "email": "test@example.com"
+  },
+  {
+    "PK": "USER#1",
+    "SK": "CLIENT#1",
+    "clientId": "1",
+    "firstName": "Alice",
+    "lastName": "Smith",
+    "email": "alice@example.com"
+  },
+  {
+    "PK": "USER#1",
+    "SK": "CLIENT#2",
+    "clientId": "2",
+    "firstName": "Bob",
+    "lastName": "Johnson",
+    "email": "bob@example.com"
+  },
+  {
+    "PK": "USER#1",
+    "SK": "CLIENT#3",
+    "clientId": "3",
+    "firstName": "Charlie",
+    "lastName": "Lee",
+    "email": "charlie@example.com"
+  },
+  {
+    "PK": "USER#1",
+    "SK": "APPT#1",
+    "appointmentId": "1",
+    "clientId": "1",
+    "title": "Alice Appointment 1",
+    "startMinutes": 1749042000000,
+    "endMinutes": 1749045600000,
+    "startTimeStr": "09:00",
+    "dateStr": "2025-05-29",
+    "color": "#FFC1C3"
+  },
+  {
+    "PK": "USER#1",
+    "SK": "APPT#2",
+    "appointmentId": "2",
+    "clientId": "1",
+    "title": "Alice Appointment 2",
+    "startMinutes": 1749031200000,
+    "endMinutes": 1749038400000,
+    "startTimeStr": "11:00",
+    "dateStr": "2025-05-29",
+    "color": "#FFC1C3"
+  },
+  {
+    "PK": "USER#1",
+    "SK": "APPT#3",
+    "appointmentId": "3",
+    "clientId": "2",
+    "title": "Bob Appointment 1",
+    "startMinutes": 1748952000000,
+    "endMinutes": 1748955600000,
+    "startTimeStr": "14:00",
+    "dateStr": "2025-05-30",
+    "color": "#F0F2BD"
+  },
+  {
+    "PK": "USER#1",
+    "SK": "APPT#4",
+    "appointmentId": "4",
+    "clientId": "2",
+    "title": "Bob Appointment 2",
+    "startMinutes": 1748962800000,
+    "endMinutes": 1748966400000,
+    "startTimeStr": "15:00",
+    "dateStr": "2025-05-30",
+    "color": "#F0F2BD"
+  },
+  {
+    "PK": "USER#1",
+    "SK": "APPT#5",
+    "appointmentId": "5",
+    "clientId": "3",
+    "title": "Charlie Appointment 1",
+    "startMinutes": 1748726400000,
+    "endMinutes": 1748730000000,
+    "startTimeStr": "18:00",
+    "dateStr": "2025-05-31",
+    "color": "#BDECF2"
+  }
+]

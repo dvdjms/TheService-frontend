@@ -1,63 +1,38 @@
 import { View, StyleSheet, TouchableOpacity, Text } from "react-native";
-import React, { useCallback, useEffect, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import CalendarMonthView from "@/src/components/schedular/CalendarMonthView";
 import CalendarDayView from "@/src/components/schedular/CalendarDayView";
-import { addDays, subDays } from "date-fns";
 import { Ionicons } from '@expo/vector-icons';
 import AppointmentBlock from "@/src/components/schedular/AppointmentBlock";
-import Animated, { runOnJS, useSharedValue, withTiming, Easing, useAnimatedStyle, useAnimatedReaction } from "react-native-reanimated";
+import Animated, { runOnJS, useSharedValue, withTiming, Easing, useAnimatedStyle, useAnimatedReaction, useDerivedValue } from "react-native-reanimated";
 import { TimeBlock, Appointment, CalendarDayViewHandle } from '@/src/components/types/Service';
-import dummyAppointments from "@/assets/mock-clients.json";
+import { addDaysNumber } from "@/src/components/utils/timeUtils";
+import { format } from "date-fns";
 
 
 export default function SchedularScreen( ) {
-    const [currentDate, setCurrentDate] = useState(new Date())
+    const [selectedDate, setSelectedDate] = useState(Date.now());
+
     const [isMonthVisible, setIsMonthVisible] = useState(false);
     const calendarDayViewRef = useRef<CalendarDayViewHandle>(null);
     const monthHeight = useSharedValue<number>(0);
     const isModalVisible = useSharedValue(false);
     const MODAL_HEIGHT = 200;
-    const appointments = useSharedValue<Appointment[]>([]);
 
     const selectedTimeBlock = useSharedValue<TimeBlock>({
         startMinutes: null,
         endMinutes: null,
-        date: new Date(),
+        date: selectedDate,
     })
+ 
+    const selectedDateShared = useSharedValue(selectedDate);
+    // const previewDate = useDerivedValue(() => selectedDateShared.value); 
+    const previewDate = useSharedValue<number | null>(null);
 
-    const visibleDates = ['2025-05-25', '2025-05-26', '2025-05-27'];
 
     useEffect(() => {
-        const flattened = dummyAppointments.flatMap((user) =>
-            user.appointments.map((appt) => ({
-                ...appt,
-                id: appt.id,
-                appointment_title: appt.appointment_title,
-                date: appt.date,
-                startMinutes: appt.start_minutes,
-                endMinutes: appt.end_minutes
-            }))
-        );
-        appointments.value = flattened;
-    }, []);
-
-
-
-    const goToDate = useCallback((date: Date) => {
-            setCurrentDate(date);
-    }, []);
-
-
-    const goToPreviousDay = useCallback(() => {
-        const prevDay = subDays(currentDate, 1);
-        goToDate(prevDay);
-    }, [currentDate, goToDate]);
-
-
-    const goToNextDay = useCallback(() => {
-        const nextDay = addDays(currentDate, 1);
-        goToDate(nextDay);
-    }, [currentDate, goToDate]);
+        selectedDateShared.value = selectedDate;
+    }, [selectedDate]);
 
 
     const toggleMonth = () => {
@@ -68,6 +43,14 @@ export default function SchedularScreen( ) {
         });
     };
 
+
+    const handleSelectedDate = (date: Date) => {
+        if (calendarDayViewRef.current) {
+            calendarDayViewRef.current?.swipeToDateImpl(date);
+        }
+        setSelectedDate(date.getTime());
+    };
+
     const collapseMonth = () =>  {
         if (isMonthVisible) {
             monthHeight.value = withTiming(0, { duration: 300, easing: Easing.inOut(Easing.ease) }, () => {
@@ -76,14 +59,7 @@ export default function SchedularScreen( ) {
         }
     }
 
-    const handleSelectedDate = (date: Date) => {
-        if (calendarDayViewRef.current) {
-            calendarDayViewRef.current?.swipeToDateImpl(date);
-        }
-        setCurrentDate(date);
-    };
-
-
+    
     useAnimatedReaction(
         () => selectedTimeBlock.value,
         (block) => {
@@ -95,12 +71,26 @@ export default function SchedularScreen( ) {
     );
 
 
+    const handleCloseModal = () => {
+        selectedTimeBlock.value = {
+            ...selectedTimeBlock.value, // Copy existing properties
+            startMinutes: null,
+            endMinutes: null
+        }
+    }
+
     const animatedStyleModal = useAnimatedStyle(() => {
         const isVisible = isModalVisible.value;
         return {
-            opacity: withTiming(isVisible ? 1 : 0, { duration: 300 }),
-            height: withTiming(isVisible ? MODAL_HEIGHT : 0, { duration: 300 }),
+            opacity: withTiming(isVisible ? 1 : 0, { duration: 200 }),
+            height: withTiming(isVisible ? MODAL_HEIGHT : 0, { duration: 200 }),
             overflow: 'hidden',
+        };
+    });
+
+    const animatedMonthStyle = useAnimatedStyle(() => {
+        return {
+            height: withTiming(monthHeight.value, { duration: 200 }),
         };
     });
 
@@ -112,17 +102,17 @@ export default function SchedularScreen( ) {
             {/* Toggle Button */}
             <TouchableOpacity onPress={toggleMonth}>
                 <Text style={styles.dateHeader}>
-                    {/* {format(currentDate, 'MMM yyyy')} {' '} */}
+                    {format(selectedDate, 'MMM yyyy')} {' '}
                     <Ionicons name={isMonthVisible ? 'chevron-up' : 'chevron-down' } size={18} color="gray" />
                 </Text>
             </TouchableOpacity>
 
             {/* Sliding Month View */}
             <Animated.View
-                style={[{ overflow: 'hidden' }, useAnimatedStyle(() => ({ height: withTiming(monthHeight.value, { duration: 300 },)}))]}>
+                style={[{ overflow: 'hidden' }, animatedMonthStyle ]}>
                 <CalendarMonthView
-                    currentDate={currentDate}
-                    onSelectDate={handleSelectedDate}
+                    selectedDate={selectedDate}
+                    handleSelectedDate={handleSelectedDate}
                 />
             </Animated.View>
 
@@ -131,15 +121,14 @@ export default function SchedularScreen( ) {
                 <CalendarDayView
                     // currentDate={format(currentDate, 'yyy-MM-dd')}
                     ref={calendarDayViewRef}
-                    currentDate={currentDate}
-                    setCurrentDate={setCurrentDate}
+                    selectedDate={selectedDate}
+                    selectedDateShared={selectedDateShared}
+                    setSelectedDate={setSelectedDate}
                     isMonthVisible={isMonthVisible}
-                    goToPreviousDay={goToPreviousDay}
-                    goToNextDay={goToNextDay}
                     collapseMonth={collapseMonth}
                     selectedTimeBlock={selectedTimeBlock}
                     isModalVisible={isModalVisible}
-                    appointments={appointments}
+                    previewDate={previewDate}
               />
             </Animated.View>
         </View>
@@ -150,10 +139,8 @@ export default function SchedularScreen( ) {
             >
             <AppointmentBlock
                 selectedTimeBlock={selectedTimeBlock}
-                currentDate={currentDate}
-                onClose={() => {
-                    isModalVisible.value = false;
-                }}
+                selectedDate={selectedDate}
+                onClose={handleCloseModal}
                 onSave={(title) => {
                     // Handle saving the appointment
                     // console.log(`Saved appointment for ${selectedTimeBlock.value?.startMinutes}:00 - ${title}`);

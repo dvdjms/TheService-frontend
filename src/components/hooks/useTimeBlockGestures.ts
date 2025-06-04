@@ -6,24 +6,9 @@ import { UseTimeBlockGesturesProps } from '@/src/components/types/Service';
 
 
 export function useTimeBlockGestures(Props: UseTimeBlockGesturesProps) {const {  
-    PIXELS_PER_MINUTE,
-    MINUTES_PER_STEP,
-    MIN_DURATION,
-    MINUTES_IN_DAY,
-    HOUR_HEIGHT,
-    dayColumnY,
-    scrollOffset,
-    selectedTimeBlock,
-    isMonthVisible,
-    currentDate,
-    isModalVisible,
-    topInitialStart,
-    bottomInitialEnd,
-    initialStart,
-    initialEnd,
-    height,
-    startHeight,
-    setIsBlockRenderable
+    PIXELS_PER_MINUTE, MINUTES_PER_STEP, MIN_DURATION, MINUTES_IN_DAY, HOUR_HEIGHT,
+    scrollOffset, selectedTimeBlock, isMonthVisible, selectedDateShared, isModalVisible, topInitialStart,
+    bottomInitialEnd, initialStart, initialEnd, height, startHeight, setIsBlockRenderable
     } = Props;
 
     useAnimatedReaction(
@@ -42,13 +27,13 @@ export function useTimeBlockGestures(Props: UseTimeBlockGesturesProps) {const {
         Gesture.Tap().onEnd((e) => {
             'worklet';
             if (!isMonthVisible) {
-                const tappedY = e.absoluteY - dayColumnY + scrollOffset.value;
-                const block = getTimeBlockFromY(tappedY, HOUR_HEIGHT, currentDate)
+                const tappedY = e.y + scrollOffset.value;
+                const block = getTimeBlockFromY(tappedY, HOUR_HEIGHT, selectedDateShared.value);
                 selectedTimeBlock.value = block;
                 isModalVisible.value = true;
             }
         }),
-        [dayColumnY, isMonthVisible]
+        [isMonthVisible]
     );
 
 
@@ -68,8 +53,8 @@ export function useTimeBlockGestures(Props: UseTimeBlockGesturesProps) {const {
                 if(selectedTimeBlock.value.endMinutes)
                 if (newStart >= 0 && newStart <= selectedTimeBlock.value.endMinutes - MIN_DURATION) {
                     selectedTimeBlock.value = {
-                    ...selectedTimeBlock.value,
-                    startMinutes: newStart,
+                        ...selectedTimeBlock.value,
+                        startMinutes: newStart,
                     };
                 }
             })
@@ -81,7 +66,7 @@ export function useTimeBlockGestures(Props: UseTimeBlockGesturesProps) {const {
                     startMinutes: snappedStart,
                 };
             }),
-        [HOUR_HEIGHT, selectedTimeBlock, currentDate]
+        [HOUR_HEIGHT, selectedTimeBlock, selectedDateShared.value]
     );
 
 
@@ -101,8 +86,8 @@ export function useTimeBlockGestures(Props: UseTimeBlockGesturesProps) {const {
                 if (selectedTimeBlock.value.startMinutes)
                 if (newEnd <= MINUTES_IN_DAY && newEnd >= selectedTimeBlock.value.startMinutes + MIN_DURATION) {
                     selectedTimeBlock.value = {
-                    ...selectedTimeBlock.value,
-                    endMinutes: newEnd,
+                        ...selectedTimeBlock.value,
+                        endMinutes: newEnd,
                     };
                 }
             })
@@ -114,7 +99,7 @@ export function useTimeBlockGestures(Props: UseTimeBlockGesturesProps) {const {
                     endMinutes: snappedEnd,
                 };
             }),
-        [HOUR_HEIGHT, selectedTimeBlock, currentDate]
+        [HOUR_HEIGHT, selectedTimeBlock, selectedDateShared.value]
     );
 
     
@@ -122,14 +107,14 @@ export function useTimeBlockGestures(Props: UseTimeBlockGesturesProps) {const {
         () =>
         Gesture.Pan()
             .onStart(() => {
-            startHeight.value = height.value;
+                startHeight.value = height.value;
             })
             .onBegin(() => {
                 'worklet';
                 if(selectedTimeBlock.value.startMinutes)
-                initialStart.value = selectedTimeBlock.value.startMinutes;
+                    initialStart.value = selectedTimeBlock.value.startMinutes;
                 if(selectedTimeBlock.value.endMinutes)
-                initialEnd.value = selectedTimeBlock.value.endMinutes;
+                    initialEnd.value = selectedTimeBlock.value.endMinutes;
             })
             .onUpdate((e) => {
                 'worklet';
@@ -138,9 +123,9 @@ export function useTimeBlockGestures(Props: UseTimeBlockGesturesProps) {const {
                 const newEnd = initialEnd.value + offsetMinutes;
                 if (newStart >= 0 && newEnd <= MINUTES_IN_DAY) {
                     selectedTimeBlock.value = {
-                    ...selectedTimeBlock.value,
-                    startMinutes: newStart,
-                    endMinutes: newEnd,
+                        ...selectedTimeBlock.value,
+                        startMinutes: newStart,
+                        endMinutes: newEnd,
                     };
                 }
             })
@@ -154,7 +139,7 @@ export function useTimeBlockGestures(Props: UseTimeBlockGesturesProps) {const {
                     endMinutes: snappedEnd,
                 };
             }),
-        [HOUR_HEIGHT, selectedTimeBlock, currentDate]
+        [HOUR_HEIGHT, selectedTimeBlock, selectedDateShared.value]
     );
 
     return {

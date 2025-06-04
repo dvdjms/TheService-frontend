@@ -13,18 +13,15 @@ interface AppointmentBlockProps {
     onClose: () => void;
     onSave: (title: string) => void;
     selectedTimeBlock: SharedValue<TimeBlock>;
-    currentDate: Date;
+    selectedDate: number;
 }   
 
-const AppointmentBlock = ({ onClose, onSave, currentDate, selectedTimeBlock }: AppointmentBlockProps) => {
+const AppointmentBlock = ({ onClose, onSave, selectedDate, selectedTimeBlock }: AppointmentBlockProps) => {
     const [title, setTitle] = useState('');
     const [displayBlock, setDisplayBlock] = useState<TimeBlock>();
 
-    const currentDateString = currentDate.toISOString().split("T")[0];
-    // console.log("displayBlock?.date", displayBlock?.date)
-
-    // const displayDateString = displayDate?.toISOString().split("T")[0];
-        const displayDateString = currentDate.toISOString().split("T")[0];
+    //convert to date
+    const newDate = new Date(selectedDate);
 
     useAnimatedReaction(
         () => selectedTimeBlock.value,
@@ -38,13 +35,15 @@ const AppointmentBlock = ({ onClose, onSave, currentDate, selectedTimeBlock }: A
             <View style={styles.modalContainer}>
 
                 <Text style={ styles.label }>
-                    {format(currentDateString, 'eeee dd MMM yyy')}
+                    {format(newDate, 'eeee dd MMM yyy')}
                     {"  •  "}
                     {displayBlock?.startMinutes  ? yToTime11(displayBlock.startMinutes) : '--:--'}
                     {" – "}
                     {displayBlock?.endMinutes ? yToTime11(displayBlock.endMinutes) : '--:--'}
                 </Text>
-                {/* <Text>selectedTimeBlock: {displayDateString ? displayDateString : '--:--'}</Text> */}
+                <Text>selectedDate: {newDate.toString()}</Text>
+                <Text>displayBlock: {displayBlock?.date ? format(displayBlock?.date, 'eee dd MMM yyy') : '---'}</Text>
+                
 
                 <TextInput
                     style={styles.input}

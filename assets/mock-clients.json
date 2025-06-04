@@ -8,17 +8,19 @@
     "appointments":[
         {
             "id": "1",
-            "appointment_title": "appointment 6",
-            "date": "26-05-2025",
-            "start_minutes": "850",
-            "end_minutes": "950"
+            "appointment_title": "appointment 1\nWed, 4 Jun 14:00 - 15:00",
+            "date": "2025-06-04",
+            "start_minutes": 1749042000000,
+            "end_minutes": 1749045600000,
+            "color": "#F0F2BD"
         },
         {
             "id": "2",
-            "appointment_title": "appointment 7",
-            "date": "27-05-2025",
-            "start_minutes": "1250",
-            "end_minutes": "1450"
+            "appointment_title": "appointment 2\nWed, 4 June 2025 11:00 - 12:00",
+            "date": "2025-06-04",
+            "start_minutes": 1749031200000,
+            "end_minutes": 1749038400000,
+            "color": "#FFC1C3"
         }
     ]
     },
@@ -31,17 +33,19 @@
     "appointments":[
         {
             "id": "3",
-            "appointment_title": "appointment 8",
-            "date": "26-05-2025",
-            "start_minutes": "950",
-            "end_minutes": "1050"
+            "appointment_title": "appointment 3\nThurs, 5 June 2025 13:00 - 14:00",
+            "date": "2025-06-04",
+            "start_minutes": 1749124800000,
+            "end_minutes": 1749128400000,
+            "color": "#F0F2BD"
         },
         {
             "id": "4",
-            "appointment_title": "appointment 9",
+            "appointment_title": "appointment 4\nTues, 3 June 2025 19:00 - 20:00",
             "date": "27-05-2025",
-            "start_minutes": "1450",
-            "end_minutes": "1650"
+            "start_minutes": 1748973600000,
+            "end_minutes": 1748977200000,
+            "color": "#FFC1C3"
         }
     ]
   },
@@ -53,18 +57,20 @@
     "phone": "123-456-7890",
         "appointments":[
         {
-            "id": "3",
-            "appointment_title": "appointment 8",
+            "id": "5",
+            "appointment_title": "appointment 5\nThurs, 5 June 2025 20:00 - 21:00",
             "date": "26-05-2025",
-            "start_minutes": "950",
-            "end_minutes": "1050"
+            "start_minutes": 1749150000000,
+            "end_minutes": 1749153600000,
+            "color": "#F0F2BD"
         },
         {
-            "id": "4",
-            "appointment_title": "appointment 9",
+            "id": "6",
+            "appointment_title": "appointment 6\nThurs, 5 June 2025 10:00 - 13:00",
             "date": "27-05-2025",
-            "start_minutes": "1450",
-            "end_minutes": "1650"
+            "start_minutes": 1749114000000,
+            "end_minutes": 1749124800000,
+            "color": "#BDECF2"
         }
     ]
   },
@@ -76,18 +82,20 @@
     "phone": "987-654-3210",
         "appointments":[
         {
-            "id": "3",
-            "appointment_title": "appointment 8",
+            "id": "7",
+            "appointment_title": "appointment 7",
             "date": "26-05-2025",
-            "start_minutes": "950",
-            "end_minutes": "1050"
+            "start_minutes": 1749006000000,
+            "end_minutes": 1749009600000,
+            "color": "#BDECF2"
         },
         {
-            "id": "4",
-            "appointment_title": "appointment 9",
+            "id": "8",
+            "appointment_title": "appointment 8",
             "date": "27-05-2025",
-            "start_minutes": "1450",
-            "end_minutes": "1650"
+            "start_minutes": 1749128400000,
+            "end_minutes": 1749132000000,
+            "color": "#BDECF2"
         }
     ]
   },
@@ -99,18 +107,20 @@
     "phone": "123-456-7890",
         "appointments":[
         {
-            "id": "3",
-            "appointment_title": "appointment 8",
+            "id": "9",
+            "appointment_title": "appointment 9",
             "date": "26-05-2025",
-            "start_minutes": "950",
-            "end_minutes": "1050"
+            "start_minutes": 1749139200000,
+            "end_minutes": 1749142800000,
+            "color": "#FFC1C3"
         },
         {
-            "id": "4",
-            "appointment_title": "appointment 9",
+            "id": "10",
+            "appointment_title": "appointment 10",
             "date": "27-05-2025",
-            "start_minutes": "1450",
-            "end_minutes": "1650"
+            "start_minutes": 1749229200000,
+            "end_minutes": 1749232800000,
+            "color": "#BDECF2"
         }
     ]
   },
@@ -122,18 +132,20 @@
     "phone": "987-654-3210",
         "appointments":[
         {
-            "id": "3",
-            "appointment_title": "appointment 8",
+            "id": "11",
+            "appointment_title": "appointment 11",
             "date": "26-05-2025",
-            "start_minutes": "950",
-            "end_minutes": "1050"
+            "start_minutes": 1749268800000,
+            "end_minutes": 1749283200000,
+            "color": "#BDECF2"
         },
         {
-            "id": "4",
-            "appointment_title": "appointment 9",
+            "id": "12",
+            "appointment_title": "appointment 12",
             "date": "27-05-2025",
-            "start_minutes": "1450",
-            "end_minutes": "1650"
+            "start_minutes": 1749204000000,
+            "end_minutes": 1749207600000,
+            "color": "#FFC1C3"
         }
     ]
   },
@@ -145,18 +157,20 @@
     "phone": "123-456-7890",
         "appointments":[
         {
-            "id": "3",
-            "appointment_title": "appointment 8",
+            "id": "13",
+            "appointment_title": "appointment 13",
             "date": "26-05-2025",
-            "start_minutes": "950",
-            "end_minutes": "1050"
+            "start_minutes": 1749212100000,
+            "end_minutes": 1749215700000,
+            "color": "#FFC1C3"
         },
         {
-            "id": "4",
-            "appointment_title": "appointment 9",
+            "id": "14",
+            "appointment_title": "appointment 14",
             "date": "27-05-2025",
-            "start_minutes": "1450",
-            "end_minutes": "1650"
+            "start_minutes": 1749222900000,
+            "end_minutes": 1749225600000,
+            "color": "#BDECF2"
         }
     ]
   },
@@ -168,18 +182,20 @@
     "phone": "987-654-3210",
         "appointments":[
         {
-            "id": "3",
-            "appointment_title": "appointment 8",
+            "id": "15",
+            "appointment_title": "appointment 15",
             "date": "26-05-2025",
-            "start_minutes": "950",
-            "end_minutes": "1050"
+            "start_minutes": 1749236400000,
+            "end_minutes": 1749241800000,
+            "color": "#F0F2BD"
         },
         {
-            "id": "4",
-            "appointment_title": "appointment 9",
+            "id": "16",
+            "appointment_title": "appointment 16",
             "date": "27-05-2025",
-            "start_minutes": "1450",
-            "end_minutes": "1650"
+            "start_minutes": 1749243600000,
+            "end_minutes": 1749247200000,
+            "color": "#BDECF2"
         }
     ]
   }

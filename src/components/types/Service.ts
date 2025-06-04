@@ -1,3 +1,4 @@
+import { Dispatch, SetStateAction } from "react";
 import { SharedValue } from "react-native-reanimated";
 
 export type DurationType = 'hour' | 'day' | 'week' | 'month';
@@ -11,16 +12,9 @@ export interface Service {
 export type TimeBlock = {
     startMinutes: number | null;
     endMinutes: number | null;
-    date: Date;
+    date: number;
 };
 
-export type Appointment = {
-    id: string;
-    appointment_title: string;
-    date: string;
-    startMinutes: string;
-    endMinutes: string;
-};
 
 export type CalendarDayViewHandle = {
     swipeToDateImpl: (date: Date) => void;
@@ -29,19 +23,22 @@ export type CalendarDayViewHandle = {
 export interface UseSwipeGesturesProps {
     screenWidth: number;
     isSwiping: SharedValue<boolean>;
-    prevDate: number;
-    nextDate: number;
-    previewDate: SharedValue<number>;
-    currentTimestamp: SharedValue<number>;
+    selectedDateShared: SharedValue<number>;
+    previewDate: SharedValue<number | null>;
     verticalThreshold: number;
     velocityThreshold: number;
     translateY: SharedValue<number>;
     translateX: SharedValue<number>;
     swipeThreshold: number;
     isMonthVisible: boolean;
-    goToNextDay: () => void
-    goToPreviousDay: () => void
     collapseMonth: () => void;
+    setSelectedDate: Dispatch<SetStateAction<number>>
+    handleSwipeToDateFinish: (targetTimestamp: number) => void;
+    // centerViewIndex: SharedValue<number>
+    prevDateShared: SharedValue<number>;
+    centerDateShared: SharedValue<number>;
+    nextDateShared: SharedValue<number>;
+    // cycleOffset: SharedValue<number>;
 }
 
 export interface UseTimeBlockGesturesProps {
@@ -52,7 +49,6 @@ export interface UseTimeBlockGesturesProps {
     MIN_DURATION: number;
     MINUTES_IN_DAY: number;
     // UI positioning and scroll state
-    dayColumnY: number;
     scrollOffset: SharedValue<number>
 
     // Time block interaction state
@@ -67,8 +63,25 @@ export interface UseTimeBlockGesturesProps {
     // UI states
     isMonthVisible: boolean;
     isModalVisible:  SharedValue<boolean>;
-    currentDate: Date;
+    selectedDateShared: SharedValue<number>;
 
+    selectedTimestamp: SharedValue<number>;
     // Output
     setIsBlockRenderable: React.Dispatch<React.SetStateAction<boolean>>;
+}
+
+
+export interface Appointment {
+    PK: string;
+    SK: string;
+    appointmentId: string;
+    clientId: string;
+    appointment_title: string;
+    startTimestamp: number;
+    endTimestamp: number;
+    start_minutes: number;
+    end_minutes: number;
+    startTimeStr: string;
+    dateStr: string;
+    color: string;
 }

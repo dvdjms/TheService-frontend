@@ -1,9 +1,11 @@
 import { Redirect } from 'expo-router';
 import { useAuth } from '@/src/context/authContext';
 import { ActivityIndicator, View } from 'react-native';
+// import {configureReanimatedLogger} from 'react-native-reanimated';
 
 export default function Index() {
-  const { isAuthenticated, hasCheckedAuth } = useAuth();
+    const { isAuthenticated, hasCheckedAuth } = useAuth();
+    // configureReanimatedLogger({strict: false,});
 
     if (!hasCheckedAuth) {
         return (

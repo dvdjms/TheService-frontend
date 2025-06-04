@@ -1,0 +1,102 @@
+{
+  "user": {
+    "id": "user_1",
+    "firstName": "Dev",
+    "lastName": "User",
+    "email": "dev@example.com"
+  },
+  "clients": [
+    {
+      "id": "client_1",
+      "firstName": "Alice",
+      "lastName": "Smith",
+      "email": "alice@example.com",
+      "phone": "123-456-7890",
+      "appointments": [
+        {
+          "id": "appt_1",
+          "title": "Hair Styling",
+          "start": 1753814400000,
+          "end": 1753818000000,
+          "color": "#FFC1C3"
+        },
+        {
+          "id": "appt_2",
+          "title": "Follow-up Consultation",
+          "start": 1753900800000,
+          "end": 1753904400000,
+          "color": "#FFC1C3"
+        }
+      ]
+    },
+    {
+      "id": "client_2",
+      "firstName": "Bob",
+      "lastName": "Johnson",
+      "email": "bob@example.com",
+      "phone": "987-654-3210",
+      "appointments": [
+        {
+          "id": "appt_3",
+          "title": "Deep Tissue Massage",
+          "start": 1753908000000,
+          "end": 1753911600000,
+          "color": "#F0F2BD"
+        },
+        {
+          "id": "appt_4",
+          "title": "Sports Recovery",
+          "start": 1753994400000,
+          "end": 1753998000000,
+          "color": "#F0F2BD"
+        }
+      ]
+    },
+    {
+      "id": "client_3",
+      "firstName": "Charlie",
+      "lastName": "Lee",
+      "email": "charlie@example.com",
+      "phone": "555-123-4567",
+      "appointments": [
+        {
+          "id": "appt_5",
+          "title": "Personal Training",
+          "start": 1754080800000,
+          "end": 1754084400000,
+          "color": "#D0E7FF"
+        },
+        {
+          "id": "appt_6",
+          "title": "Mobility Assessment",
+          "start": 1754167200000,
+          "end": 1754170800000,
+          "color": "#D0E7FF"
+        }
+      ]
+    },
+    {
+      "id": "client_4",
+      "firstName": "Diana",
+      "lastName": "Nguyen",
+      "email": "diana@example.com",
+      "phone": "444-321-6789",
+      "appointments": [
+        {
+          "id": "appt_7",
+          "title": "Makeup Session",
+          "start": 1754253600000,
+          "end": 1754257200000,
+          "color": "#E5D2F0"
+        },
+        {
+          "id": "appt_8",
+          "title": "Skincare Review",
+          "start": 1754340000000,
+          "end": 1754343600000,
+          "color": "#E5D2F0"
+        }
+      ]
+    }
+  ]
+}

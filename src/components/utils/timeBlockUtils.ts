@@ -3,13 +3,15 @@ import { TimeBlock } from "../types/Service";
 
 
 
-export const getTimeBlockFromY = (y: number, hourHeight: number, date: Date) => {
+export const getTimeBlockFromY = (y: number, hourHeight: number, date: number) => {
     'worklet';
     const interval = 15;
-    const startMinutes = Math.floor((y / hourHeight) * 60 / interval) * interval;
+    const minutes = (y / hourHeight) * 60
+    const startMinutes = Math.floor(minutes / interval) * interval;
     const endMinutes = startMinutes + interval * 4;
     return { startMinutes, endMinutes, date };
 };
+
 
 // export const getYFromTimeBlock = (
 //     block: TimeBlock,
@@ -29,7 +31,7 @@ export const roundMinutesTo15 = (min: number) => {
 
 export const updateTimeBlockDate = (
     selectedTimeBlock: SharedValue<TimeBlock>,
-    newDate: Date
+    newDate: number
 ) => {
     'worklet';
     const block = selectedTimeBlock.value;
@@ -46,7 +48,7 @@ export const updateTimeBlockDate = (
 
 const timeBlockToSerialized = (block: TimeBlock) => ({
   ...block,
-  date: block.date.toISOString(),
+  date: block.date,
 });
 
 const serializedToTimeBlock = (data: any): TimeBlock => ({

@@ -5,35 +5,36 @@ import { format, isValid, startOfMonth } from 'date-fns';
 import MonthScroller from './MonthScroller';
 
 type CalendarMonthViewProps = {
-    currentDate: Date;
-    onSelectDate: (date: Date) => void;
+    selectedDate: number;
+    handleSelectedDate: (date: Date) => void;
 };
 
-export default function CalendarMonthView({ onSelectDate, currentDate }: CalendarMonthViewProps) {
-    const [selectedDate, setSelectedDate] = useState<Date | null>(null);
-    const [currentMonth, setCurrentMonth] = useState(startOfMonth(new Date(currentDate)));
+export default function CalendarMonthView({ selectedDate, handleSelectedDate }: CalendarMonthViewProps) {
+    const dateSelection = new Date(selectedDate)
+    const [selected_Date, setSelected_Date] = useState<Date | null>(null);
+    const [currentMonth, setCurrentMonth] = useState(startOfMonth(dateSelection));
 
 
     useEffect(() => {
-        setSelectedDate(currentDate);
-        setCurrentMonth(startOfMonth(currentDate));
-    }, [currentDate]);
+        setSelected_Date(dateSelection);
+        setCurrentMonth(startOfMonth(dateSelection));
+    }, [selectedDate]);
 
   
-    const currentDateStr = isValid(currentDate) ? format(currentDate, 'yyyy-MM-dd') : '';
-    const selectedStr = selectedDate ? format(selectedDate, 'yyyy-MM-dd') : null;
+    const currentDateStr = isValid(dateSelection) ? format(dateSelection, 'yyyy-MM-dd') : '';
+    const selectedStr = selected_Date ? format(selected_Date, 'yyyy-MM-dd') : null;
     const highlightedDate = selectedStr ?? currentDateStr;
 
 
     // Handler for day press in calendar
     const onDayPress: CalendarProps['onDayPress'] = (day) => {
-        const selectedDate = new Date(day.dateString);
-        onSelectDate(selectedDate)
-        setSelectedDate(selectedDate);
+        const selected_Date = new Date(day.dateString);
+        handleSelectedDate(selected_Date)
+        setSelected_Date(selected_Date);
     };
 
     const updateMonthPreservingDay = (newMonthDate: Date) => {
-        const day = selectedDate?.getDate();
+        const day = selected_Date?.getDate();
         const year = newMonthDate.getFullYear();
         const month = newMonthDate.getMonth();
 
@@ -41,8 +42,8 @@ export default function CalendarMonthView({ onSelectDate, currentDate }: Calenda
         const fallbackDate = startOfMonth(newMonthDate);
         const validDate = tentativeDate.getMonth() === month ? tentativeDate : fallbackDate;
 
-        setSelectedDate(validDate);
-        onSelectDate(validDate);
+        setSelected_Date(validDate);
+        handleSelectedDate(validDate);
         setCurrentMonth(startOfMonth(newMonthDate));
     };
     

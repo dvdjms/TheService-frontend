@@ -62,11 +62,36 @@ export const useAdjacentDates = (baseDate: Date) => {
     }, [baseDate.getDate()]);
 }
 
+const MS_IN_DAY = 24 * 60 * 60 * 1000;
+export const addDaysNumber = (timestamp: number, days: number) => {
+    'worklet';
+    return timestamp + days * MS_IN_DAY;
+}
 
-export const useAdjacentDatesNumber = (baseDate: Date) => {
+
+export const useAdjacentDatesDates = (baseDate: Date) => {
     return useMemo(() => {
         const prevDate = subDays(new Date(baseDate), 1).getTime();
         const nextDate = addDays(new Date(baseDate), 1).getTime();
         return { prevDate, nextDate };
     }, [baseDate]);
+}
+
+export const useAdjacentDatesNumber = (baseDate: number) => {
+    return useMemo(() => {
+        const prevDate = subDays(new Date(baseDate), 1).getTime();
+        const nextDate = addDays(new Date(baseDate), 1).getTime();
+        return { prevDate, nextDate };
+    }, [baseDate]);
+};
+
+
+// not really needed
+export const encodeAppointmentTime = (date: number) => {
+    const dateString = new Date(date)
+    const startTimestamp = dateString.getTime();
+    const startTimeStr = dateString.toISOString().substring(11, 16); // "09:00"
+    const startMinutes = dateString.getHours() * 60 + dateString.getMinutes(); // 540
+    
+    return { startTimestamp, startTimeStr, startMinutes };
 }

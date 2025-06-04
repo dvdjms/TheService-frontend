@@ -1,10 +1,14 @@
-import React, { useEffect, useRef, useState } from 'react';
-import { Text, View, StyleSheet} from 'react-native';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
+import { Text, View, StyleSheet, Dimensions } from 'react-native';
 import { GestureDetector } from 'react-native-gesture-handler';
-import Animated, { runOnJS, SharedValue, useAnimatedReaction, useAnimatedStyle, useSharedValue, AnimatedRef } from 'react-native-reanimated';
+import Animated, { runOnJS, SharedValue, useAnimatedReaction, useAnimatedStyle, useSharedValue, AnimatedRef, DerivedValue, useAnimatedScrollHandler, useAnimatedRef, useDerivedValue, useAnimatedProps } from 'react-native-reanimated';
 import { format } from 'date-fns';
 import { TimeBlock, Appointment } from '../types/Service';
 import { useTimeBlockGestures } from '@/src/components/hooks/useTimeBlockGestures';
+import { addDaysNumber } from '../utils/timeUtils';
+import AppointmentBlock from './AppointmentBlock';
+
+
 
 const MINUTES_PER_STEP = 15;
 const MINUTES_IN_HOUR = 60;
@@ -13,45 +17,41 @@ const PIXELS_PER_MINUTE = HOUR_HEIGHT / MINUTES_IN_HOUR;
 const MIN_DURATION = 15;
 const MINUTES_IN_DAY = 1440;
 
+const screenWidth = Dimensions.get('window').width;
 
 interface DayColumnProps {
-    currentDate: Date;
-    previewDate: Date;
+    selectedDate: number;
+    selectedDateShared: SharedValue<number>;
+    isCurrentDay?: boolean;
     centerListRef: AnimatedRef<Animated.FlatList<number>>;
     prevListRef: AnimatedRef<Animated.FlatList<number>>;
-    nextListRef: AnimatedRef<Animated.FlatList<number>>;
+    nextListRef: AnimatedRef<Animated.FlatList<number>>
     position: 'prev' | 'center' | 'next';
+    displayDateShared: DerivedValue<number>;
     scrollHandler?: any;
     onLeftRightScroll?: (e: any) => void;
     scrollOffset: SharedValue<number>
-    getItemLayout?: (data: any, index: number) => { length: number; offset: number; index: number };
-    isCurrentDay?: boolean;
+    // getItemLayout?: (data: any, index: number) => { length: number; offset: number; index: number };
     selectedTimeBlock: SharedValue<TimeBlock>;
     isMonthVisible: boolean;
-    isModalVisible:  SharedValue<boolean>;
-    // appointment: SharedValue<Appointment[]>
+    isModalVisible: SharedValue<boolean>;
+    isSwiping: SharedValue<boolean>;
+    previewDate: SharedValue<number | null>
+    appointments: Appointment[];
 }
 
 export const DayColumn: React.FC<DayColumnProps> = ({
-    currentDate,
-    previewDate,
-    centerListRef,
-    prevListRef,
-    nextListRef,
-    position,
-    scrollHandler,
-    isCurrentDay = false,
-    selectedTimeBlock,
-    isMonthVisible,
-    isModalVisible,
-    scrollOffset
+    selectedDateShared, scrollHandler, selectedTimeBlock, position, 
+    isMonthVisible, isModalVisible, scrollOffset, displayDateShared, appointments,
+    prevListRef, centerListRef, nextListRef, isCurrentDay = false, selectedDate,previewDate
 }) => {
     const appointmentTitle = "Appointment 1" // temporary marker
 
 
-    const ListHours = Array.from({ length: 24 }, (_, i) => i);
-    
-    const [dayColumnY, setDayColumnY] = useState(0);
+    const ListHours = useMemo(() => Array.from({ length: 24 }, (_, i) => i), []);
+   
+    const dayColumnY = useSharedValue(0)
+
     const [isBlockRenderable, setIsBlockRenderable] = useState(false);
     const containerRef = useRef<View>(null);
 
@@ -60,50 +60,24 @@ export const DayColumn: React.FC<DayColumnProps> = ({
     const topInitialStart = useSharedValue(0);
     const bottomInitialEnd = useSharedValue(0);
     const initialOffset = 8 * 60;
-
     const height = useSharedValue(0);
     const startHeight = useSharedValue(height.value);
 
-const {
-    tapTimeBlockGesture,
-    topResizeGesture,
-    bottomResizeGesture,
-    moveGesture,
-} = useTimeBlockGestures({
-        HOUR_HEIGHT,
-        MINUTES_PER_STEP,
-        PIXELS_PER_MINUTE,
-        MIN_DURATION,
-        MINUTES_IN_DAY,
-        dayColumnY,
-        scrollOffset,
-        selectedTimeBlock,
-        isMonthVisible,
-        currentDate,
-        isModalVisible,
-        topInitialStart,
-        bottomInitialEnd,
-        initialStart,
-        initialEnd,
-        height,
-        startHeight,
-        setIsBlockRenderable,
+    const selectedTimestamp = useSharedValue(selectedDateShared.value)
+
+    const { tapTimeBlockGesture, topResizeGesture, bottomResizeGesture, moveGesture 
+    } = useTimeBlockGestures({ HOUR_HEIGHT, MINUTES_PER_STEP, PIXELS_PER_MINUTE, selectedDateShared,
+        MIN_DURATION, MINUTES_IN_DAY, scrollOffset, selectedTimeBlock, 
+        isMonthVisible, selectedTimestamp, isModalVisible, topInitialStart, bottomInitialEnd, 
+        initialStart, initialEnd, height, startHeight, setIsBlockRenderable
     });
 
 
-    const baseDate = useSharedValue('2025-05-26');
-
-    const visibleOffsets = [-2, -1, 0, 1, 2];
-
-
-
-
-
-    useEffect(() => {
+     useEffect(() => {
         setTimeout(() => {
             if (containerRef.current) {
                 containerRef.current.measure((x, y, width, height, pageX, pageY) => {
-                    setDayColumnY(pageY);
+                    dayColumnY.value = pageY;
                 });
             }
             if (centerListRef.current) {
@@ -113,15 +87,7 @@ const {
     }, []);
 
 
-    const animatedStyle = useAnimatedStyle(() => {
-        const block = selectedTimeBlock.value;
-        return {
-            top: (block?.startMinutes ?? 0) * HOUR_HEIGHT / 60 - scrollOffset.value,
-            height: block.endMinutes && block.startMinutes? (block.endMinutes - block.startMinutes) * HOUR_HEIGHT / 60 : 0,
-        };
-    });
 
-    
     useAnimatedReaction(() => {
         const block = selectedTimeBlock.value
         return block !== null && block.startMinutes !== null && block.endMinutes !== null;
@@ -130,87 +96,205 @@ const {
     },[]);
 
 
+    const appointmentBlockStyle = useAnimatedStyle(() => {
+        const block = selectedTimeBlock.value;
+        return {
+            top: (block?.startMinutes ?? 0) * HOUR_HEIGHT / 60 - scrollOffset.value + dayColumnY.value,
+            height: block.endMinutes && block.startMinutes ? (block.endMinutes - block.startMinutes) * HOUR_HEIGHT / 60 : 0,
+        };
+    });
+
+
+    useAnimatedReaction(() => {
+        const block = selectedTimeBlock.value
+        return block !== null && block.startMinutes !== null && block.endMinutes !== null;
+    },(isRenderable) => {
+        runOnJS(setIsBlockRenderable)(isRenderable);
+    },[]);
+
+
+    const [displayDate, setDisplayDate] = useState(selectedDateShared.value);
+
+    useAnimatedReaction(
+        () =>  displayDateShared.value,
+        (result, previous) => {
+            if (result !== previous) {
+            runOnJS(setDisplayDate)(result);
+            }
+        }
+    );
+
+
+    const calculatePositionedAppointments = (appointments: any[], dateStartMs: number) => {
+        return appointments.map(app => {
+            const start = app.start_minutes;
+            const end = app.end_minutes;
+            const topOffset = Math.max(0, ((start - dateStartMs) / 60000 / 60) * HOUR_HEIGHT);
+            const blockHeight = ((end - start) / 60000 / 60) * HOUR_HEIGHT;
+            return {
+                ...app,
+                topOffset,
+                blockHeight,
+            };
+        });
+    };
+
+
+    const dateStartMs = new Date(displayDate).setHours(0, 0, 0, 0);
+
+    const positionedAppointments = useMemo(() =>
+        calculatePositionedAppointments(appointments, dateStartMs),
+    [appointments, dateStartMs]);
+
+    const appointmentsByHour = useMemo(() => {
+        const grouped = {} as Record<number, typeof positionedAppointments>;
+        for (const app of positionedAppointments) {
+            const startHour = new Date(app.start_minutes).getHours();
+            if (!grouped[startHour]) grouped[startHour] = [];
+            grouped[startHour].push(app);
+        }
+        return grouped;
+    }, [positionedAppointments]);
+
+
     return (
-            <View 
-                style={{ flex: 1 }} 
-                pointerEvents="auto"
-                ref={containerRef} 
-                >
-
-                <View style={ isMonthVisible ? styles.dayContainer2 : styles.dayContainer}>
-                    <Text style={ styles.dayName }>{format(previewDate, 'EEE' ).toUpperCase()}</Text>
-                    <Text style={ styles.dayNumber }>{format(previewDate, 'dd')}</Text>
+        <Animated.View 
+            style={{ flex: 1 }} 
+            pointerEvents="auto"
+            ref={containerRef} 
+            >
+            {/* date header */}
+            <View style={{flexDirection: "row", zIndex: 1}}>
+                <View style={ isMonthVisible ? styles.dayContainerDefault : styles.dayContainerVisible }>
+                    <Text style={ styles.dayNumber }>{format(new Date(displayDate), 'EEE')}</Text>
+                    <Text style={ styles.dayNumber }>{format(new Date(displayDate), 'dd')}</Text>
                 </View>
+                <View style={{ flex: 1, backgroundColor: 'white', justifyContent: 'center' }}>
+                    <Text style={{ width: 300, paddingLeft: 30, fontSize: 16 }}>selectedDate:       {format(new Date(selectedDate), 'EEE dd MMM yyy')}</Text>
+                    <Text style={{ width: 300, paddingLeft: 30, fontSize: 16 }}>selectedShared:   {format(new Date(selectedDateShared.value), 'EEE dd MMM yyy')}</Text>
 
-                <GestureDetector gesture={tapTimeBlockGesture}> 
-                    <Animated.FlatList
-                        ref={position === 'prev' ? prevListRef : position === 'center' ? centerListRef : nextListRef}
-                        data={ListHours}
-                        keyExtractor={item => `${isCurrentDay ? 'curr' : isCurrentDay}-${item}`}
-                        bounces={true}
-                        overScrollMode="always"
-                        onScroll={scrollHandler}
-                        scrollEventThrottle={16}
-                        showsVerticalScrollIndicator={false}
-                        style={{ flex: 1, backgroundColor: '#fff' }}
-
-                        renderItem={({ item: hour }) => {
-                            return (
-                                <Animated.View
-                                    style={{
-                                        height: HOUR_HEIGHT,
-                                        justifyContent: 'center',
-                                        paddingHorizontal: 10,
-                                        flex: 1,
-                                        flexDirection: "row"
-                                    }}
-                                >
-                                    <View style={ styles.timeContainer}>
-                                        <Text style={styles.time}>{`${hour}:00`}</Text>
-                                    </View>
-                                    <View style={ styles.hourBlockDivider} />
-
-                                    <View style={ styles.hourBlock}>
-                                        {/* <Text>{date}</Text> */}
-                                    </View>
-                                </Animated.View>
-                            );
-                        }}
-                    />
-                </GestureDetector>
-
-                {/* {isBlockRenderable && ( */}
-                    {isBlockRenderable && (
-                    <Animated.View
-                        pointerEvents="auto"
-                        style={[styles.selectedTimeBlock, animatedStyle]}
-                    >
-                        {/* Top edge drag zone */}
-                        <GestureDetector gesture={topResizeGesture}>
-                            <View style={styles.topResizeGesture }/>
-                        </GestureDetector>
-
-                        {/* Middle drag zone */}
-                        <GestureDetector gesture={moveGesture}>
-                            <View style={styles.moveGesture} >
-                                <Text style={ styles.appointmentTitle}>{appointmentTitle}</Text>
-                            </View>
-                        </GestureDetector>
-
-                        {/* Bottom edge drag zone */}
-                        <GestureDetector gesture={bottomResizeGesture}>
-                            <View style={styles.bottomResizeGesture }/>
-                        </GestureDetector>
-                    </Animated.View>
-                )}
+                    {/* <Text style={{ width: 300, paddingLeft: 30, fontSize: 16 }}>TimeBlockDate:   {format(new Date(selectedTimeBlock.value.date), 'EEE dd MMM yyy')}</Text> */}
+                </View>
             </View>
+
+            <GestureDetector gesture={tapTimeBlockGesture}> 
+                <View 
+                    style={{position: 'relative', flex: 1}}
+                    onLayout={(e) => {
+                        const {y} = e.nativeEvent.layout;
+                        dayColumnY.value = y
+                    }}
+                >
+                <Animated.FlatList
+                    ref={position === 'prev' ? prevListRef : position === 'center' ? centerListRef : nextListRef}
+                    keyExtractor={item => `${isCurrentDay ? 'curr' : isCurrentDay}-${item}`}
+                    data={ListHours}
+                    bounces={true}
+                    overScrollMode="always"
+                    onScroll={scrollHandler}
+                    scrollEventThrottle={16}
+                    showsVerticalScrollIndicator={false}
+                    style={{ 
+                        flex: 1, 
+                        backgroundColor: position === 'prev' 
+                        ? '#f0f8ff' : position === 'center'
+                        ? '#e6ffe6' : '#ffe6f0',
+                    }}
+
+                    
+                    // getItemLayout={(_, index) => ({
+                    //     length: HOUR_HEIGHT,
+                    //     offset: index * HOUR_HEIGHT,
+                    //     index,
+                    // })}
+
+                    renderItem={({ item: hour }) => {
+                        const blocks = appointmentsByHour[hour] || [];
+
+                        return (
+                            <View
+                                style={{
+                                    height: HOUR_HEIGHT,
+                                    justifyContent: 'center',
+                                    paddingHorizontal: 5,
+                                    flex: 1,
+                                    flexDirection: "row",
+                                    // width: screenWidth
+                                }}
+                            >
+                                <View >
+                                    <Text style={styles.time}>{`${hour}:00`}</Text>
+                                </View>
+                                <View style={ styles.hourBlockDivider} />
+                                    
+                                {/* replace with below when rendering appointments */}
+                                {/* <View style={ styles.hourBlock}> */}
+                                    {/* <Text>{date}</Text> */}
+                                {/* </View> */}
+
+                                <View style={styles.hourBlock}>
+                                {blocks.map(app => {
+                                    return (
+                                        <View
+                                            key={app.start_minutes}
+                                            style={{
+                                                position: 'absolute',
+                                                top: app.topOffset,
+                                                height: app.blockHeight,
+                                                backgroundColor: app.color,
+                                                borderRadius: 7,
+                                                padding: 7,
+                                                left: 3,
+                                                right: 2,
+                                                zIndex: 1,
+                                                borderWidth: 2,
+                                                borderColor: 'red'
+                                            }}
+                                            >
+                                            <Text>{app.appointment_title}</Text>
+                                        </View>
+                                    );
+                                    })}
+                                </View>
+                            </View>
+                        );
+                    }}
+                />
+                </View>
+            </GestureDetector>
+
+            {isBlockRenderable && (
+                <Animated.View
+                    pointerEvents="auto"
+                    style={[styles.selectedTimeBlock, appointmentBlockStyle]}
+                >
+                    {/* Top edge drag zone */}
+                    <GestureDetector gesture={topResizeGesture}>
+                        <View style={styles.topResizeGesture }/>
+                    </GestureDetector>
+
+                    {/* Middle drag zone */}
+                    <GestureDetector gesture={moveGesture}>
+                        <View style={styles.moveGesture} >
+                            <Text style={ styles.appointmentTitle}>{appointmentTitle}</Text>
+                        </View>
+                    </GestureDetector>
+
+                    {/* Bottom edge drag zone */}
+                    <GestureDetector gesture={bottomResizeGesture}>
+                        <View style={styles.bottomResizeGesture }/>
+                    </GestureDetector>
+                </Animated.View>
+            )}
+        </Animated.View>
     );
 };
 
 
 const styles = StyleSheet.create({
-    timeContainer: {
-        // flex: 1,
+    constainer: {
+        flex: 1,
+        // borderTopWidth: 1,
     },
     time: {
         textAlign: 'right', 
@@ -220,13 +304,13 @@ const styles = StyleSheet.create({
     },
     hourBlock: {
         flex: 5,  
-        borderBottomWidth: .5,
-        borderTopWidth: 1,
+        // borderBottomWidth: .5,
+        borderTopWidth: .5,
         borderColor: '#eee',
-        alignItems: 'stretch' 
+        alignItems: 'stretch',
     },
     hourBlockDivider: {
-        marginLeft: 5,
+        marginLeft: 10,
         width: 5, 
         borderRightWidth: 1,
         borderTopWidth: .5,
@@ -268,11 +352,7 @@ const styles = StyleSheet.create({
         backgroundColor: 'rgba(255, 0, 0, 0.2)', 
         zIndex: 10,
     },
-
-    container: {
-        flex: 1,
-    },
-    dayContainer: {
+    dayContainerVisible: {
         backgroundColor: "white",
         borderRadius: 2,
         // iOS shadow
@@ -285,7 +365,7 @@ const styles = StyleSheet.create({
         // Android shadow (elevation = spread + blur approximation)
         elevation: 4
     },
-    dayContainer2:{
+    dayContainerDefault:{
         backgroundColor: 'white',  
         borderBottomColor: '#eee', 
         borderBottomWidth: 1

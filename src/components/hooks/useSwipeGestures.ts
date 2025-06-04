@@ -1,13 +1,15 @@
 import { Gesture } from 'react-native-gesture-handler';
-import { Easing, runOnJS, withTiming } from 'react-native-reanimated';
+import { Easing, runOnJS, useSharedValue, withSpring, withTiming } from 'react-native-reanimated';
 import { UseSwipeGesturesProps } from '@/src/components/types/Service';
+import { addDaysNumber } from '../utils/timeUtils';
 
 
 export function useSwipeGestures(Props: UseSwipeGesturesProps) {const {  
-    isSwiping, isMonthVisible, screenWidth, prevDate, nextDate, previewDate,
-    currentTimestamp, verticalThreshold, velocityThreshold, swipeThreshold,
-    translateX, translateY, collapseMonth, goToNextDay, goToPreviousDay
+    isSwiping, isMonthVisible, screenWidth, previewDate, setSelectedDate,
+    selectedDateShared, verticalThreshold, velocityThreshold, swipeThreshold,
+    translateX, translateY, collapseMonth, handleSwipeToDateFinish,
     } = Props;
+
 
     const panGesture = Gesture.Pan()
         .onBegin(() => {
@@ -18,65 +20,70 @@ export function useSwipeGestures(Props: UseSwipeGesturesProps) {const {
                 translateY.value = e.translationY;
                 translateX.value = 0;
             } else {
-                 translateX.value = e.translationX;
+                translateX.value = e.translationX;
             }
 
-            const previewThreshold = screenWidth * 0.01;
+            const previewThreshold = screenWidth * 0.05;
 
             if (Math.abs(e.translationX) > previewThreshold) {
-                const newPreview = e.translationX > 0 ? prevDate : nextDate;
-                previewDate.value = newPreview;
+                const direction = e.translationX > 0 ? -1 : 1;
+                const potentialDate = addDaysNumber(selectedDateShared.value, direction);
+                if (previewDate.value !== potentialDate) {
+                    previewDate.value = potentialDate;
+                }
             } else {
-                previewDate.value = currentTimestamp.value;
+                 previewDate.value = null;
             }
-
         })
         .onEnd((e) => {
             // Vertical swipe up
-            if (isMonthVisible && e.translationY < -verticalThreshold || e.velocityY < -velocityThreshold) {
+            if (isMonthVisible && e.translationY < -verticalThreshold || e.velocityY < -velocityThreshold) {                
                 runOnJS(collapseMonth)();
+                isSwiping.value = false;
                 return;
             } 
+  
             // Swipe right (go to previous day)
-            else if (e.translationX > swipeThreshold || e.velocityX > velocityThreshold) {
-                // runOnJS(updateTimeBlockDate)(selectedTimeBlock, new Date(prevDate));
-                runOnJS(goToPreviousDay)();
+            if (e.translationX > swipeThreshold || e.velocityX > velocityThreshold) {
                 translateX.value = withTiming(
                     screenWidth,
-                    { duration: 300, easing: Easing.bezier(0.25, 0.1, 0.25, 1) },
+                    { duration: 250, easing: Easing.out(Easing.linear) },
                     (finished) => {
                         'worklet';
                         if (finished) {
-                            translateX.value = 0;
-                            isSwiping.value = false;
+                            // selectedDateShared.value = addDaysNumber(selectedDateShared.value, -1);
+                            runOnJS(handleSwipeToDateFinish)(-1);
                         }
                     }
                 );
             } 
             // Swipe left (go to next day)
-            else if (e.translationX < -swipeThreshold || e.velocityX < -velocityThreshold) {
-                // updateTimeBlockDate(selectedTimeBlock, nextDate);
-                // runOnJS(updateTimeBlockDate)(selectedTimeBlock, new Date(nextDate))
-                runOnJS(goToNextDay)();
+            else if (e.translationX < -swipeThreshold || e.velocityX < -velocityThreshold) {         
                 translateX.value = withTiming(
                     -screenWidth,
-                    { duration: 300, easing: Easing.bezier(0.25, 0.1, 0.25, 1) },
+                    { duration: 250, easing: Easing.out(Easing.linear) },
                     (finished) => {
                         'worklet';
                         if (finished) {
-                            translateX.value = 0;
-                            isSwiping.value = false;
+                            // selectedDateShared.value = addDaysNumber(selectedDateShared.value, 1);
+                            runOnJS(handleSwipeToDateFinish)(1);
                         }
                     }
                 );
             }    
             else {
-                translateX.value = withTiming(0, { duration: 200 });
-                translateY.value = withTiming(0, { duration: 200 });
-                isSwiping.value = false;
+                // cancel swipe
+                translateX.value = withTiming(
+                    0,
+                    { duration: 300 },
+                    () => {
+                        isSwiping.value = false;
+                    }
+                );
             }
         }
     );
+
 
     // closes Month on tap
     const tapGesture = Gesture.Tap()
