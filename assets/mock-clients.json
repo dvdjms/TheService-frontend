@@ -83,10 +83,10 @@
         "appointments":[
         {
             "id": "7",
-            "appointment_title": "appointment 7",
+            "appointment_title": "appointment 7\nThurs, 5 June 2025 16:30 - 17:30",
             "date": "26-05-2025",
-            "start_minutes": 1749006000000,
-            "end_minutes": 1749009600000,
+            "start_minutes": 1749141000000,
+            "end_minutes": 1749144600000,
             "color": "#BDECF2"
         },
         {

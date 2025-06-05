@@ -1,5 +1,5 @@
 import { Gesture } from 'react-native-gesture-handler';
-import { Easing, runOnJS, useSharedValue, withSpring, withTiming } from 'react-native-reanimated';
+import { Easing, runOnJS, withTiming } from 'react-native-reanimated';
 import { UseSwipeGesturesProps } from '@/src/components/types/Service';
 import { addDaysNumber } from '../utils/timeUtils';
 
@@ -7,7 +7,7 @@ import { addDaysNumber } from '../utils/timeUtils';
 export function useSwipeGestures(Props: UseSwipeGesturesProps) {const {  
     isSwiping, isMonthVisible, screenWidth, previewDate, setSelectedDate,
     selectedDateShared, verticalThreshold, velocityThreshold, swipeThreshold,
-    translateX, translateY, collapseMonth, handleSwipeToDateFinish,
+    translateX, translateY, collapseMonth,
     } = Props;
 
 
@@ -48,12 +48,14 @@ export function useSwipeGestures(Props: UseSwipeGesturesProps) {const {
                 translateX.value = withTiming(
                     screenWidth,
                     { duration: 250, easing: Easing.out(Easing.linear) },
-                    (finished) => {
+                    () => {
                         'worklet';
-                        if (finished) {
-                            // selectedDateShared.value = addDaysNumber(selectedDateShared.value, -1);
-                            runOnJS(handleSwipeToDateFinish)(-1);
-                        }
+                        const newDate = addDaysNumber(selectedDateShared.value, -1);
+                        selectedDateShared.value = newDate;
+                        runOnJS(setSelectedDate)(newDate);
+                        previewDate.value = null; 
+                        translateX.value = 0;
+                        isSwiping.value = false;
                     }
                 );
             } 
@@ -62,12 +64,14 @@ export function useSwipeGestures(Props: UseSwipeGesturesProps) {const {
                 translateX.value = withTiming(
                     -screenWidth,
                     { duration: 250, easing: Easing.out(Easing.linear) },
-                    (finished) => {
+                    () => {
                         'worklet';
-                        if (finished) {
-                            // selectedDateShared.value = addDaysNumber(selectedDateShared.value, 1);
-                            runOnJS(handleSwipeToDateFinish)(1);
-                        }
+                        const newDate = addDaysNumber(selectedDateShared.value, 1);
+                        selectedDateShared.value = newDate;
+                        runOnJS(setSelectedDate)(newDate);
+                        previewDate.value = null; 
+                        translateX.value = 0;
+                        isSwiping.value = false;
                     }
                 );
             }    

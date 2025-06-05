@@ -33,7 +33,7 @@ export interface UseSwipeGesturesProps {
     isMonthVisible: boolean;
     collapseMonth: () => void;
     setSelectedDate: Dispatch<SetStateAction<number>>
-    handleSwipeToDateFinish: (targetTimestamp: number) => void;
+    // updateReactSelectionDate: (targetTimestamp: number) => void;
     // centerViewIndex: SharedValue<number>
     prevDateShared: SharedValue<number>;
     centerDateShared: SharedValue<number>;

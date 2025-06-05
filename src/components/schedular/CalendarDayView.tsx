@@ -1,18 +1,14 @@
-import React, { Dispatch, RefObject, SetStateAction, forwardRef, useCallback, 
-    useEffect, useImperativeHandle, useMemo, useRef, useState  } from 'react';
+import React, { Dispatch, SetStateAction, forwardRef, useImperativeHandle, useMemo  } from 'react';
 import { GestureDetector, Gesture } from 'react-native-gesture-handler';
 import Animated, { useSharedValue, useAnimatedStyle, withTiming, runOnJS, Easing, 
     SharedValue, useAnimatedRef, useAnimatedScrollHandler, scrollTo, useDerivedValue,
-    useAnimatedReaction, DerivedValue,
-    runOnUI
 } from 'react-native-reanimated';
-import { View, StyleSheet, Dimensions, FlatList } from 'react-native';
+import { View, StyleSheet, Dimensions } from 'react-native';
 import { DayColumn } from './DayColumn';
-import { addDaysNumber, useAdjacentDatesNumber } from '../utils/timeUtils';
+import { addDaysNumber } from '../utils/timeUtils';
 import { Appointment, CalendarDayViewHandle, TimeBlock } from '@/src/components/types/Service';
 import { useSwipeGestures } from '../hooks/useSwipeGestures';
 import dummyAppointments from "@/assets/mock-clients.json";
-import { format, isSameDay } from 'date-fns';
 
 
 const screenWidth = Dimensions.get('window').width;
@@ -86,28 +82,15 @@ const CalendarDayView = forwardRef<CalendarDayViewHandle, CalendarDayViewProps>(
             (finished) => {
                 'worklet';
                 if (finished) {
-                    runOnJS(handleSwipeToDateFinish)(target);
+                    selectedDateShared.value = targetDate;
+                    runOnJS(setSelectedDate)(targetDate);
+                    previewDate.value = null;
                     translateX.value = 0;
                     isSwiping.value = false;
                 }
             }
         );
     };
-
-
-    const handleSwipeToDateFinish = (direction: number) => {
-        const newDate = addDaysNumber(selectedDateShared.value, direction);
-        setSelectedDate(newDate);
-
-        previewDate.value = null; 
-        translateX.value = 0;
-        isSwiping.value = false;
-        // for testing - this does not cause the flicker
-       // setTimeout(() => {
-            // setSelectedDate(sharedDate)
-     
-       // },4000);
-    }
 
 
     const prevDateShared = useDerivedValue(() => {
@@ -147,7 +130,7 @@ const CalendarDayView = forwardRef<CalendarDayViewHandle, CalendarDayViewProps>(
  
     const {panGesture, tapGesture } = useSwipeGestures({ selectedDateShared, isSwiping, isMonthVisible,
         screenWidth, previewDate, verticalThreshold, velocityThreshold, swipeThreshold, translateX, 
-        translateY, collapseMonth, setSelectedDate, handleSwipeToDateFinish,
+        translateY, collapseMonth, setSelectedDate,
     prevDateShared, centerDateShared, nextDateShared
     });
 
