@@ -83,10 +83,10 @@
         "appointments":[
         {
             "id": "7",
-            "appointment_title": "appointment 7\nThurs, 5 June 2025 16:30 - 17:30",
+            "appointment_title": "appointment 7\nThurs, 5 June 2025 18:00 - 19:00",
             "date": "26-05-2025",
-            "start_minutes": 1749141000000,
-            "end_minutes": 1749144600000,
+            "start_minutes": 1749142800000,
+            "end_minutes": 1749146400000,
             "color": "#BDECF2"
         },
         {
@@ -116,10 +116,10 @@
         },
         {
             "id": "10",
-            "appointment_title": "appointment 10",
+            "appointment_title": "appointment 10\nFriday, 6 June 2025 18:45 - 19:45",
             "date": "27-05-2025",
-            "start_minutes": 1749229200000,
-            "end_minutes": 1749232800000,
+            "start_minutes": 1749231900000,
+            "end_minutes": 1749235500000,
             "color": "#BDECF2"
         }
     ]
@@ -141,7 +141,7 @@
         },
         {
             "id": "12",
-            "appointment_title": "appointment 12",
+            "appointment_title": "appointment 12\nFri, June 6 2025 11:00 - 12:00",
             "date": "27-05-2025",
             "start_minutes": 1749204000000,
             "end_minutes": 1749207600000,
@@ -193,8 +193,8 @@
             "id": "16",
             "appointment_title": "appointment 16",
             "date": "27-05-2025",
-            "start_minutes": 1749243600000,
-            "end_minutes": 1749247200000,
+            "start_minutes": 1749226600000,
+            "end_minutes": 1749230200000,
             "color": "#BDECF2"
         }
     ]

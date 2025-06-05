@@ -24,9 +24,7 @@ export default function SchedularScreen( ) {
         endMinutes: null,
         date: selectedDate,
     })
- 
     const selectedDateShared = useSharedValue(selectedDate);
-    // const previewDate = useDerivedValue(() => selectedDateShared.value); 
     const previewDate = useSharedValue<number | null>(null);
 
 

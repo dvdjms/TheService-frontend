@@ -1,7 +1,8 @@
-import React, { Dispatch, SetStateAction, forwardRef, useImperativeHandle, useMemo  } from 'react';
+import React, { Dispatch, SetStateAction, forwardRef, useEffect, useImperativeHandle, useMemo  } from 'react';
 import { GestureDetector, Gesture } from 'react-native-gesture-handler';
 import Animated, { useSharedValue, useAnimatedStyle, withTiming, runOnJS, Easing, 
     SharedValue, useAnimatedRef, useAnimatedScrollHandler, scrollTo, useDerivedValue,
+    runOnUI,
 } from 'react-native-reanimated';
 import { View, StyleSheet, Dimensions } from 'react-native';
 import { DayColumn } from './DayColumn';
@@ -28,9 +29,9 @@ const CalendarDayView = forwardRef<CalendarDayViewHandle, CalendarDayViewProps>(
     selectedDate, selectedDateShared, isMonthVisible, isModalVisible, collapseMonth, 
     selectedTimeBlock, setSelectedDate, previewDate
 }, ref)  => {
-    const centerListRef = useAnimatedRef<Animated.FlatList<any>>();
-    const prevListRef = useAnimatedRef<Animated.FlatList<any>>();
-    const nextListRef = useAnimatedRef<Animated.FlatList<any>>();
+    const centerListRef = useAnimatedRef<Animated.ScrollView>();
+    const prevListRef = useAnimatedRef<Animated.ScrollView>();
+    const nextListRef = useAnimatedRef<Animated.ScrollView>();
     
     const scrollOffset = useSharedValue(0);
     const isSwiping = useSharedValue(false);
@@ -41,6 +42,8 @@ const CalendarDayView = forwardRef<CalendarDayViewHandle, CalendarDayViewProps>(
     const swipeThreshold = screenWidth * 0.25;
     const verticalThreshold = 60;
     const velocityThreshold = 500;
+    const isContentReadyForSnap = useSharedValue(false); // Added for handshake
+
 
     //Exposes swipeToDate function to parent
     useImperativeHandle(ref, () => ({
@@ -131,7 +134,7 @@ const CalendarDayView = forwardRef<CalendarDayViewHandle, CalendarDayViewProps>(
     const {panGesture, tapGesture } = useSwipeGestures({ selectedDateShared, isSwiping, isMonthVisible,
         screenWidth, previewDate, verticalThreshold, velocityThreshold, swipeThreshold, translateX, 
         translateY, collapseMonth, setSelectedDate,
-    prevDateShared, centerDateShared, nextDateShared
+    prevDateShared, centerDateShared, nextDateShared, isContentReadyForSnap
     });
 
     const sharedProps = {
@@ -172,22 +175,33 @@ const CalendarDayView = forwardRef<CalendarDayViewHandle, CalendarDayViewProps>(
         return groupAppointmentsByDay(flatAppointments);
     }, [dummyAppointments]);
 
-    // This is the correct way:
-    const appointmentsForPrev = useMemo(() => {
-        const dayKey = normalizeToDayTimestamp(prevDateShared.value);
-        return groupedAppointments[dayKey] || [];
-    }, [groupedAppointments, prevDateShared.value]);
+    // // This is the correct way:
+    // const appointmentsForPrev = useMemo(() => {
+    //     const dayKey = normalizeToDayTimestamp(prevDateShared.value);
+    //     return groupedAppointments[dayKey] || [];
+    // }, [groupedAppointments, prevDateShared.value]);
 
-    const appointmentsForCenter = useMemo(() => {
-        const dayKey = normalizeToDayTimestamp(centerDateShared.value);
-        return groupedAppointments[dayKey] || [];
-    }, [groupedAppointments, centerDateShared.value]);
+    // const appointmentsForCenter = useMemo(() => {
+    //     const dayKey = normalizeToDayTimestamp(centerDateShared.value);
+    //     return groupedAppointments[dayKey] || [];
+    // }, [groupedAppointments, centerDateShared.value]);
 
-    const appointmentsForNext = useMemo(() => {
-        const dayKey = normalizeToDayTimestamp(nextDateShared.value);
-        return groupedAppointments[dayKey] || [];
-    }, [groupedAppointments, nextDateShared.value]);
-
+    // const appointmentsForNext = useMemo(() => {
+    //     const dayKey = normalizeToDayTimestamp(nextDateShared.value);
+    //     return groupedAppointments[dayKey] || [];
+    // }, [groupedAppointments, nextDateShared.value]);
+    useEffect(() => {
+        // This effect runs after React has committed the selectedDate change
+        // and DayColumns have had a chance to re-render with new appointments.
+        runOnUI(() => {
+            'worklet';
+            // We only signal readiness if it was previously false.
+            // The reaction on the UI thread will reset it to false after snapping.
+            if (isContentReadyForSnap.value === false) {
+                isContentReadyForSnap.value = true;
+            }
+        })();
+    }, [selectedDate, isContentReadyForSnap]); 
 
 
     return (
@@ -200,7 +214,7 @@ const CalendarDayView = forwardRef<CalendarDayViewHandle, CalendarDayViewProps>(
                     <DayColumn 
                         // displayDate={prevDate}
                         displayDateShared={prevDateShared}
-                        appointments={appointmentsForPrev}
+                        allGroupedAppointments={groupedAppointments}
                         position={'prev'}
                         {...sharedProps} />
                 </Animated.View>
@@ -208,7 +222,7 @@ const CalendarDayView = forwardRef<CalendarDayViewHandle, CalendarDayViewProps>(
                     <DayColumn 
                         // displayDate={centerDate} 
                         displayDateShared={centerDateShared}
-                        appointments={appointmentsForCenter}
+                        allGroupedAppointments={groupedAppointments}
                         position={'center'}
                         {...sharedProps} />
                 </Animated.View>
@@ -216,7 +230,7 @@ const CalendarDayView = forwardRef<CalendarDayViewHandle, CalendarDayViewProps>(
                     <DayColumn 
                         // displayDate={nextDate}
                         displayDateShared={nextDateShared}
-                        appointments={appointmentsForNext}
+                        allGroupedAppointments={groupedAppointments}
                         position={'next'} 
                         {...sharedProps} />
                 </Animated.View>

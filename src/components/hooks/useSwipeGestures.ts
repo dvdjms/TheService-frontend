@@ -1,5 +1,5 @@
 import { Gesture } from 'react-native-gesture-handler';
-import { Easing, runOnJS, withTiming } from 'react-native-reanimated';
+import { Easing, runOnJS, useAnimatedReaction, withTiming } from 'react-native-reanimated';
 import { UseSwipeGesturesProps } from '@/src/components/types/Service';
 import { addDaysNumber } from '../utils/timeUtils';
 
@@ -7,10 +7,22 @@ import { addDaysNumber } from '../utils/timeUtils';
 export function useSwipeGestures(Props: UseSwipeGesturesProps) {const {  
     isSwiping, isMonthVisible, screenWidth, previewDate, setSelectedDate,
     selectedDateShared, verticalThreshold, velocityThreshold, swipeThreshold,
-    translateX, translateY, collapseMonth,
+    translateX, translateY, collapseMonth, isContentReadyForSnap
     } = Props;
 
 
+     useAnimatedReaction(
+        () => isContentReadyForSnap.value,
+        (ready, wasReady) => {
+            if (ready && (wasReady === false || wasReady === null)) {
+                'worklet';
+                translateX.value = 0;
+                isContentReadyForSnap.value = false; // Reset for the next swipe action
+            }
+        },
+        [isContentReadyForSnap, translateX] // Dependencies for the reaction
+    );
+    
     const panGesture = Gesture.Pan()
         .onBegin(() => {
             isSwiping.value = true;
@@ -48,15 +60,16 @@ export function useSwipeGestures(Props: UseSwipeGesturesProps) {const {
                 translateX.value = withTiming(
                     screenWidth,
                     { duration: 250, easing: Easing.out(Easing.linear) },
-                    () => {
+                    (finished) => {
                         'worklet';
+                        if(finished) {
                         const newDate = addDaysNumber(selectedDateShared.value, -1);
                         selectedDateShared.value = newDate;
                         runOnJS(setSelectedDate)(newDate);
                         previewDate.value = null; 
-                        translateX.value = 0;
+                        // translateX.value = 0;
                         isSwiping.value = false;
-                    }
+                    }}
                 );
             } 
             // Swipe left (go to next day)
@@ -70,7 +83,8 @@ export function useSwipeGestures(Props: UseSwipeGesturesProps) {const {
                         selectedDateShared.value = newDate;
                         runOnJS(setSelectedDate)(newDate);
                         previewDate.value = null; 
-                        translateX.value = 0;
+                        // translateX.value = 0;
+
                         isSwiping.value = false;
                     }
                 );

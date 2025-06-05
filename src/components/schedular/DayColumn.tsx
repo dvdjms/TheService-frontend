@@ -1,13 +1,13 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
-import { Text, View, StyleSheet, Dimensions } from 'react-native';
+import { Text, View, StyleSheet, Dimensions, TextInput,  } from 'react-native';
 import { GestureDetector } from 'react-native-gesture-handler';
-import Animated, { runOnJS, SharedValue, useAnimatedReaction, useAnimatedStyle, useSharedValue, AnimatedRef, DerivedValue, useAnimatedScrollHandler, useAnimatedRef, useDerivedValue, useAnimatedProps } from 'react-native-reanimated';
+import Animated, { runOnJS, SharedValue, useAnimatedReaction, useAnimatedStyle, useSharedValue, 
+    AnimatedRef, DerivedValue, useAnimatedProps } from 'react-native-reanimated';
 import { format } from 'date-fns';
 import { TimeBlock, Appointment } from '../types/Service';
 import { useTimeBlockGestures } from '@/src/components/hooks/useTimeBlockGestures';
 import { addDaysNumber } from '../utils/timeUtils';
 import AppointmentBlock from './AppointmentBlock';
-
 
 
 const MINUTES_PER_STEP = 15;
@@ -19,13 +19,15 @@ const MINUTES_IN_DAY = 1440;
 
 const screenWidth = Dimensions.get('window').width;
 
+// const AnimatedTextInput = createAnimatedComponent(TextInput);
+
 interface DayColumnProps {
     selectedDate: number;
     selectedDateShared: SharedValue<number>;
     isCurrentDay?: boolean;
-    centerListRef: AnimatedRef<Animated.FlatList<number>>;
-    prevListRef: AnimatedRef<Animated.FlatList<number>>;
-    nextListRef: AnimatedRef<Animated.FlatList<number>>
+    centerListRef: AnimatedRef<Animated.ScrollView>;
+    prevListRef: AnimatedRef<Animated.ScrollView>;
+    nextListRef: AnimatedRef<Animated.ScrollView>
     position: 'prev' | 'center' | 'next';
     displayDateShared: DerivedValue<number>;
     scrollHandler?: any;
@@ -37,16 +39,36 @@ interface DayColumnProps {
     isModalVisible: SharedValue<boolean>;
     isSwiping: SharedValue<boolean>;
     previewDate: SharedValue<number | null>
-    appointments: Appointment[];
+    allGroupedAppointments: Record<number, Appointment[]>;
 }
+
 
 export const DayColumn: React.FC<DayColumnProps> = ({
     selectedDateShared, scrollHandler, selectedTimeBlock, position, 
-    isMonthVisible, isModalVisible, scrollOffset, displayDateShared, appointments,
+    isMonthVisible, isModalVisible, scrollOffset, displayDateShared, allGroupedAppointments,
     prevListRef, centerListRef, nextListRef, isCurrentDay = false, selectedDate,previewDate
 }) => {
     const appointmentTitle = "Appointment 1" // temporary marker
 
+        // Date formatting logic for standard Text components
+    const currentTimestamp = displayDateShared.value; 
+    let dayNameString = 'ERR';
+    let dayNumberString = 'ERR';
+
+    if (currentTimestamp !== null && currentTimestamp !== undefined && !isNaN(currentTimestamp)) {
+        try {
+            const dateObj = new Date(currentTimestamp);
+            dayNameString = format(dateObj, 'EEE');
+            dayNumberString = format(dateObj, 'dd');
+        } catch (e) {
+            console.error("Error formatting date in DayColumn:", e);
+            // dayNameString and dayNumberString remain 'ERR'
+        }
+    } else {
+        // Handle null, undefined, or NaN timestamps if necessary, e.g., display placeholder
+        dayNameString = currentTimestamp === null ? 'NUL' : currentTimestamp === undefined ? 'UND' : 'NaN';
+        dayNumberString = dayNameString;
+    }
 
     const ListHours = useMemo(() => Array.from({ length: 24 }, (_, i) => i), []);
    
@@ -65,11 +87,29 @@ export const DayColumn: React.FC<DayColumnProps> = ({
 
     const selectedTimestamp = useSharedValue(selectedDateShared.value)
 
+
     const { tapTimeBlockGesture, topResizeGesture, bottomResizeGesture, moveGesture 
     } = useTimeBlockGestures({ HOUR_HEIGHT, MINUTES_PER_STEP, PIXELS_PER_MINUTE, selectedDateShared,
         MIN_DURATION, MINUTES_IN_DAY, scrollOffset, selectedTimeBlock, 
         isMonthVisible, selectedTimestamp, isModalVisible, topInitialStart, bottomInitialEnd, 
         initialStart, initialEnd, height, startHeight, setIsBlockRenderable
+    });
+
+    const AnimatedTextInput = Animated.createAnimatedComponent(TextInput);
+
+
+    const dayNameProps = useAnimatedProps(() => {
+        'worklet';
+        const date = new Date(displayDateShared.value);
+        const dayNames = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+        return { value: dayNames[date.getDay()] };
+    });
+
+    const dayNumberProps = useAnimatedProps(() => {
+        'worklet';
+        const date = new Date(displayDateShared.value);
+        const day = date.getDate();
+        return { value: day + '' };
     });
 
 
@@ -81,7 +121,7 @@ export const DayColumn: React.FC<DayColumnProps> = ({
                 });
             }
             if (centerListRef.current) {
-                centerListRef.current.scrollToOffset({ offset: initialOffset, animated: false });
+                centerListRef.current.scrollTo({ y: initialOffset, animated: false });
             }
         }, 0);
     }, []);
@@ -113,16 +153,16 @@ export const DayColumn: React.FC<DayColumnProps> = ({
     },[]);
 
 
-    const [displayDate, setDisplayDate] = useState(selectedDateShared.value);
+    // const [displayDate, setDisplayDate] = useState(selectedDateShared.value);
 
-    useAnimatedReaction(
-        () =>  displayDateShared.value,
-        (result, previous) => {
-            if (result !== previous) {
-            runOnJS(setDisplayDate)(result);
-            }
-        }
-    );
+    // useAnimatedReaction(
+    //     () =>  displayDateShared.value,
+    //     (result, previous) => {
+    //         if (result !== previous) {
+    //         runOnJS(setDisplayDate)(result);
+    //         }
+    //     }
+    // );
 
 
     const calculatePositionedAppointments = (appointments: any[], dateStartMs: number) => {
@@ -140,21 +180,21 @@ export const DayColumn: React.FC<DayColumnProps> = ({
     };
 
 
-    const dateStartMs = new Date(displayDate).setHours(0, 0, 0, 0);
+    // const dateStartMs = new Date(displayDate).setHours(0, 0, 0, 0);
+    const dateStartMs = useMemo(() => {
+        const d = new Date(displayDateShared.value);
+        d.setHours(0, 0, 0, 0);
+        return d.getTime();
+    }, [displayDateShared.value]);
+
+    const currentAppointments = useMemo(() => {
+        return allGroupedAppointments[dateStartMs] || [];
+    }, [allGroupedAppointments, dateStartMs])
 
     const positionedAppointments = useMemo(() =>
-        calculatePositionedAppointments(appointments, dateStartMs),
-    [appointments, dateStartMs]);
+        calculatePositionedAppointments(currentAppointments, dateStartMs),
+    [currentAppointments, dateStartMs]);
 
-    const appointmentsByHour = useMemo(() => {
-        const grouped = {} as Record<number, typeof positionedAppointments>;
-        for (const app of positionedAppointments) {
-            const startHour = new Date(app.start_minutes).getHours();
-            if (!grouped[startHour]) grouped[startHour] = [];
-            grouped[startHour].push(app);
-        }
-        return grouped;
-    }, [positionedAppointments]);
 
 
     return (
@@ -166,8 +206,10 @@ export const DayColumn: React.FC<DayColumnProps> = ({
             {/* date header */}
             <View style={{flexDirection: "row", zIndex: 1}}>
                 <View style={ isMonthVisible ? styles.dayContainerDefault : styles.dayContainerVisible }>
-                    <Text style={ styles.dayNumber }>{format(new Date(displayDate), 'EEE')}</Text>
-                    <Text style={ styles.dayNumber }>{format(new Date(displayDate), 'dd')}</Text>
+                    <Text style={styles.dayNumber}>{dayNameString}</Text>
+                    <Text style={styles.dayNumber}>{dayNumberString}</Text>
+                    {/* <AnimatedTextInput style={styles.dayNumber} animatedProps={dayNameProps} editable={false} /> */}
+                    {/* <AnimatedTextInput style={styles.dayNumber} animatedProps={dayNumberProps} editable={false} /> */}
                 </View>
                 <View style={{ flex: 1, backgroundColor: 'white', justifyContent: 'center' }}>
                     <Text style={{ width: 300, paddingLeft: 30, fontSize: 16 }}>selectedDate:       {format(new Date(selectedDate), 'EEE dd MMM yyy')}</Text>
@@ -185,81 +227,66 @@ export const DayColumn: React.FC<DayColumnProps> = ({
                         dayColumnY.value = y
                     }}
                 >
-                <Animated.FlatList
-                    ref={position === 'prev' ? prevListRef : position === 'center' ? centerListRef : nextListRef}
-                    keyExtractor={item => `${isCurrentDay ? 'curr' : isCurrentDay}-${item}`}
-                    data={ListHours}
-                    bounces={true}
-                    overScrollMode="always"
-                    onScroll={scrollHandler}
-                    scrollEventThrottle={16}
-                    showsVerticalScrollIndicator={false}
-                    style={{ 
-                        flex: 1, 
-                        backgroundColor: position === 'prev' 
-                        ? '#f0f8ff' : position === 'center'
-                        ? '#e6ffe6' : '#ffe6f0',
-                    }}
+                    <Animated.ScrollView
+                        ref={position === 'prev' ? prevListRef : position === 'center' ? centerListRef : nextListRef}
+                        // keyExtractor={item => `${isCurrentDay ? 'curr' : isCurrentDay}-${item}`}
+                        // data={ListHours}
+                        bounces={true}
+                        overScrollMode="always"
+                        onScroll={scrollHandler}
+                        scrollEventThrottle={16}
+                        showsVerticalScrollIndicator={false}
+                        style={{ 
+                            flex: 1, 
+                            backgroundColor: position === 'prev' 
+                            ? '#f0f8ff' : position === 'center'
+                            ? '#e6ffe6' : '#ffe6f0',
+                        }}
+                    >
+                        <View style={{ height: 24 * HOUR_HEIGHT, position: 'relative' }}>
 
-                    
-                    // getItemLayout={(_, index) => ({
-                    //     length: HOUR_HEIGHT,
-                    //     offset: index * HOUR_HEIGHT,
-                    //     index,
-                    // })}
-
-                    renderItem={({ item: hour }) => {
-                        const blocks = appointmentsByHour[hour] || [];
-
-                        return (
-                            <View
-                                style={{
-                                    height: HOUR_HEIGHT,
-                                    justifyContent: 'center',
-                                    paddingHorizontal: 5,
-                                    flex: 1,
-                                    flexDirection: "row",
-                                    // width: screenWidth
-                                }}
-                            >
-                                <View >
-                                    <Text style={styles.time}>{`${hour}:00`}</Text>
+                            {ListHours.map((hour) => (
+                                <View
+                                    key={`hour-${hour}`}
+                                    style={{
+                                        height: HOUR_HEIGHT,
+                                        flexDirection: 'row',
+                                        paddingHorizontal: 5,
+                                    }}
+                                >
+                                    <View>
+                                        <Text style={styles.time}>{`${hour}:00`}</Text>
+                                    </View>
+                                    <View style={ styles.hourBlockDivider} />
+                                    <View style={styles.hourBlock} />
                                 </View>
-                                <View style={ styles.hourBlockDivider} />
-                                    
-                                {/* replace with below when rendering appointments */}
-                                {/* <View style={ styles.hourBlock}> */}
-                                    {/* <Text>{date}</Text> */}
-                                {/* </View> */}
+                            ))}
 
-                                <View style={styles.hourBlock}>
-                                {blocks.map(app => {
-                                    return (
-                                        <View
-                                            key={app.start_minutes}
-                                            style={{
-                                                position: 'absolute',
-                                                top: app.topOffset,
-                                                height: app.blockHeight,
-                                                backgroundColor: app.color,
-                                                borderRadius: 7,
-                                                padding: 7,
-                                                left: 3,
-                                                right: 2,
-                                                zIndex: 1,
-                                                borderWidth: 2,
-                                                borderColor: 'red'
-                                            }}
-                                            >
-                                            <Text>{app.appointment_title}</Text>
-                                        </View>
-                                    );
-                                    })}
-                                </View>
-                            </View>
-                        );
-                    }}
-                />
+                            {positionedAppointments.map(app => {
+                                console.log(`DayColumn [${format(new Date(displayDateShared.value), 'EEE dd')}]: Rendering app: ${app.appointment_title} at top: ${app.topOffset}, height: ${app.blockHeight}, left: 62`);
+                                return (
+                                    <View
+                                        key={app.appointmentId || app.start_minutes}
+                                        style={{
+                                            position: 'absolute',
+                                            top: app.topOffset,
+                                            height: app.blockHeight,
+                                            backgroundColor: app.color,
+                                            borderRadius: 7,
+                                            padding: 7,
+                                            left: 62,
+                                            right: 5,
+                                            zIndex: 10,
+                                            borderWidth: 2,
+                                            borderColor: 'red'
+                                        }}
+                                        >
+                                        <Text>{app.appointment_title}</Text>
+                                    </View>
+                                );
+                            })}
+                        </View>
+                    </Animated.ScrollView>
                 </View>
             </GestureDetector>
 

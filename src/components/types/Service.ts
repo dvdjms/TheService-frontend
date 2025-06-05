@@ -38,6 +38,7 @@ export interface UseSwipeGesturesProps {
     prevDateShared: SharedValue<number>;
     centerDateShared: SharedValue<number>;
     nextDateShared: SharedValue<number>;
+    isContentReadyForSnap: SharedValue<boolean>
     // cycleOffset: SharedValue<number>;
 }
 
