@@ -11,7 +11,13 @@ import { format } from "date-fns";
 
 
 export default function SchedularScreen( ) {
-    const [selectedDate, setSelectedDate] = useState(Date.now());
+    // const [selectedDate, setSelectedDate] = useState(Date.now());
+
+    const [selectedDate, setSelectedDate] = useState(() => {
+    const initialDate = Date.now();
+    console.log("SchedularScreen INITIALIZING selectedDate to:", new Date(initialDate).toString());
+    return initialDate;
+});
 
     const [isMonthVisible, setIsMonthVisible] = useState(false);
     const calendarDayViewRef = useRef<CalendarDayViewHandle>(null);
@@ -24,13 +30,15 @@ export default function SchedularScreen( ) {
         endMinutes: null,
         date: selectedDate,
     })
+
     const selectedDateShared = useSharedValue(selectedDate);
     const previewDate = useSharedValue<number | null>(null);
 
 
-    useEffect(() => {
-        selectedDateShared.value = selectedDate;
-    }, [selectedDate]);
+    // useEffect(() => {
+    //     console.log("SchedularScreen: selectedDate EFFECT triggered, new date:", new Date(selectedDate).toString());
+    //     selectedDateShared.value = selectedDate;
+    // }, [selectedDate]);
 
 
     const toggleMonth = () => {

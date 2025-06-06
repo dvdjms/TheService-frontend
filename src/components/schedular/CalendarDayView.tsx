@@ -3,6 +3,7 @@ import { GestureDetector, Gesture } from 'react-native-gesture-handler';
 import Animated, { useSharedValue, useAnimatedStyle, withTiming, runOnJS, Easing, 
     SharedValue, useAnimatedRef, useAnimatedScrollHandler, scrollTo, useDerivedValue,
     runOnUI,
+    useAnimatedReaction,
 } from 'react-native-reanimated';
 import { View, StyleSheet, Dimensions } from 'react-native';
 import { DayColumn } from './DayColumn';
@@ -32,6 +33,10 @@ const CalendarDayView = forwardRef<CalendarDayViewHandle, CalendarDayViewProps>(
     const centerListRef = useAnimatedRef<Animated.ScrollView>();
     const prevListRef = useAnimatedRef<Animated.ScrollView>();
     const nextListRef = useAnimatedRef<Animated.ScrollView>();
+
+    const prevOpacity = useSharedValue(1); // Re-add
+    const centerOpacity = useSharedValue(1); // Re-add
+    const nextOpacity = useSharedValue(1);
     
     const scrollOffset = useSharedValue(0);
     const isSwiping = useSharedValue(false);
@@ -86,8 +91,8 @@ const CalendarDayView = forwardRef<CalendarDayViewHandle, CalendarDayViewProps>(
                 'worklet';
                 if (finished) {
                     selectedDateShared.value = targetDate;
-                    runOnJS(setSelectedDate)(targetDate);
                     previewDate.value = null;
+                    runOnJS(setSelectedDate)(targetDate);
                     translateX.value = 0;
                     isSwiping.value = false;
                 }
@@ -109,31 +114,32 @@ const CalendarDayView = forwardRef<CalendarDayViewHandle, CalendarDayViewProps>(
         return addDaysNumber(selectedDateShared.value, 1)
     });
     
-  
-
 
     const animatedStyle = useAnimatedStyle(() => {
         return {
             transform: [{ translateX: translateX.value }],
+            opacity: centerOpacity.value 
         };
     });
 
     const nextDayStyle = useAnimatedStyle(() => {
         return {
             transform: [{ translateX: translateX.value + screenWidth }],
+            opacity: centerOpacity.value 
         };
     });
 
     const prevDayStyle = useAnimatedStyle(() => {
         return {
             transform: [{ translateX:  translateX.value - screenWidth }],
+            opacity: centerOpacity.value 
         };
     });
 
  
     const {panGesture, tapGesture } = useSwipeGestures({ selectedDateShared, isSwiping, isMonthVisible,
         screenWidth, previewDate, verticalThreshold, velocityThreshold, swipeThreshold, translateX, 
-        translateY, collapseMonth, setSelectedDate,
+        translateY, collapseMonth, setSelectedDate, prevOpacity, centerOpacity, nextOpacity,
     prevDateShared, centerDateShared, nextDateShared, isContentReadyForSnap
     });
 
@@ -191,19 +197,30 @@ const CalendarDayView = forwardRef<CalendarDayViewHandle, CalendarDayViewProps>(
     //     return groupedAppointments[dayKey] || [];
     // }, [groupedAppointments, nextDateShared.value]);
     useEffect(() => {
-        // This effect runs after React has committed the selectedDate change
-        // and DayColumns have had a chance to re-render with new appointments.
         runOnUI(() => {
             'worklet';
-            // We only signal readiness if it was previously false.
-            // The reaction on the UI thread will reset it to false after snapping.
-            if (isContentReadyForSnap.value === false) {
+            // if (isContentReadyForSnap.value === false) {
                 isContentReadyForSnap.value = true;
-            }
+            // }
         })();
-    }, [selectedDate, isContentReadyForSnap]); 
+    }, [selectedDate]); 
 
 
+    useAnimatedReaction(
+        () => selectedDateShared.value, // Monitor the main selectedDateShared
+        (currentSelectedDate, previousSelectedDate) => {
+            'worklet'; // Ensure this runs on the UI thread
+            if (currentSelectedDate !== previousSelectedDate) {
+                console.log(`WORKLET_LOG_CalendarDayView: selectedDateShared changed from ${previousSelectedDate} to ${currentSelectedDate}`);
+                console.log(`WORKLET_LOG_CalendarDayView: prevDateShared.value = ${prevDateShared.value}`);
+                console.log(`WORKLET_LOG_CalendarDayView: centerDateShared.value = ${centerDateShared.value}`);
+                console.log(`WORKLET_LOG_CalendarDayView: nextDateShared.value = ${nextDateShared.value}`);
+            }
+        },
+        [selectedDateShared, prevDateShared, centerDateShared, nextDateShared] // Dependencies
+    );
+
+    
     return (
         <GestureDetector gesture={Gesture.Exclusive(tapGesture, panGesture)}>
             <View 

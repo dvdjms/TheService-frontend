@@ -7,21 +7,23 @@ import { addDaysNumber } from '../utils/timeUtils';
 export function useSwipeGestures(Props: UseSwipeGesturesProps) {const {  
     isSwiping, isMonthVisible, screenWidth, previewDate, setSelectedDate,
     selectedDateShared, verticalThreshold, velocityThreshold, swipeThreshold,
-    translateX, translateY, collapseMonth, isContentReadyForSnap
+    translateX, translateY, collapseMonth, isContentReadyForSnap, prevOpacity, centerOpacity, nextOpacity
     } = Props;
 
 
-     useAnimatedReaction(
+    useAnimatedReaction(
         () => isContentReadyForSnap.value,
         (ready, wasReady) => {
+            'worklet';
             if (ready && (wasReady === false || wasReady === null)) {
-                'worklet';
                 translateX.value = 0;
-                isContentReadyForSnap.value = false; // Reset for the next swipe action
+                isContentReadyForSnap.value = false;
+                isSwiping.value = false;
             }
         },
-        [isContentReadyForSnap, translateX] // Dependencies for the reaction
+        [isContentReadyForSnap, translateX]
     );
+
     
     const panGesture = Gesture.Pan()
         .onBegin(() => {
@@ -66,9 +68,7 @@ export function useSwipeGestures(Props: UseSwipeGesturesProps) {const {
                         const newDate = addDaysNumber(selectedDateShared.value, -1);
                         selectedDateShared.value = newDate;
                         runOnJS(setSelectedDate)(newDate);
-                        previewDate.value = null; 
-                        // translateX.value = 0;
-                        isSwiping.value = false;
+                        // previewDate.value = null; 
                     }}
                 );
             } 
@@ -82,10 +82,8 @@ export function useSwipeGestures(Props: UseSwipeGesturesProps) {const {
                         const newDate = addDaysNumber(selectedDateShared.value, 1);
                         selectedDateShared.value = newDate;
                         runOnJS(setSelectedDate)(newDate);
-                        previewDate.value = null; 
-                        // translateX.value = 0;
-
-                        isSwiping.value = false;
+                        // previewDate.value = null; 
+                        // isSwiping.value = false;
                     }
                 );
             }    

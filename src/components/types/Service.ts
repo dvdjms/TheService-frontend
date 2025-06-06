@@ -38,7 +38,11 @@ export interface UseSwipeGesturesProps {
     prevDateShared: SharedValue<number>;
     centerDateShared: SharedValue<number>;
     nextDateShared: SharedValue<number>;
-    isContentReadyForSnap: SharedValue<boolean>
+    isContentReadyForSnap: SharedValue<boolean>;
+
+    prevOpacity: SharedValue<number>;
+    centerOpacity: SharedValue<number>;
+    nextOpacity: SharedValue<number>;
     // cycleOffset: SharedValue<number>;
 }
 
@@ -85,4 +89,9 @@ export interface Appointment {
     startTimeStr: string;
     dateStr: string;
     color: string;
+}
+
+export interface PositionedAppointment extends Appointment {
+  topOffset: number;
+  blockHeight: number;
 }
