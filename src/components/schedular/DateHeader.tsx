@@ -14,7 +14,7 @@ const DateHeader = (({ displayDate, selectedDate, isMonthVisible }: Props) => (
 
     <View style={{ flexDirection: "row", zIndex: 1 }}>
         <View style={isMonthVisible ? styles.dayContainerDefault : styles.dayContainerVisible}>
-            <Animated.Text style={styles.dayNumber}>{format(new Date(displayDate), 'EEE')}</Animated.Text>
+            <Animated.Text style={styles.dayName}>{format(new Date(displayDate), 'EEE')}</Animated.Text>
             <Animated.Text style={styles.dayNumber}>{format(new Date(displayDate), 'dd')}</Animated.Text>
         </View>
             <View style={[{ flex: 1, backgroundColor: 'white', justifyContent: 'center' }, isMonthVisible ? styles.dayContainerDefault : styles.dayContainerVisible]}>
@@ -38,12 +38,14 @@ const styles = StyleSheet.create({
         borderBottomColor: 'grey',
         zIndex: 1,
         // Android shadow (elevation = spread + blur approximation)
-        elevation: 4
+        elevation: 4,
+        width: 40
     },
     dayContainerDefault:{
         backgroundColor: 'white',  
         borderBottomColor: '#eee', 
-        borderBottomWidth: 1
+        borderBottomWidth: 1,
+        width: 40
     },
     dayName: {
         backgroundColor: "transparent",
@@ -51,7 +53,7 @@ const styles = StyleSheet.create({
         paddingBottom: 3,
         width: 60,
         textAlign: 'center',
-        fontSize: 12,
+        fontSize: 11,
         borderRightColor: '#eeeeee',
         borderRightWidth: 1,
         fontWeight: 500
@@ -63,6 +65,7 @@ const styles = StyleSheet.create({
         borderRightColor: '#eeeeee',
         borderRightWidth: 1,
         paddingBottom: 3,
+        fontSize: 11,
         fontWeight: 500
     },
 });

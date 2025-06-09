@@ -1,24 +1,29 @@
 import { useState } from "react";
-import { View, StyleSheet, TextInput, Button, Text, Animated, Dimensions, TouchableOpacity } from "react-native";
+import { View, StyleSheet, TextInput, Text, Dimensions, TouchableOpacity } from "react-native";
 import { yToTime, yToTime11 } from '../utils/timeUtils';
 import { TimeBlock } from "../types/Service";
 
-import { runOnJS, SharedValue, useAnimatedReaction } from "react-native-reanimated";
+import { runOnJS, runOnUI, SharedValue, useAnimatedReaction } from "react-native-reanimated";
 import { format } from "date-fns";
 import { Ionicons } from "@expo/vector-icons";
 
 const SCREEN_HEIGHT = Dimensions.get('window').height;
+const MODAL_COLLAPSED_HEIGHT = 30;
+const MODAL_EXPANDED_HEIGHT = 200;
 
 interface AppointmentBlockProps {
-    onClose: () => void;
     onSave: (title: string) => void;
     selectedTimeBlock: SharedValue<TimeBlock>;
     selectedDate: number;
+    isModalExpanded: SharedValue<boolean>;
+    isModalVisible: SharedValue<boolean>;
 }   
 
-const AppointmentBlock = ({ onClose, onSave, selectedDate, selectedTimeBlock }: AppointmentBlockProps) => {
+const AppointmentBlock = ({ onSave, selectedDate, selectedTimeBlock, isModalVisible, isModalExpanded }: AppointmentBlockProps) => {
     const [title, setTitle] = useState('');
     const [displayBlock, setDisplayBlock] = useState<TimeBlock>();
+    const [expandedJS, setExpandedJS] = useState(false);
+    // const expanded = useSharedValue(false);
 
     //convert to date
     const newDate = new Date(selectedDate);
@@ -30,43 +35,88 @@ const AppointmentBlock = ({ onClose, onSave, selectedDate, selectedTimeBlock }: 
         }
     );
 
+    useAnimatedReaction(
+        () => isModalExpanded.value,
+        (value) => {
+            runOnJS(setExpandedJS)(value);
+        },
+    );
+
+
+    const handleClose = () => {
+        runOnUI(() => {
+            isModalExpanded.value = false;
+            isModalVisible.value = false;
+            selectedTimeBlock.value = {
+                ...selectedTimeBlock.value,
+                startMinutes: null,
+                endMinutes: null,
+            };
+        })();
+    };
+
+
+    const handleSave = () => {
+        onSave(title);
+        handleClose();
+    };
+
+
     return (
-        <Animated.View style={styles.modalOverlay}>
-            <View style={styles.modalContainer}>
 
-                <Text style={ styles.label }>
-                    {format(newDate, 'eeee dd MMM yyy')}
-                    {"  •  "}
-                    {displayBlock?.startMinutes  ? yToTime11(displayBlock.startMinutes) : '--:--'}
-                    {" – "}
-                    {displayBlock?.endMinutes ? yToTime11(displayBlock.endMinutes) : '--:--'}
-                </Text>
-                <Text>selectedDate: {newDate.toString()}</Text>
-                <Text>displayBlock: {displayBlock?.date ? format(displayBlock?.date, 'eee dd MMM yyy') : '---'}</Text>
-                
-
-                <TextInput
-                    style={styles.input}
-                    placeholder="Appointment title"
-                    value={title}
-                    onChangeText={setTitle}
-                />
-
-                <TouchableOpacity style={ styles.addClientContainer }>
-                    <Ionicons name="people-outline" size={18} />
-                    <Text style={ styles.label }>Add client</Text>
+        <View style={[styles.modalOverlay]}>
+            {isModalVisible && (
+            <>
+                <TouchableOpacity
+                    onPress={() => {
+                        isModalExpanded.value = !isModalExpanded.value;
+                    }}
+                    style={styles.chevron}
+                    >
+                    <Ionicons name={expandedJS ? "chevron-down" : "chevron-up"} size={24} />
+                    <Text style={{textAlign: 'center'}}>{expandedJS ? "" : "(No title)"}  </Text>
                 </TouchableOpacity>
 
+                {expandedJS && (
+                    <View style={styles.modalContainer}>
+                        <View style={styles.modalButtons}>
+                            <TouchableOpacity onPress={handleClose}>
+                                <Text style={styles.buttons}>Cancel</Text>
+                            </TouchableOpacity>
 
-                <View style={styles.modalButtons}>
-                    <Button title="Cancel" onPress={onClose} />
-                    <Button title="Save" onPress={() => {
-                        onSave(title);
-                        onClose();
-                    }} />
-                </View>
-            </View>
-        </Animated.View>    
+                            <TouchableOpacity onPress={handleSave}>
+                                <Text style={styles.buttons}>Save</Text>
+                            </TouchableOpacity>
+                        </View>
+
+                        <Text style={ styles.label }>
+                            {format(newDate, 'eeee dd MMM yyy')}
+                            {"  •  "}
+                            {displayBlock?.startMinutes  ? yToTime11(displayBlock.startMinutes) : '--:--'}
+                            {" – "}
+                            {displayBlock?.endMinutes ? yToTime11(displayBlock.endMinutes) : '--:--'}
+                        </Text>
+                        {/* <Text>selectedDate: {newDate.toString()}</Text> */}
+                        {/* <Text>displayBlock: {displayBlock?.date ? format(displayBlock?.date, 'eee dd MMM yyy') : '---'}</Text> */}
+                        
+
+                        <TextInput
+                            style={styles.input}
+                            placeholder="Appointment title"
+                            value={title}
+                            onChangeText={setTitle}
+                        />
+
+                        <TouchableOpacity style={ styles.addClientContainer }>
+                            <Ionicons name="people-outline" size={18} />
+                            <Text style={ styles.label }>Add client</Text>
+                        </TouchableOpacity>
+                    </View>
+                )}
+            </>
+            )}
+        </View>  
+
     )
 };
 
@@ -78,10 +128,12 @@ const styles = StyleSheet.create({
         right: 0,
         zIndex: 100,
         backgroundColor: 'transparent', // white
+        justifyContent: 'center'
     },
     modalContainer: {
         backgroundColor: '#ddd',
         padding: 20,
+        paddingTop: 40,
         borderTopLeftRadius: 30,
         borderTopRightRadius: 30,
         // shadowColor: '#000',
@@ -109,10 +161,6 @@ const styles = StyleSheet.create({
         marginBottom: 15,
         backgroundColor: '#fff',
     },
-    modalButtons: {
-        flexDirection: 'row',
-        justifyContent: 'space-around',
-    },
     nonBlockingOverlay: {
         position: 'absolute',
         bottom: 0,
@@ -125,6 +173,23 @@ const styles = StyleSheet.create({
         flexDirection: 'row',
         paddingLeft: 20
     },
+    modalButtons: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        top: -22,
+        paddingStart: 25,
+        paddingEnd: 25,
+    },
+    buttons: {
+        color: 'blue'
+    },
+    chevron: {
+        position: 'absolute',
+        top: 5,
+        alignSelf: 'center',
+        zIndex: 100,
+        alignItems: 'center',
+    }
 });
 
 export default AppointmentBlock;

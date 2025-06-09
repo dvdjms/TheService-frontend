@@ -1,16 +1,16 @@
-import React, { useEffect, useMemo, useRef, useState } from 'react';
-import { Text, View, StyleSheet, Dimensions, TextInput, Button,  } from 'react-native';
+import React, { useEffect, useRef, useState } from 'react';
+import { View } from 'react-native';
 import { GestureDetector } from 'react-native-gesture-handler';
-import Animated, { runOnJS, SharedValue, useAnimatedReaction, useAnimatedStyle, useSharedValue, 
-    AnimatedRef, DerivedValue } from 'react-native-reanimated';
-import { format } from 'date-fns';
+import Animated, { runOnJS, SharedValue, useAnimatedReaction, useAnimatedStyle, 
+    useSharedValue, AnimatedRef, DerivedValue, 
+    withTiming} from 'react-native-reanimated';
 import { TimeBlock, Appointment } from '../types/Service';
 import { useTimeBlockGestures } from '@/src/components/hooks/useTimeBlockGestures';
 import HourGrid from '@/src/components/schedular/HourGrid';
 import DateHeader from '@/src/components/schedular/DateHeader';
 import AppointmentBlocks from './AppointmentBlocks';
-import { calculatePositionedAppointments } from '../utils/appoinmentHelpers';
 import SelectedTimeBlock from './SelectedTimeBlock';
+import { usePositionedAppointments } from '../hooks/usePositionedAppointments';
 
 const MINUTES_PER_STEP = 15;
 const MINUTES_IN_HOUR = 60;
@@ -19,9 +19,6 @@ const PIXELS_PER_MINUTE = HOUR_HEIGHT / MINUTES_IN_HOUR;
 const MIN_DURATION = 15;
 const MINUTES_IN_DAY = 1440;
 
-const screenWidth = Dimensions.get('window').width;
-
-// const AnimatedTextInput = createAnimatedComponent(TextInput);
 
 interface DayColumnProps {
     selectedDate: number;
@@ -65,29 +62,25 @@ export const DayColumn: React.FC<DayColumnProps> = ({
     const height = useSharedValue(0);
     const startHeight = useSharedValue(height.value);
 
-    const selectedTimestamp = useSharedValue(selectedDateShared.value)
 
-    const [displayDate, setDisplayDate] = useState(displayDateShared.value);
-
-
-    useAnimatedReaction(
-        () => displayDateShared.value,
-        (result, previous) => {
-            if (result !== previous) {
-              runOnJS(setDisplayDate)(result);
-            }
-        },
-        [displayDateShared]
-    );
-
+    // const [displayDate, setDisplayDate] = useState(displayDateShared.value);
 
     const { tapTimeBlockGesture, topResizeGesture, bottomResizeGesture, moveGesture 
     } = useTimeBlockGestures({ HOUR_HEIGHT, MINUTES_PER_STEP, PIXELS_PER_MINUTE, selectedDateShared,
-        MIN_DURATION, MINUTES_IN_DAY, scrollOffset, selectedTimeBlock, 
-        isMonthVisible, selectedTimestamp, isModalVisible, topInitialStart, bottomInitialEnd, 
-        initialStart, initialEnd, height, startHeight, setIsBlockRenderable
+        MIN_DURATION, MINUTES_IN_DAY, scrollOffset, selectedTimeBlock, isMonthVisible, 
+        isModalVisible, topInitialStart, bottomInitialEnd, initialStart, 
+        initialEnd, height, startHeight, setIsBlockRenderable
     });
 
+
+    const [displayDate, setDisplayDate] = useState<number>(0);
+
+    useAnimatedReaction(
+        () => displayDateShared.value,
+        (val) => {
+            runOnJS(setDisplayDate)(val);
+        }
+    );
 
     useEffect(() => {
         setTimeout(() => {
@@ -101,6 +94,17 @@ export const DayColumn: React.FC<DayColumnProps> = ({
             }
         }, 0);
     }, []);
+
+
+    useAnimatedReaction(
+        () => displayDateShared.value,
+        (result, previous) => {
+            if (result !== previous) {
+              runOnJS(setDisplayDate)(result);
+            }
+        },
+        // [displayDateShared]
+    );
 
 
     useAnimatedReaction(() => {
@@ -120,30 +124,10 @@ export const DayColumn: React.FC<DayColumnProps> = ({
     });
 
 
-    useAnimatedReaction(() => {
-        const block = selectedTimeBlock.value
-        return block !== null && block.startMinutes !== null && block.endMinutes !== null;
-    },(isRenderable) => {
-        runOnJS(setIsBlockRenderable)(isRenderable);
-    },[]);
+    const positionedAppointments = usePositionedAppointments(displayDate, allGroupedAppointments);
 
 
-
-    const dateStartMs = useMemo(() => {
-        const d = new Date(displayDateShared.value);
-        d.setHours(0, 0, 0, 0);
-        return d.getTime();
-    }, [displayDateShared.value]);
-
-    const currentAppointments = useMemo(() => {
-        return allGroupedAppointments[dateStartMs] || [];
-    }, [allGroupedAppointments, dateStartMs])
-
-    const positionedAppointments = useMemo(() =>
-        calculatePositionedAppointments(currentAppointments, dateStartMs),
-    [currentAppointments, dateStartMs]);
-
-
+    
     return (
         <Animated.View 
             style={{ flex: 1 }} 

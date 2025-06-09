@@ -11,16 +11,6 @@ export function useTimeBlockGestures(Props: UseTimeBlockGesturesProps) {const {
     bottomInitialEnd, initialStart, initialEnd, height, startHeight, setIsBlockRenderable
     } = Props;
 
-    useAnimatedReaction(
-        () => {
-            const block = selectedTimeBlock.value;
-            return block !== null && block.startMinutes !== null && block.endMinutes !== null;
-        },
-        (isRenderable) => {
-            runOnJS(setIsBlockRenderable)(isRenderable);
-        },[]
-    );
-
 
     const tapTimeBlockGesture = useMemo(
         () =>

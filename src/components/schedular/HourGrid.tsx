@@ -33,10 +33,11 @@ const styles = StyleSheet.create({
         // borderTopWidth: 1,
     },
     time: {
-        textAlign: 'right', 
+        textAlign: 'right',
         fontWeight: '300', 
+        fontSize: 10,
         width: 40, 
-        marginTop: -9,
+        marginTop: -7,
     },
     hourBlock: {
         flex: 5,  
@@ -47,10 +48,10 @@ const styles = StyleSheet.create({
     },
     hourBlockDivider: {
         marginLeft: 10,
-        width: 5, 
+        width: 8, 
         borderRightWidth: 1,
         borderTopWidth: .5,
-        borderBottomWidth: .5, 
+        // borderBottomWidth: .5, 
         borderColor: '#eee' 
     }
 });

@@ -70,7 +70,6 @@ export interface UseTimeBlockGesturesProps {
     isModalVisible:  SharedValue<boolean>;
     selectedDateShared: SharedValue<number>;
 
-    selectedTimestamp: SharedValue<number>;
     // Output
     setIsBlockRenderable: React.Dispatch<React.SetStateAction<boolean>>;
 }
@@ -92,6 +91,6 @@ export interface Appointment {
 }
 
 export interface PositionedAppointment extends Appointment {
-  topOffset: number;
-  blockHeight: number;
+    topOffset: number;
+    blockHeight: number;
 }

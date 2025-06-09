@@ -2,9 +2,7 @@ import React, { Dispatch, SetStateAction, forwardRef, useEffect, useImperativeHa
 import { GestureDetector, Gesture } from 'react-native-gesture-handler';
 import Animated, { useSharedValue, useAnimatedStyle, withTiming, runOnJS, Easing, 
     SharedValue, useAnimatedRef, useAnimatedScrollHandler, scrollTo, useDerivedValue,
-    runOnUI,
-    useAnimatedReaction,
-} from 'react-native-reanimated';
+    runOnUI } from 'react-native-reanimated';
 import { View, StyleSheet, Dimensions } from 'react-native';
 import { DayColumn } from './DayColumn';
 import { addDaysNumber } from '../utils/timeUtils';
@@ -24,11 +22,12 @@ interface CalendarDayViewProps {
     collapseMonth: () => void;
     selectedTimeBlock: SharedValue<TimeBlock>;
     previewDate: SharedValue<number | null>;
+    isModalExpanded: SharedValue<boolean>;
 }
 
 const CalendarDayView = forwardRef<CalendarDayViewHandle, CalendarDayViewProps>(({ 
     selectedDate, selectedDateShared, isMonthVisible, isModalVisible, collapseMonth, 
-    selectedTimeBlock, setSelectedDate, previewDate
+    selectedTimeBlock, setSelectedDate, previewDate, isModalExpanded
 }, ref)  => {
     const centerListRef = useAnimatedRef<Animated.ScrollView>();
     const prevListRef = useAnimatedRef<Animated.ScrollView>();
@@ -68,6 +67,12 @@ const CalendarDayView = forwardRef<CalendarDayViewHandle, CalendarDayViewProps>(
             }
             if (nextListRef) {
                 scrollTo(nextListRef, 0, y, false);
+            }
+        },
+        onBeginDrag: (event) => {
+            if (selectedTimeBlock?.value?.startMinutes)
+            if (selectedTimeBlock?.value?.startMinutes < 1260){
+                isModalExpanded.value = false;
             }
         },
     });
@@ -125,14 +130,14 @@ const CalendarDayView = forwardRef<CalendarDayViewHandle, CalendarDayViewProps>(
     const nextDayStyle = useAnimatedStyle(() => {
         return {
             transform: [{ translateX: translateX.value + screenWidth }],
-            opacity: centerOpacity.value 
+            opacity: nextOpacity.value 
         };
     });
 
     const prevDayStyle = useAnimatedStyle(() => {
         return {
             transform: [{ translateX:  translateX.value - screenWidth }],
-            opacity: centerOpacity.value 
+            opacity: prevOpacity.value 
         };
     });
 
@@ -140,7 +145,7 @@ const CalendarDayView = forwardRef<CalendarDayViewHandle, CalendarDayViewProps>(
     const {panGesture, tapGesture } = useSwipeGestures({ selectedDateShared, isSwiping, isMonthVisible,
         screenWidth, previewDate, verticalThreshold, velocityThreshold, swipeThreshold, translateX, 
         translateY, collapseMonth, setSelectedDate, prevOpacity, centerOpacity, nextOpacity,
-    prevDateShared, centerDateShared, nextDateShared, isContentReadyForSnap
+        prevDateShared, centerDateShared, nextDateShared, isContentReadyForSnap
     });
 
     const sharedProps = {
@@ -155,7 +160,7 @@ const CalendarDayView = forwardRef<CalendarDayViewHandle, CalendarDayViewProps>(
         nextListRef,
         selectedDate,
         isSwiping,
-        previewDate
+        previewDate,
     }
 
 
@@ -167,35 +172,21 @@ const CalendarDayView = forwardRef<CalendarDayViewHandle, CalendarDayViewProps>(
     };
 
     const groupAppointmentsByDay = (appointments: any[]) => {
-    return appointments.reduce((acc, app) => {
-        const dateKey = normalizeToDayTimestamp(app.start_minutes);
-        if (!acc[dateKey]) acc[dateKey] = [];
-        acc[dateKey].push(app);
-        return acc;
-    }, {} as Record<number, any[]>);
+        return appointments.reduce((acc, app) => {
+            const dateKey = normalizeToDayTimestamp(app.start_minutes);
+            if (!acc[dateKey]) acc[dateKey] = [];
+                acc[dateKey].push(app);
+            return acc;
+        }, {} as Record<number, any[]>);
     };
 
 
     const groupedAppointments = useMemo(() => {
         const flatAppointments = dummyAppointments.flatMap(client => client.appointments);
         return groupAppointmentsByDay(flatAppointments);
-    }, [dummyAppointments]);
+    }, []);
 
-    // // This is the correct way:
-    // const appointmentsForPrev = useMemo(() => {
-    //     const dayKey = normalizeToDayTimestamp(prevDateShared.value);
-    //     return groupedAppointments[dayKey] || [];
-    // }, [groupedAppointments, prevDateShared.value]);
 
-    // const appointmentsForCenter = useMemo(() => {
-    //     const dayKey = normalizeToDayTimestamp(centerDateShared.value);
-    //     return groupedAppointments[dayKey] || [];
-    // }, [groupedAppointments, centerDateShared.value]);
-
-    // const appointmentsForNext = useMemo(() => {
-    //     const dayKey = normalizeToDayTimestamp(nextDateShared.value);
-    //     return groupedAppointments[dayKey] || [];
-    // }, [groupedAppointments, nextDateShared.value]);
     useEffect(() => {
         runOnUI(() => {
             'worklet';
@@ -206,19 +197,19 @@ const CalendarDayView = forwardRef<CalendarDayViewHandle, CalendarDayViewProps>(
     }, [selectedDate]); 
 
 
-    useAnimatedReaction(
-        () => selectedDateShared.value, // Monitor the main selectedDateShared
-        (currentSelectedDate, previousSelectedDate) => {
-            'worklet'; // Ensure this runs on the UI thread
-            if (currentSelectedDate !== previousSelectedDate) {
-                console.log(`WORKLET_LOG_CalendarDayView: selectedDateShared changed from ${previousSelectedDate} to ${currentSelectedDate}`);
-                console.log(`WORKLET_LOG_CalendarDayView: prevDateShared.value = ${prevDateShared.value}`);
-                console.log(`WORKLET_LOG_CalendarDayView: centerDateShared.value = ${centerDateShared.value}`);
-                console.log(`WORKLET_LOG_CalendarDayView: nextDateShared.value = ${nextDateShared.value}`);
-            }
-        },
-        [selectedDateShared, prevDateShared, centerDateShared, nextDateShared] // Dependencies
-    );
+    // useAnimatedReaction(
+    //     () => selectedDateShared.value, // Monitor the main selectedDateShared
+    //     (currentSelectedDate, previousSelectedDate) => {
+    //         'worklet'; // Ensure this runs on the UI thread
+    //         if (currentSelectedDate !== previousSelectedDate) {
+    //             console.log(`WORKLET_LOG_CalendarDayView: selectedDateShared changed from ${previousSelectedDate} to ${currentSelectedDate}`);
+    //             console.log(`WORKLET_LOG_CalendarDayView: prevDateShared.value = ${prevDateShared.value}`);
+    //             console.log(`WORKLET_LOG_CalendarDayView: centerDateShared.value = ${centerDateShared.value}`);
+    //             console.log(`WORKLET_LOG_CalendarDayView: nextDateShared.value = ${nextDateShared.value}`);
+    //         }
+    //     },
+    //     [selectedDateShared, prevDateShared, centerDateShared, nextDateShared] // Dependencies
+    // );
 
     
     return (

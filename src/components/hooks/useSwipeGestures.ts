@@ -48,6 +48,14 @@ export function useSwipeGestures(Props: UseSwipeGesturesProps) {const {
             } else {
                  previewDate.value = null;
             }
+
+            if (Math.abs(e.translationX) > screenWidth - 110) {
+                centerOpacity.value = 0;
+
+            } else {
+                centerOpacity.value = 1;
+            }
+
         })
         .onEnd((e) => {
             // Vertical swipe up
@@ -68,6 +76,7 @@ export function useSwipeGestures(Props: UseSwipeGesturesProps) {const {
                         const newDate = addDaysNumber(selectedDateShared.value, -1);
                         selectedDateShared.value = newDate;
                         runOnJS(setSelectedDate)(newDate);
+                         centerOpacity.value = 1;
                         // previewDate.value = null; 
                     }}
                 );
@@ -84,6 +93,7 @@ export function useSwipeGestures(Props: UseSwipeGesturesProps) {const {
                         runOnJS(setSelectedDate)(newDate);
                         // previewDate.value = null; 
                         // isSwiping.value = false;
+                         centerOpacity.value = 1;
                     }
                 );
             }    
