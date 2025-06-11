@@ -1,9 +1,11 @@
-import React, { Dispatch, SetStateAction, forwardRef, useEffect, useImperativeHandle, useMemo  } from 'react';
+import React, { Dispatch, SetStateAction, forwardRef, useCallback, useEffect, useImperativeHandle, useMemo, useRef, useState  } from 'react';
 import { GestureDetector, Gesture } from 'react-native-gesture-handler';
 import Animated, { useSharedValue, useAnimatedStyle, withTiming, runOnJS, Easing, 
     SharedValue, useAnimatedRef, useAnimatedScrollHandler, scrollTo, useDerivedValue,
     runOnUI } from 'react-native-reanimated';
-import { View, StyleSheet, Dimensions } from 'react-native';
+import { View, StyleSheet, Dimensions, NativeSyntheticEvent, NativeScrollEvent, LayoutChangeEvent } from 'react-native';
+import { FlashList } from '@shopify/flash-list';
+import type { FlashList as FlashListType } from "@shopify/flash-list";
 import { DayColumn } from './DayColumn';
 import { addDaysNumber } from '../utils/timeUtils';
 import { Appointment, CalendarDayViewHandle, TimeBlock } from '@/src/components/types/Service';
@@ -29,16 +31,13 @@ const CalendarDayView = forwardRef<CalendarDayViewHandle, CalendarDayViewProps>(
     selectedDate, selectedDateShared, isMonthVisible, isModalVisible, collapseMonth, 
     selectedTimeBlock, setSelectedDate, previewDate, isModalExpanded
 }, ref)  => {
-    const centerListRef = useAnimatedRef<Animated.ScrollView>();
-    const prevListRef = useAnimatedRef<Animated.ScrollView>();
-    const nextListRef = useAnimatedRef<Animated.ScrollView>();
-
-    const prevOpacity = useSharedValue(1); // Re-add
-    const centerOpacity = useSharedValue(1); // Re-add
-    const nextOpacity = useSharedValue(1);
-    
+    const flashListRef = useRef<FlashListType<number>>(null);
     const scrollOffset = useSharedValue(0);
     const isSwiping = useSharedValue(false);
+
+    const isScrolling = useSharedValue(false);
+
+    const masterScrollOffsetY = useSharedValue(0);
 
     const translateX = useSharedValue(0);
     const translateY = useSharedValue(0);
@@ -48,122 +47,25 @@ const CalendarDayView = forwardRef<CalendarDayViewHandle, CalendarDayViewProps>(
     const velocityThreshold = 500;
     const isContentReadyForSnap = useSharedValue(false); // Added for handshake
 
-
-    //Exposes swipeToDate function to parent
-    useImperativeHandle(ref, () => ({
-        swipeToDateImpl: (targetDate: Date) => {
-            swipeToDate(targetDate.getTime());
-        }
-    }));
-
-
-    const scrollHandler = useAnimatedScrollHandler({
-        onScroll: (event) => {
-            const y = event.contentOffset.y;
-            scrollOffset.value = y;
-
-            if (prevListRef) {
-                scrollTo(prevListRef, 0, y, false);
-            }
-            if (nextListRef) {
-                scrollTo(nextListRef, 0, y, false);
-            }
-        },
-        onBeginDrag: (event) => {
-            if (selectedTimeBlock?.value?.startMinutes)
-            if (selectedTimeBlock?.value?.startMinutes < 1260){
-                isModalExpanded.value = false;
-            }
-        },
-    });
-
-    //swipe function referenced in CalendarMonthView
-    const swipeToDate = (targetDate: number) => {
-        const target = targetDate;
-
-        if (selectedDateShared.value === target) return;
-
-        const isForward = target > selectedDateShared.value;
-        const directionMultiplier = isForward ? -1 : 1;
-
-        isSwiping.value = true;
-        previewDate.value = target;
-
-        translateX.value = withTiming(
-            directionMultiplier * screenWidth,
-            { duration: 300, easing: Easing.out(Easing.ease) },
-            (finished) => {
-                'worklet';
-                if (finished) {
-                    selectedDateShared.value = targetDate;
-                    previewDate.value = null;
-                    runOnJS(setSelectedDate)(targetDate);
-                    translateX.value = 0;
-                    isSwiping.value = false;
-                }
-            }
-        );
-    };
-
-
-    const prevDateShared = useDerivedValue(() => {
-        return addDaysNumber(selectedDateShared.value, -1)
-    });
-
-    const centerDateShared = useDerivedValue(() => {
-        return addDaysNumber(selectedDateShared.value, 0)
-    });
-
-
-    const nextDateShared = useDerivedValue(() => {
-        return addDaysNumber(selectedDateShared.value, 1)
-    });
-    
-
-    const animatedStyle = useAnimatedStyle(() => {
-        return {
-            transform: [{ translateX: translateX.value }],
-            opacity: centerOpacity.value 
-        };
-    });
-
-    const nextDayStyle = useAnimatedStyle(() => {
-        return {
-            transform: [{ translateX: translateX.value + screenWidth }],
-            opacity: nextOpacity.value 
-        };
-    });
-
-    const prevDayStyle = useAnimatedStyle(() => {
-        return {
-            transform: [{ translateX:  translateX.value - screenWidth }],
-            opacity: prevOpacity.value 
-        };
-    });
-
  
     const {panGesture, tapGesture } = useSwipeGestures({ selectedDateShared, isSwiping, isMonthVisible,
         screenWidth, previewDate, verticalThreshold, velocityThreshold, swipeThreshold, translateX, 
-        translateY, collapseMonth, setSelectedDate, prevOpacity, centerOpacity, nextOpacity,
-        prevDateShared, centerDateShared, nextDateShared, isContentReadyForSnap
+        translateY, collapseMonth, setSelectedDate, isContentReadyForSnap
     });
 
-    const sharedProps = {
-        selectedDateShared,
-        isMonthVisible,
-        isModalVisible,
-        selectedTimeBlock,
-        scrollOffset,
-        scrollHandler,
-        prevListRef,
-        centerListRef,
-        nextListRef,
-        selectedDate,
-        isSwiping,
-        previewDate,
-    }
 
 
+
+//     const onDayColumnScroll = useAnimatedScrollHandler({
+//     // onEndDrag: (event) => {
+//     //     'worklet'
+//     //     masterScrollOffsetY.value = event.contentOffset.y;
+//     // },
+//     onMomentumEnd: (event) => {
+//         'worklet'
+//         masterScrollOffsetY.value = event.contentOffset.y;
+//     }
+// });
 
     const normalizeToDayTimestamp = (ts: number) => {
         const d = new Date(ts);
@@ -197,54 +99,166 @@ const CalendarDayView = forwardRef<CalendarDayViewHandle, CalendarDayViewProps>(
     }, [selectedDate]); 
 
 
-    // useAnimatedReaction(
-    //     () => selectedDateShared.value, // Monitor the main selectedDateShared
-    //     (currentSelectedDate, previousSelectedDate) => {
-    //         'worklet'; // Ensure this runs on the UI thread
-    //         if (currentSelectedDate !== previousSelectedDate) {
-    //             console.log(`WORKLET_LOG_CalendarDayView: selectedDateShared changed from ${previousSelectedDate} to ${currentSelectedDate}`);
-    //             console.log(`WORKLET_LOG_CalendarDayView: prevDateShared.value = ${prevDateShared.value}`);
-    //             console.log(`WORKLET_LOG_CalendarDayView: centerDateShared.value = ${centerDateShared.value}`);
-    //             console.log(`WORKLET_LOG_CalendarDayView: nextDateShared.value = ${nextDateShared.value}`);
-    //         }
-    //     },
-    //     [selectedDateShared, prevDateShared, centerDateShared, nextDateShared] // Dependencies
-    // );
 
-    
+
+
+    // Handle scroll events
+
+    // Update current date when scrolling stops
+
+
+        // Scroll to date when selectedDate changes externally
+    // useEffect(() => {
+    //     if (!flashListRef.current || isScrolling.value) return;
+        
+    //     const index = dates.findIndex(date => date === selectedDate);
+    //     if (index >= 0) {
+    //         flashListRef.current.scrollToIndex({
+    //             index,
+    //             animated: true,
+    //             viewPosition: 0.5 // Center the item
+    //         });
+    //     }
+    // }, [selectedDate, dates]);
+
+    const dates = useMemo(() => {
+        const days = [];
+            for (let i = -30; i <= 30; i++) {
+                days.push(addDaysNumber(selectedDate, i));
+            }
+            return days;
+    }, [selectedDate]);
+
+
+    const initialScrollIndex = useMemo(() => {
+        return dates.findIndex(date => date === selectedDate);
+    }, [dates, selectedDate]);
+
+
+    const [layoutSize, setLayoutSize] = useState({ width: 0, height: 0 });
+
+    const onLayoutView = useCallback((event: LayoutChangeEvent) => {
+        const { width, height } = event.nativeEvent.layout;
+        if (width > 0 && height > 0) {
+            if (width !== layoutSize.width || height !== layoutSize.height) {
+                console.log(width, height)
+                setLayoutSize({ width, height });
+            }
+        }
+    }, [layoutSize.width, layoutSize.height]); // Add dependencies to useCallback
+
+
+        const sharedProps = {
+        selectedDateShared,
+        isMonthVisible,
+        isModalVisible,
+        selectedTimeBlock,
+        scrollOffset,
+        selectedDate,
+        onLayoutView,
+        masterScrollOffsetY
+    }
+
     return (
-        <GestureDetector gesture={Gesture.Exclusive(tapGesture, panGesture)}>
+        // <GestureDetector gesture={Gesture.Exclusive(tapGesture, panGesture)}>
+        <GestureDetector gesture={Gesture.Exclusive(tapGesture)}>
             <View 
-                style={{ flex: 1, flexDirection: 'row', width: screenWidth * 3 }}
+                style={{ flex: 1}}
                 pointerEvents={isMonthVisible ? "box-only" : "auto"}
+                      onLayout={onLayoutView}
             >
-                <Animated.View style={[{width: screenWidth}, StyleSheet.absoluteFill, prevDayStyle]}>
-                    <DayColumn 
-                        // displayDate={prevDate}
-                        displayDateShared={prevDateShared}
-                        allGroupedAppointments={groupedAppointments}
-                        position={'prev'}
-                        {...sharedProps} />
-                </Animated.View>
-                <Animated.View style={[{width: screenWidth}, StyleSheet.absoluteFill, animatedStyle]}>
-                    <DayColumn 
-                        // displayDate={centerDate} 
-                        displayDateShared={centerDateShared}
-                        allGroupedAppointments={groupedAppointments}
-                        position={'center'}
-                        {...sharedProps} />
-                </Animated.View>
-                <Animated.View style={[{width: screenWidth}, StyleSheet.absoluteFill, nextDayStyle]}>
-                    <DayColumn 
-                        // displayDate={nextDate}
-                        displayDateShared={nextDateShared}
-                        allGroupedAppointments={groupedAppointments}
-                        position={'next'} 
-                        {...sharedProps} />
-                </Animated.View>
+                {layoutSize.width > 0 && layoutSize.height > 0 ? (
+
+                <FlashList
+                    ref={flashListRef}
+                    data={dates}
+                    renderItem={({ item }) => {
+                        return (
+                            <DayColumn 
+                                dateTimestamp={item} 
+                                allGroupedAppointments={groupedAppointments} 
+                                itemActualHeight={layoutSize.height} 
+                                itemActualWidth={layoutSize.width} 
+                                {...sharedProps} />
+                    )}}
+                    estimatedItemSize={screenWidth}
+                    horizontal
+                    pagingEnabled={true}
+                    showsHorizontalScrollIndicator={false}
+                    keyExtractor={(item) => item.toString()}
+                    getItemType={() => 'day'}
+
+                    initialScrollIndex={initialScrollIndex}
+
+                    scrollEventThrottle={16}
+                    snapToInterval={screenWidth}
+                    snapToAlignment="center"
+                    decelerationRate="fast" 
+                  
+                />
+                ): null}
+     
             </View>
         </GestureDetector>
     );
 })
 
 export default CalendarDayView;
+
+
+
+    //Exposes swipeToDate function to parent
+    // useImperativeHandle(ref, () => ({
+    //     swipeToDateImpl: (targetDate: Date) => {
+    //         swipeToDate(targetDate.getTime());
+    //     }
+    // }));
+
+
+    // const scrollHandler = useAnimatedScrollHandler({
+    //     onScroll: (event) => {
+    //         const y = event.contentOffset.y;
+    //         scrollOffset.value = y;
+
+    //         // if (prevListRef) {
+    //         //     scrollTo(prevListRef, 0, y, false);
+    //         // }
+    //         // if (nextListRef) {
+    //         //     scrollTo(nextListRef, 0, y, false);
+    //         // }
+    //     },
+    //     onBeginDrag: (event) => {
+    //         if (selectedTimeBlock?.value?.startMinutes)
+    //         if (selectedTimeBlock?.value?.startMinutes < 1260){
+    //             isModalExpanded.value = false;
+    //         }
+    //     },
+    // });
+
+    //swipe function referenced in CalendarMonthView
+    // const swipeToDate = (targetDate: number) => {
+    //     const target = targetDate;
+
+    //     if (selectedDateShared.value === target) return;
+
+    //     const isForward = target > selectedDateShared.value;
+    //     const directionMultiplier = isForward ? -1 : 1;
+
+    //     isSwiping.value = true;
+    //     previewDate.value = target;
+
+    //     translateX.value = withTiming(
+    //         directionMultiplier * screenWidth,
+    //         { duration: 300, easing: Easing.out(Easing.ease) },
+    //         (finished) => {
+    //             'worklet';
+    //             if (finished) {
+    //                 selectedDateShared.value = targetDate;
+    //                 previewDate.value = null;
+    //                 runOnJS(setSelectedDate)(targetDate);
+    //                 translateX.value = 0;
+    //                 isSwiping.value = false;
+    //             }
+    //         }
+    //     );
+    // };

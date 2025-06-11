@@ -10,7 +10,7 @@ import { addDaysNumber } from "@/src/components/utils/timeUtils";
 import { format } from "date-fns";
 
 
-export default function SchedularScreen( ) {
+export default function SchedularScreen() {
     // const [selectedDate, setSelectedDate] = useState(Date.now());
 
     const [selectedDate, setSelectedDate] = useState(() => {
@@ -165,7 +165,8 @@ export default function SchedularScreen( ) {
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-          backgroundColor: '#fff'
+        backgroundColor: '#fff',
+        position: 'absolute', top: 0, bottom: 0, left: 0, right: 0
     },
     dateHeader: {
         height: 30,

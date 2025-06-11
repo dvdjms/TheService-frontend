@@ -1,9 +1,9 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { View } from 'react-native';
 import { GestureDetector } from 'react-native-gesture-handler';
 import Animated, { runOnJS, SharedValue, useAnimatedReaction, useAnimatedStyle, 
-    useSharedValue, AnimatedRef, DerivedValue, 
-    withTiming} from 'react-native-reanimated';
+    useSharedValue, runOnUI, scrollTo, useAnimatedRef, useAnimatedScrollHandler
+    } from 'react-native-reanimated';
 import { TimeBlock, Appointment } from '../types/Service';
 import { useTimeBlockGestures } from '@/src/components/hooks/useTimeBlockGestures';
 import HourGrid from '@/src/components/schedular/HourGrid';
@@ -12,6 +12,7 @@ import AppointmentBlocks from './AppointmentBlocks';
 import SelectedTimeBlock from './SelectedTimeBlock';
 import { usePositionedAppointments } from '../hooks/usePositionedAppointments';
 
+
 const MINUTES_PER_STEP = 15;
 const MINUTES_IN_HOUR = 60;
 const HOUR_HEIGHT = 60
@@ -19,32 +20,25 @@ const PIXELS_PER_MINUTE = HOUR_HEIGHT / MINUTES_IN_HOUR;
 const MIN_DURATION = 15;
 const MINUTES_IN_DAY = 1440;
 
-
 interface DayColumnProps {
     selectedDate: number;
     selectedDateShared: SharedValue<number>;
-    isCurrentDay?: boolean;
-    centerListRef: AnimatedRef<Animated.ScrollView>;
-    prevListRef: AnimatedRef<Animated.ScrollView>;
-    nextListRef: AnimatedRef<Animated.ScrollView>
-    position: 'prev' | 'center' | 'next';
-    displayDateShared: DerivedValue<number>;
-    scrollHandler?: any;
-    onLeftRightScroll?: (e: any) => void;
+    dateTimestamp: number;
     scrollOffset: SharedValue<number>
     selectedTimeBlock: SharedValue<TimeBlock>;
     isMonthVisible: boolean;
     isModalVisible: SharedValue<boolean>;
-    isSwiping: SharedValue<boolean>;
-    previewDate: SharedValue<number | null>
     allGroupedAppointments: Record<number, Appointment[]>;
+    itemActualHeight: number;
+    itemActualWidth: number;
+    masterScrollOffsetY: SharedValue<number>
 }
 
 
 export const DayColumn: React.FC<DayColumnProps> = ({
-    selectedDateShared, scrollHandler, selectedTimeBlock, position, 
-    isMonthVisible, isModalVisible, scrollOffset, displayDateShared, allGroupedAppointments,
-    prevListRef, centerListRef, nextListRef, isCurrentDay = false, selectedDate, previewDate
+    selectedDateShared, selectedTimeBlock, masterScrollOffsetY,
+    isMonthVisible, isModalVisible, scrollOffset, allGroupedAppointments,
+    dateTimestamp, itemActualHeight, itemActualWidth
 }) => {
 
     const appointmentTitle = "Appointment 1" // temporary marker
@@ -61,9 +55,8 @@ export const DayColumn: React.FC<DayColumnProps> = ({
     const initialOffset = 8 * 60;
     const height = useSharedValue(0);
     const startHeight = useSharedValue(height.value);
+    const isUserDraggingThisColumn = useSharedValue(false);
 
-
-    // const [displayDate, setDisplayDate] = useState(displayDateShared.value);
 
     const { tapTimeBlockGesture, topResizeGesture, bottomResizeGesture, moveGesture 
     } = useTimeBlockGestures({ HOUR_HEIGHT, MINUTES_PER_STEP, PIXELS_PER_MINUTE, selectedDateShared,
@@ -73,37 +66,45 @@ export const DayColumn: React.FC<DayColumnProps> = ({
     });
 
 
-    const [displayDate, setDisplayDate] = useState<number>(0);
-
-    useAnimatedReaction(
-        () => displayDateShared.value,
-        (val) => {
-            runOnJS(setDisplayDate)(val);
-        }
-    );
+    const [displayDate, setDisplayDate] = useState<number>(dateTimestamp);
+    const scrollViewRef = useAnimatedRef<Animated.ScrollView>();
+    const initialScrollPixels = useMemo(() => (8 * 60) * PIXELS_PER_MINUTE, []);
 
     useEffect(() => {
-        setTimeout(() => {
-            if (containerRef.current) {
-                containerRef.current.measure((x, y, width, height, pageX, pageY) => {
-                    dayColumnY.value = pageY;
-                });
-            }
-            if (centerListRef.current) {
-                centerListRef.current.scrollTo({ y: initialOffset, animated: false });
-            }
-        }, 0);
-    }, []);
+        if (dateTimestamp !== displayDate) {
+            setDisplayDate(dateTimestamp);
+        }
+    }, [dateTimestamp, displayDate]);
 
 
+    const [hasPerformedInitialScrollLogic, setHasPerformedInitialScrollLogic] = useState(false);
+
+    useEffect(() => {
+        if (!hasPerformedInitialScrollLogic) {
+            const targetY = masterScrollOffsetY.value > 1 ? masterScrollOffsetY.value : initialScrollPixels;
+            runOnUI(() => {
+                'worklet';
+                if (scrollViewRef.current) {
+                    scrollTo(scrollViewRef, 0, targetY, false);
+                }
+            })();
+            setHasPerformedInitialScrollLogic(true);
+        }
+    }, [initialScrollPixels, masterScrollOffsetY, hasPerformedInitialScrollLogic, dateTimestamp, scrollViewRef]);
+
+    // Reaction to masterScrollOffsetY changes (runs on UI thread)
     useAnimatedReaction(
-        () => displayDateShared.value,
-        (result, previous) => {
-            if (result !== previous) {
-              runOnJS(setDisplayDate)(result);
+        () => masterScrollOffsetY.value,
+        (currentMasterY, previousMasterY) => {
+            'worklet';
+            if (currentMasterY !== previousMasterY && scrollViewRef.current) {
+                if (!isUserDraggingThisColumn.value) { // <<< THE CRUCIAL CHECK
+                    scrollTo(scrollViewRef, 0, currentMasterY, false);
+                } else {
+                }
             }
         },
-        // [displayDateShared]
+        [masterScrollOffsetY, scrollViewRef, dateTimestamp] 
     );
 
 
@@ -126,37 +127,51 @@ export const DayColumn: React.FC<DayColumnProps> = ({
 
     const positionedAppointments = usePositionedAppointments(displayDate, allGroupedAppointments);
 
-
+    const internalScrollHandler = useAnimatedScrollHandler({
+        onBeginDrag: (event, context) => {
+            'worklet';
+            isUserDraggingThisColumn.value = true;
+        },
+        onEndDrag: (event) => {
+            'worklet';
+            masterScrollOffsetY.value = event.contentOffset.y;
+            isUserDraggingThisColumn.value = false;
+        },
+        onMomentumEnd: (event) => {
+            'worklet';
+            masterScrollOffsetY.value = event.contentOffset.y;
+            isUserDraggingThisColumn.value = false;
+        },
+    });
     
     return (
-        <Animated.View 
-            style={{ flex: 1 }} 
+        <View 
+            style={{ height: itemActualHeight, width: itemActualWidth}} 
             pointerEvents="auto"
             ref={containerRef} 
             >
 
-            <DateHeader isMonthVisible={isMonthVisible} displayDate={displayDate} selectedDate={selectedDate}/>
-
+            <DateHeader isMonthVisible={isMonthVisible} displayDate={displayDate} selectedDate={displayDate}/>
+            
+            
             <GestureDetector gesture={tapTimeBlockGesture}> 
                 <View 
-                    style={{position: 'relative', flex: 1}}
+                    style={{position: 'relative', flex: 1 }}
                     onLayout={(e) => {
                         const {y} = e.nativeEvent.layout;
                         dayColumnY.value = y
                     }}
                 >
                     <Animated.ScrollView
-                        ref={position === 'prev' ? prevListRef : position === 'center' ? centerListRef : nextListRef}
+                        ref={scrollViewRef}
                         bounces={true}
                         overScrollMode="always"
-                        onScroll={scrollHandler}
                         scrollEventThrottle={16}
                         showsVerticalScrollIndicator={false}
+                        onScroll={internalScrollHandler}
                         style={{ 
                             flex: 1, 
-                            backgroundColor: '#fff' //position === 'prev' 
-                           // ? '#f0f8ff' : position === 'center'
-                           // ? '#e6ffe6' : '#ffe6f0',
+                            backgroundColor: '#fff',
                         }}
                     >
                         <View style={{ height: 24 * HOUR_HEIGHT, position: 'relative' }}>
@@ -175,7 +190,6 @@ export const DayColumn: React.FC<DayColumnProps> = ({
                 bottomResizeGesture={bottomResizeGesture}
                 appointmentTitle={appointmentTitle}
             />
-
-        </Animated.View>
+        </View>
     );
 };

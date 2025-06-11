@@ -20,3 +20,4 @@ export const usePositionedAppointments = (displayDate: number, allGroupedAppoint
 
     return positionedAppointments;
 };
+

@@ -35,14 +35,9 @@ export interface UseSwipeGesturesProps {
     setSelectedDate: Dispatch<SetStateAction<number>>
     // updateReactSelectionDate: (targetTimestamp: number) => void;
     // centerViewIndex: SharedValue<number>
-    prevDateShared: SharedValue<number>;
-    centerDateShared: SharedValue<number>;
-    nextDateShared: SharedValue<number>;
+
     isContentReadyForSnap: SharedValue<boolean>;
 
-    prevOpacity: SharedValue<number>;
-    centerOpacity: SharedValue<number>;
-    nextOpacity: SharedValue<number>;
     // cycleOffset: SharedValue<number>;
 }
 

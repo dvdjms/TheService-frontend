@@ -7,7 +7,7 @@ import { addDaysNumber } from '../utils/timeUtils';
 export function useSwipeGestures(Props: UseSwipeGesturesProps) {const {  
     isSwiping, isMonthVisible, screenWidth, previewDate, setSelectedDate,
     selectedDateShared, verticalThreshold, velocityThreshold, swipeThreshold,
-    translateX, translateY, collapseMonth, isContentReadyForSnap, prevOpacity, centerOpacity, nextOpacity
+    translateX, translateY, collapseMonth, isContentReadyForSnap
     } = Props;
 
 
@@ -49,12 +49,12 @@ export function useSwipeGestures(Props: UseSwipeGesturesProps) {const {
                  previewDate.value = null;
             }
 
-            if (Math.abs(e.translationX) > screenWidth - 110) {
-                centerOpacity.value = 0;
+            // if (Math.abs(e.translationX) > screenWidth - 110) {
+            //     centerOpacity.value = 0;
 
-            } else {
-                centerOpacity.value = 1;
-            }
+            // } else {
+            //     centerOpacity.value = 1;
+            // }
 
         })
         .onEnd((e) => {
@@ -76,7 +76,7 @@ export function useSwipeGestures(Props: UseSwipeGesturesProps) {const {
                         const newDate = addDaysNumber(selectedDateShared.value, -1);
                         selectedDateShared.value = newDate;
                         runOnJS(setSelectedDate)(newDate);
-                         centerOpacity.value = 1;
+                        //  centerOpacity.value = 1;
                         // previewDate.value = null; 
                     }}
                 );
@@ -93,7 +93,7 @@ export function useSwipeGestures(Props: UseSwipeGesturesProps) {const {
                         runOnJS(setSelectedDate)(newDate);
                         // previewDate.value = null; 
                         // isSwiping.value = false;
-                         centerOpacity.value = 1;
+                        //  centerOpacity.value = 1;
                     }
                 );
             }    

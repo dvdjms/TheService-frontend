@@ -11,9 +11,9 @@ const HourGrid = React.memo(() => (
             <View
                 key={`hour-${hour}`}
                 style={{
-                height: HOUR_HEIGHT,
-                flexDirection: 'row',
-                paddingHorizontal: 5,
+                    height: HOUR_HEIGHT,
+                    flexDirection: 'row',
+                    paddingHorizontal: 5,
                 }}
             >
                 <View>
