@@ -12,10 +12,8 @@ import { format } from "date-fns";
 
 export default function SchedularScreen() {
     // const [selectedDate, setSelectedDate] = useState(Date.now());
-
     const [selectedDate, setSelectedDate] = useState(() => {
     const initialDate = Date.now();
-    //console.log("SchedularScreen INITIALIZING selectedDate to:", new Date(initialDate).toString());
     return initialDate;
 });
 
@@ -84,23 +82,28 @@ export default function SchedularScreen() {
         };
     });
 
-    const bottomPadding = useDerivedValue(() => {
-        return isModalVisible.value ? modalHeight.value : 0;
-    });
-
     const animatedCalendarStyle = useAnimatedStyle(() => {
         return {
-            marginBottom: bottomPadding.value,
+            flex: 1,
         };
     });
 
 
-    const animatedStyleModal = useAnimatedStyle(() => {
+    const animatedModalStyle = useAnimatedStyle(() => {
         const isVisible = isModalVisible.value;
         return {
             opacity: withTiming(isVisible ? 1 : 0, { duration: 200}),
             height: modalHeight.value,
+            position: 'absolute',
+            bottom: 0,
+            right: 0,
+            left: 0
         };
+    });
+
+
+    const dynamicModalPadding = useDerivedValue(() => {
+        return isModalVisible.value ? modalHeight.value : 0;
     });
 
     return (
@@ -138,13 +141,14 @@ export default function SchedularScreen() {
                     isModalVisible={isModalVisible}
                     previewDate={previewDate}
                     isModalExpanded={isModalExpanded}
+                    dynamicModalPadding={dynamicModalPadding}
               />
             </Animated.View>
         </View>
 
           {/* Sliding Appointment View */}
         <Animated.View
-            style={[styles.appointmentBlock, animatedStyleModal]}
+            style={[styles.appointmentBlock, animatedModalStyle]}
             >
             <AppointmentBlock
                 isModalExpanded={isModalExpanded}
@@ -166,7 +170,11 @@ const styles = StyleSheet.create({
     container: {
         flex: 1,
         backgroundColor: '#fff',
-        position: 'absolute', top: 0, bottom: 0, left: 0, right: 0
+        position: 'absolute', //???? Unsure why, also works with realative 
+        top: 0, 
+        bottom: 0, 
+        left: 0, 
+        right: 0
     },
     dateHeader: {
         height: 30,
@@ -179,11 +187,10 @@ const styles = StyleSheet.create({
     },
     appointmentBlock: {
         overflow: 'hidden',
-          backgroundColor: 'rgba(221, 221, 221, 0.95)',
+        backgroundColor: 'rgba(221, 221, 221, 0.95)',
         // backgroundColor: '#ddd',
         borderTopLeftRadius: 30,
         borderTopRightRadius: 30,
-        
         position: 'absolute',
         bottom: 0,
         width: '100%',

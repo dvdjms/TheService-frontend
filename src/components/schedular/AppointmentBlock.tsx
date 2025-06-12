@@ -90,7 +90,7 @@ const AppointmentBlock = ({ onSave, selectedDate, selectedTimeBlock, isModalVisi
                         </View>
 
                         <Text style={ styles.label }>
-                            {format(newDate, 'eeee dd MMM yyy')}
+                            {displayBlock?.date ? format(displayBlock?.date, 'eeee dd MMM yyy') : 'no date selected'}
                             {"  •  "}
                             {displayBlock?.startMinutes  ? yToTime11(displayBlock.startMinutes) : '--:--'}
                             {" – "}

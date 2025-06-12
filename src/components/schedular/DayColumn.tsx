@@ -2,7 +2,8 @@ import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { View } from 'react-native';
 import { GestureDetector } from 'react-native-gesture-handler';
 import Animated, { runOnJS, SharedValue, useAnimatedReaction, useAnimatedStyle, 
-    useSharedValue, runOnUI, scrollTo, useAnimatedRef, useAnimatedScrollHandler
+    useSharedValue, runOnUI, scrollTo, useAnimatedRef, useAnimatedScrollHandler,
+    DerivedValue
     } from 'react-native-reanimated';
 import { TimeBlock, Appointment } from '../types/Service';
 import { useTimeBlockGestures } from '@/src/components/hooks/useTimeBlockGestures';
@@ -24,21 +25,21 @@ interface DayColumnProps {
     selectedDate: number;
     selectedDateShared: SharedValue<number>;
     dateTimestamp: number;
-    scrollOffset: SharedValue<number>
     selectedTimeBlock: SharedValue<TimeBlock>;
     isMonthVisible: boolean;
     isModalVisible: SharedValue<boolean>;
     allGroupedAppointments: Record<number, Appointment[]>;
     itemActualHeight: number;
     itemActualWidth: number;
-    masterScrollOffsetY: SharedValue<number>
+    masterScrollOffsetY: SharedValue<number>;
+    dynamicModalPadding: DerivedValue<0 | 170 | 50>;
 }
 
 
 export const DayColumn: React.FC<DayColumnProps> = ({
     selectedDateShared, selectedTimeBlock, masterScrollOffsetY,
-    isMonthVisible, isModalVisible, scrollOffset, allGroupedAppointments,
-    dateTimestamp, itemActualHeight, itemActualWidth
+    isMonthVisible, isModalVisible, allGroupedAppointments,
+    dateTimestamp, itemActualHeight, itemActualWidth, dynamicModalPadding
 }) => {
 
     const appointmentTitle = "Appointment 1" // temporary marker
@@ -52,62 +53,102 @@ export const DayColumn: React.FC<DayColumnProps> = ({
     const initialEnd = useSharedValue(0);
     const topInitialStart = useSharedValue(0);
     const bottomInitialEnd = useSharedValue(0);
-    const initialOffset = 8 * 60;
     const height = useSharedValue(0);
     const startHeight = useSharedValue(height.value);
     const isUserDraggingThisColumn = useSharedValue(false);
 
+    const [displayDate, setDisplayDate] = useState<number>(dateTimestamp);
+    const scrollViewRef = useAnimatedRef<Animated.ScrollView>();
+
 
     const { tapTimeBlockGesture, topResizeGesture, bottomResizeGesture, moveGesture 
     } = useTimeBlockGestures({ HOUR_HEIGHT, MINUTES_PER_STEP, PIXELS_PER_MINUTE, selectedDateShared,
-        MIN_DURATION, MINUTES_IN_DAY, scrollOffset, selectedTimeBlock, isMonthVisible, 
+        MIN_DURATION, MINUTES_IN_DAY, masterScrollOffsetY, selectedTimeBlock, isMonthVisible, 
         isModalVisible, topInitialStart, bottomInitialEnd, initialStart, 
-        initialEnd, height, startHeight, setIsBlockRenderable
+        initialEnd, height, startHeight, setIsBlockRenderable, dateTimestamp, displayDate
     });
 
-
-    const [displayDate, setDisplayDate] = useState<number>(dateTimestamp);
-    const scrollViewRef = useAnimatedRef<Animated.ScrollView>();
-    const initialScrollPixels = useMemo(() => (8 * 60) * PIXELS_PER_MINUTE, []);
 
     useEffect(() => {
         if (dateTimestamp !== displayDate) {
             setDisplayDate(dateTimestamp);
         }
-    }, [dateTimestamp, displayDate]);
+    }, [dateTimestamp]);
 
 
-    const [hasPerformedInitialScrollLogic, setHasPerformedInitialScrollLogic] = useState(false);
+    const [hasPerformedInitialScroll, setHasPerformedInitialScroll] = useState(false);
+
+    // useEffect(() => {
+    //     if (!hasPerformedInitialScrollLogic) {
+    //         const targetY = masterScrollOffsetY.value > 1 ? masterScrollOffsetY.value : initialScrollPixels;
+    //         runOnUI(() => {
+    //             'worklet';
+    //             if (scrollViewRef.current) {
+    //                 scrollTo(scrollViewRef, 0, targetY, false);
+    //             }
+    //         })();
+    //         setHasPerformedInitialScrollLogic(true);
+    //     }
+    // }, [initialScrollPixels, masterScrollOffsetY, hasPerformedInitialScrollLogic, dateTimestamp, scrollViewRef]);
+
+
+
+
+    // const [hasPerformedInitialScroll, setHasPerformedInitialScroll] = useState(false);
 
     useEffect(() => {
-        if (!hasPerformedInitialScrollLogic) {
-            const targetY = masterScrollOffsetY.value > 1 ? masterScrollOffsetY.value : initialScrollPixels;
-            runOnUI(() => {
-                'worklet';
-                if (scrollViewRef.current) {
-                    scrollTo(scrollViewRef, 0, targetY, false);
-                }
-            })();
-            setHasPerformedInitialScrollLogic(true);
+        if (hasPerformedInitialScroll) {
+            return;
         }
-    }, [initialScrollPixels, masterScrollOffsetY, hasPerformedInitialScrollLogic, dateTimestamp, scrollViewRef]);
 
-    // Reaction to masterScrollOffsetY changes (runs on UI thread)
+        const attemptScrollWorklet = () => { // This is the worklet
+            'worklet';
+            if (scrollViewRef.current) {
+                // Assumes masterScrollOffsetY.value is in correct units (pixels, or minutes if PIXELS_PER_MINUTE is 1)
+                scrollTo(scrollViewRef, 0, masterScrollOffsetY.value, false); 
+                runOnJS(setHasPerformedInitialScroll)(true); // Signal success to JS thread
+                // No need to return true from worklet for this specific JS logic,
+                // but can keep it if other future uses of this worklet might need it.
+            }
+            // No explicit return false needed if the worklet's return isn't directly used by runOnUI's caller.
+        };
+
+        // Immediately try to run the worklet.
+        runOnUI(attemptScrollWorklet)(); 
+
+        // Set up interval, which will stop once hasPerformedInitialScroll becomes true.
+        const intervalId = setInterval(() => {
+            // Check the state that is updated by the worklet via runOnJS
+            if (hasPerformedInitialScroll) { 
+                clearInterval(intervalId);
+                return;
+            }
+            // If not yet scrolled, try again
+            runOnUI(attemptScrollWorklet)();
+        }, 100); // Check every 100ms
+
+        // Cleanup interval on unmount or when dependencies change (though hasPerformedInitialScroll handles completion)
+        return () => clearInterval(intervalId); 
+
+    }, [hasPerformedInitialScroll, masterScrollOffsetY, scrollViewRef, dateTimestamp]);
+
+
+
+   // Reaction to masterScrollOffsetY changes (runs on UI thread)
     useAnimatedReaction(
         () => masterScrollOffsetY.value,
         (currentMasterY, previousMasterY) => {
             'worklet';
-            if (currentMasterY !== previousMasterY && scrollViewRef.current) {
-                if (!isUserDraggingThisColumn.value) { // <<< THE CRUCIAL CHECK
+            if (currentMasterY !== previousMasterY) {
+                if (!isUserDraggingThisColumn.value) {
                     scrollTo(scrollViewRef, 0, currentMasterY, false);
-                } else {
                 }
             }
         },
-        [masterScrollOffsetY, scrollViewRef, dateTimestamp] 
+        [masterScrollOffsetY, scrollViewRef, dateTimestamp, isUserDraggingThisColumn] 
     );
 
-
+    
     useAnimatedReaction(() => {
         const block = selectedTimeBlock.value
         return block !== null && block.startMinutes !== null && block.endMinutes !== null;
@@ -119,8 +160,8 @@ export const DayColumn: React.FC<DayColumnProps> = ({
     const appointmentBlockStyle = useAnimatedStyle(() => {
         const block = selectedTimeBlock.value;
         return {
-            top: (block?.startMinutes ?? 0) * HOUR_HEIGHT / 60 - scrollOffset.value + dayColumnY.value,
-            height: block.endMinutes && block.startMinutes ? (block.endMinutes - block.startMinutes) * HOUR_HEIGHT / 60 : 0,
+            top: (block?.startMinutes ?? 0) * PIXELS_PER_MINUTE - masterScrollOffsetY.value + dayColumnY.value,
+            height: block.endMinutes && block.startMinutes ? (block.endMinutes - block.startMinutes) * PIXELS_PER_MINUTE : 0,
         };
     });
 
@@ -132,10 +173,24 @@ export const DayColumn: React.FC<DayColumnProps> = ({
             'worklet';
             isUserDraggingThisColumn.value = true;
         },
+        onScroll: (event, context) => { // Added this
+            'worklet';
+            if (isUserDraggingThisColumn.value) {
+                masterScrollOffsetY.value = event.contentOffset.y;
+            }
+        },
         onEndDrag: (event) => {
             'worklet';
-            masterScrollOffsetY.value = event.contentOffset.y;
+            if (isUserDraggingThisColumn.value) { 
+                masterScrollOffsetY.value = event.contentOffset.y;
+            }
             isUserDraggingThisColumn.value = false;
+        },
+        onMomentumBegin: (event, context) => {
+            'worklet';
+            if (isUserDraggingThisColumn.value) {
+                masterScrollOffsetY.value = event.contentOffset.y;
+            }
         },
         onMomentumEnd: (event) => {
             'worklet';
@@ -144,6 +199,17 @@ export const DayColumn: React.FC<DayColumnProps> = ({
         },
     });
     
+
+
+
+   // Define animatedPaddingViewStyle using the new dynamicModalPadding prop
+    const animatedPaddingViewStyle = useAnimatedStyle(() => {
+        'worklet';
+        return {
+            height: dynamicModalPadding.value,
+        };
+    }, [dynamicModalPadding]);
+
     return (
         <View 
             style={{ height: itemActualHeight, width: itemActualWidth}} 
@@ -152,7 +218,6 @@ export const DayColumn: React.FC<DayColumnProps> = ({
             >
 
             <DateHeader isMonthVisible={isMonthVisible} displayDate={displayDate} selectedDate={displayDate}/>
-            
             
             <GestureDetector gesture={tapTimeBlockGesture}> 
                 <View 
@@ -167,17 +232,22 @@ export const DayColumn: React.FC<DayColumnProps> = ({
                         bounces={true}
                         overScrollMode="always"
                         scrollEventThrottle={16}
+    
                         showsVerticalScrollIndicator={false}
                         onScroll={internalScrollHandler}
                         style={{ 
                             flex: 1, 
                             backgroundColor: '#fff',
+                            paddingBottom: 300
                         }}
+                        // contentContainerStyle={internalScrollViewContentStyle}
                     >
                         <View style={{ height: 24 * HOUR_HEIGHT, position: 'relative' }}>
                             <HourGrid />
                             <AppointmentBlocks appointments={positionedAppointments} />
                         </View>
+                        <Animated.View style={animatedPaddingViewStyle} />
+
                     </Animated.ScrollView>
                 </View>
             </GestureDetector>

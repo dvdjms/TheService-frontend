@@ -1,9 +1,7 @@
 import React, { Dispatch, SetStateAction, forwardRef, useCallback, useEffect, useImperativeHandle, useMemo, useRef, useState  } from 'react';
 import { GestureDetector, Gesture } from 'react-native-gesture-handler';
-import Animated, { useSharedValue, useAnimatedStyle, withTiming, runOnJS, Easing, 
-    SharedValue, useAnimatedRef, useAnimatedScrollHandler, scrollTo, useDerivedValue,
-    runOnUI } from 'react-native-reanimated';
-import { View, StyleSheet, Dimensions, NativeSyntheticEvent, NativeScrollEvent, LayoutChangeEvent } from 'react-native';
+import Animated, { useSharedValue, SharedValue, runOnUI, DerivedValue} from 'react-native-reanimated';
+import { View, Dimensions, LayoutChangeEvent } from 'react-native';
 import { FlashList } from '@shopify/flash-list';
 import type { FlashList as FlashListType } from "@shopify/flash-list";
 import { DayColumn } from './DayColumn';
@@ -25,19 +23,20 @@ interface CalendarDayViewProps {
     selectedTimeBlock: SharedValue<TimeBlock>;
     previewDate: SharedValue<number | null>;
     isModalExpanded: SharedValue<boolean>;
+    dynamicModalPadding: DerivedValue<0 | 170 | 50>
 }
 
 const CalendarDayView = forwardRef<CalendarDayViewHandle, CalendarDayViewProps>(({ 
-    selectedDate, selectedDateShared, isMonthVisible, isModalVisible, collapseMonth, 
-    selectedTimeBlock, setSelectedDate, previewDate, isModalExpanded
+    selectedDate, selectedDateShared, isMonthVisible, isModalVisible, isModalExpanded, collapseMonth, 
+    selectedTimeBlock, setSelectedDate, previewDate, dynamicModalPadding
 }, ref)  => {
     const flashListRef = useRef<FlashListType<number>>(null);
-    const scrollOffset = useSharedValue(0);
     const isSwiping = useSharedValue(false);
 
     const isScrolling = useSharedValue(false);
 
-    const masterScrollOffsetY = useSharedValue(0);
+    const EIGHT_AM_OFFSET = 8 * 60;
+    const masterScrollOffsetY = useSharedValue(EIGHT_AM_OFFSET);
 
     const translateX = useSharedValue(0);
     const translateY = useSharedValue(0);
@@ -52,7 +51,6 @@ const CalendarDayView = forwardRef<CalendarDayViewHandle, CalendarDayViewProps>(
         screenWidth, previewDate, verticalThreshold, velocityThreshold, swipeThreshold, translateX, 
         translateY, collapseMonth, setSelectedDate, isContentReadyForSnap
     });
-
 
 
 
@@ -141,22 +139,22 @@ const CalendarDayView = forwardRef<CalendarDayViewHandle, CalendarDayViewProps>(
         const { width, height } = event.nativeEvent.layout;
         if (width > 0 && height > 0) {
             if (width !== layoutSize.width || height !== layoutSize.height) {
-                console.log(width, height)
                 setLayoutSize({ width, height });
             }
         }
     }, [layoutSize.width, layoutSize.height]); // Add dependencies to useCallback
 
 
-        const sharedProps = {
+
+    const sharedProps = {
         selectedDateShared,
         isMonthVisible,
         isModalVisible,
         selectedTimeBlock,
-        scrollOffset,
         selectedDate,
         onLayoutView,
-        masterScrollOffsetY
+        masterScrollOffsetY,
+        dynamicModalPadding
     }
 
     return (
@@ -165,7 +163,7 @@ const CalendarDayView = forwardRef<CalendarDayViewHandle, CalendarDayViewProps>(
             <View 
                 style={{ flex: 1}}
                 pointerEvents={isMonthVisible ? "box-only" : "auto"}
-                      onLayout={onLayoutView}
+                onLayout={onLayoutView}
             >
                 {layoutSize.width > 0 && layoutSize.height > 0 ? (
 
@@ -180,7 +178,8 @@ const CalendarDayView = forwardRef<CalendarDayViewHandle, CalendarDayViewProps>(
                                 itemActualHeight={layoutSize.height} 
                                 itemActualWidth={layoutSize.width} 
                                 {...sharedProps} />
-                    )}}
+                        )
+                    }}
                     estimatedItemSize={screenWidth}
                     horizontal
                     pagingEnabled={true}
@@ -193,8 +192,9 @@ const CalendarDayView = forwardRef<CalendarDayViewHandle, CalendarDayViewProps>(
                     scrollEventThrottle={16}
                     snapToInterval={screenWidth}
                     snapToAlignment="center"
-                    decelerationRate="fast" 
-                  
+                    decelerationRate="fast"
+                        contentContainerStyle={{ paddingBottom: isModalVisible.value ? (isModalExpanded.value ? 170 : 50) : 0 }}
+                    // contentContainerStyle={flashListContentContainerStyle}
                 />
                 ): null}
      

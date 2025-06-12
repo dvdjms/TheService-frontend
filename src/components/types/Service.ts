@@ -49,8 +49,7 @@ export interface UseTimeBlockGesturesProps {
     MIN_DURATION: number;
     MINUTES_IN_DAY: number;
     // UI positioning and scroll state
-    scrollOffset: SharedValue<number>
-
+    masterScrollOffsetY: SharedValue<number>
     // Time block interaction state
     selectedTimeBlock: SharedValue<TimeBlock>;
     topInitialStart: SharedValue<number>;
@@ -64,7 +63,8 @@ export interface UseTimeBlockGesturesProps {
     isMonthVisible: boolean;
     isModalVisible:  SharedValue<boolean>;
     selectedDateShared: SharedValue<number>;
-
+    dateTimestamp: number;
+    displayDate: number;
     // Output
     setIsBlockRenderable: React.Dispatch<React.SetStateAction<boolean>>;
 }

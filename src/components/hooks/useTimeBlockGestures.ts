@@ -7,8 +7,8 @@ import { UseTimeBlockGesturesProps } from '@/src/components/types/Service';
 
 export function useTimeBlockGestures(Props: UseTimeBlockGesturesProps) {const {  
     PIXELS_PER_MINUTE, MINUTES_PER_STEP, MIN_DURATION, MINUTES_IN_DAY, HOUR_HEIGHT,
-    scrollOffset, selectedTimeBlock, isMonthVisible, selectedDateShared, isModalVisible, topInitialStart,
-    bottomInitialEnd, initialStart, initialEnd, height, startHeight, setIsBlockRenderable
+    masterScrollOffsetY, selectedTimeBlock, isMonthVisible, selectedDateShared, dateTimestamp,displayDate,
+    isModalVisible, topInitialStart, bottomInitialEnd, initialStart, initialEnd, height, startHeight
     } = Props;
 
 
@@ -17,13 +17,19 @@ export function useTimeBlockGestures(Props: UseTimeBlockGesturesProps) {const {
         Gesture.Tap().onEnd((e) => {
             'worklet';
             if (!isMonthVisible) {
-                const tappedY = e.y + scrollOffset.value;
-                const block = getTimeBlockFromY(tappedY, HOUR_HEIGHT, selectedDateShared.value);
+                // const tappedY = e.y + masterScrollOffsetY.value;
+                // const block = getTimeBlockFromY(tappedY, HOUR_HEIGHT, displayDate);
+
+                const tapRelativeToScrollableTop = e.y;
+                const tappedYInScrollContent = tapRelativeToScrollableTop + masterScrollOffsetY.value;
+
+                const block = getTimeBlockFromY(tappedYInScrollContent, HOUR_HEIGHT, displayDate);
+  
                 selectedTimeBlock.value = block;
                 isModalVisible.value = true;
             }
         }),
-        [isMonthVisible]
+        [isMonthVisible, displayDate, masterScrollOffsetY, selectedTimeBlock, isModalVisible, HOUR_HEIGHT]
     );
 
 
