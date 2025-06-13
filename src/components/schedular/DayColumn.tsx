@@ -44,7 +44,6 @@ export const DayColumn: React.FC<DayColumnProps> = ({
 
     const appointmentTitle = "Appointment 1" // temporary marker
 
-    const dayColumnY = useSharedValue(0)
 
     const [isBlockRenderable, setIsBlockRenderable] = useState(false);
     const containerRef = useRef<View>(null);
@@ -55,8 +54,10 @@ export const DayColumn: React.FC<DayColumnProps> = ({
     const bottomInitialEnd = useSharedValue(0);
     const height = useSharedValue(0);
     const startHeight = useSharedValue(height.value);
+    const dayColumnY = useSharedValue(0)
     const isUserDraggingThisColumn = useSharedValue(false);
 
+    const [hasPerformedInitialScroll, setHasPerformedInitialScroll] = useState(false);
     const [displayDate, setDisplayDate] = useState<number>(dateTimestamp);
     const scrollViewRef = useAnimatedRef<Animated.ScrollView>();
 
@@ -76,44 +77,20 @@ export const DayColumn: React.FC<DayColumnProps> = ({
     }, [dateTimestamp]);
 
 
-    const [hasPerformedInitialScroll, setHasPerformedInitialScroll] = useState(false);
 
-    // useEffect(() => {
-    //     if (!hasPerformedInitialScrollLogic) {
-    //         const targetY = masterScrollOffsetY.value > 1 ? masterScrollOffsetY.value : initialScrollPixels;
-    //         runOnUI(() => {
-    //             'worklet';
-    //             if (scrollViewRef.current) {
-    //                 scrollTo(scrollViewRef, 0, targetY, false);
-    //             }
-    //         })();
-    //         setHasPerformedInitialScrollLogic(true);
-    //     }
-    // }, [initialScrollPixels, masterScrollOffsetY, hasPerformedInitialScrollLogic, dateTimestamp, scrollViewRef]);
-
-
-
-
-    // const [hasPerformedInitialScroll, setHasPerformedInitialScroll] = useState(false);
 
     useEffect(() => {
         if (hasPerformedInitialScroll) {
             return;
         }
 
-        const attemptScrollWorklet = () => { // This is the worklet
+        const attemptScrollWorklet = () => {
             'worklet';
             if (scrollViewRef.current) {
-                // Assumes masterScrollOffsetY.value is in correct units (pixels, or minutes if PIXELS_PER_MINUTE is 1)
                 scrollTo(scrollViewRef, 0, masterScrollOffsetY.value, false); 
-                runOnJS(setHasPerformedInitialScroll)(true); // Signal success to JS thread
-                // No need to return true from worklet for this specific JS logic,
-                // but can keep it if other future uses of this worklet might need it.
+                runOnJS(setHasPerformedInitialScroll)(true);
             }
-            // No explicit return false needed if the worklet's return isn't directly used by runOnUI's caller.
         };
-
-        // Immediately try to run the worklet.
         runOnUI(attemptScrollWorklet)(); 
 
         // Set up interval, which will stop once hasPerformedInitialScroll becomes true.
@@ -123,11 +100,9 @@ export const DayColumn: React.FC<DayColumnProps> = ({
                 clearInterval(intervalId);
                 return;
             }
-            // If not yet scrolled, try again
             runOnUI(attemptScrollWorklet)();
-        }, 100); // Check every 100ms
+        }, 100);
 
-        // Cleanup interval on unmount or when dependencies change (though hasPerformedInitialScroll handles completion)
         return () => clearInterval(intervalId); 
 
     }, [hasPerformedInitialScroll, masterScrollOffsetY, scrollViewRef, dateTimestamp]);
@@ -151,10 +126,13 @@ export const DayColumn: React.FC<DayColumnProps> = ({
     
     useAnimatedReaction(() => {
         const block = selectedTimeBlock.value
-        return block !== null && block.startMinutes !== null && block.endMinutes !== null;
+        return block !== null && 
+                block.startMinutes !== null && 
+                block.endMinutes !== null &&
+                block.date === dateTimestamp;
     },(isRenderable) => {
         runOnJS(setIsBlockRenderable)(isRenderable);
-    },[]);
+    },[selectedTimeBlock, dateTimestamp]);
 
 
     const appointmentBlockStyle = useAnimatedStyle(() => {
@@ -184,7 +162,6 @@ export const DayColumn: React.FC<DayColumnProps> = ({
             if (isUserDraggingThisColumn.value) { 
                 masterScrollOffsetY.value = event.contentOffset.y;
             }
-            isUserDraggingThisColumn.value = false;
         },
         onMomentumBegin: (event, context) => {
             'worklet';
