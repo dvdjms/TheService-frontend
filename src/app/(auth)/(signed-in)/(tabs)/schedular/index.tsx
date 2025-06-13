@@ -1,42 +1,40 @@
 import { View, StyleSheet, TouchableOpacity, Text } from "react-native";
-import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import React, { useRef, useState } from 'react';
 import CalendarMonthView from "@/src/components/schedular/CalendarMonthView";
 import CalendarDayView from "@/src/components/schedular/CalendarDayView";
 import { Ionicons } from '@expo/vector-icons';
 import AppointmentBlock from "@/src/components/schedular/AppointmentBlock";
-import Animated, { runOnJS, useSharedValue, withTiming, Easing, useAnimatedStyle, useAnimatedReaction, useDerivedValue, runOnUI } from "react-native-reanimated";
-import { TimeBlock, Appointment, CalendarDayViewHandle } from '@/src/components/types/Service';
-import { addDaysNumber } from "@/src/components/utils/timeUtils";
+import Animated, { runOnJS, useSharedValue, withTiming, Easing, useAnimatedStyle, useAnimatedReaction, useDerivedValue } from "react-native-reanimated";
+import { TimeBlock, CalendarDayViewHandle } from '@/src/components/types/Service';
 import { format } from "date-fns";
 
 
 export default function SchedularScreen() {
     // const [selectedDate, setSelectedDate] = useState(Date.now());
     const [selectedDate, setSelectedDate] = useState(() => {
-    const initialDate = Date.now();
-    return initialDate;
-});
+        const initialDate = Date.now();
+        return initialDate;
+    });
 
     const [isMonthVisible, setIsMonthVisible] = useState(false);
     const calendarDayViewRef = useRef<CalendarDayViewHandle>(null);
     const monthHeight = useSharedValue<number>(0);
     const isModalVisible = useSharedValue(false);
     const isModalExpanded = useSharedValue(false);
+    const selectedDateShared = useSharedValue(selectedDate);
+    const previewDate = useSharedValue<number | null>(null);
 
     const selectedTimeBlock = useSharedValue<TimeBlock>({
         startMinutes: null,
         endMinutes: null,
         date: selectedDate,
-    })
-
-    const selectedDateShared = useSharedValue(selectedDate);
-    const previewDate = useSharedValue<number | null>(null);
+    });
 
 
     const toggleMonth = () => {
         const monthMaxHeight = 270;
         const toValue = isMonthVisible ? 0 : monthMaxHeight;
-        monthHeight.value = withTiming(toValue, { duration: 300, easing: Easing.inOut(Easing.ease) }, () => {
+        monthHeight.value = withTiming(toValue, { duration: 200, easing: Easing.inOut(Easing.ease) }, () => {
             runOnJS(setIsMonthVisible)(!isMonthVisible);
         });
     };
@@ -52,11 +50,11 @@ export default function SchedularScreen() {
 
     const collapseMonth = () =>  {
         if (isMonthVisible) {
-            monthHeight.value = withTiming(0, { duration: 300, easing: Easing.inOut(Easing.ease) }, () => {
+            monthHeight.value = withTiming(0, { duration: 200, easing: Easing.inOut(Easing.ease) }, () => {
                 runOnJS(setIsMonthVisible)(false);
             });
         }
-    }
+    };
 
     
     useAnimatedReaction(
@@ -72,19 +70,20 @@ export default function SchedularScreen() {
 
     const modalHeight = useDerivedValue(() => {
         if (!isModalVisible.value) return withTiming(0, {duration: 200})
-        return withTiming(isModalExpanded.value ? 170 : 50, { duration: 300 });
+        return withTiming(isModalExpanded.value ? 170 : 50, { duration: 200 });
     });
 
 
     const animatedMonthStyle = useAnimatedStyle(() => {
         return {
-            height: withTiming(monthHeight.value, { duration: 200 }),
+            height: withTiming(monthHeight.value, { duration: 200 })
         };
     });
 
+
     const animatedCalendarStyle = useAnimatedStyle(() => {
         return {
-            flex: 1,
+            // flex: 1,
         };
     });
 
@@ -106,9 +105,9 @@ export default function SchedularScreen() {
         return isModalVisible.value ? modalHeight.value : 0;
     });
 
+
     return (
         <>
-    
         <View style={styles.container}>
             {/* Toggle Button */}
             <TouchableOpacity onPress={toggleMonth}>
@@ -130,7 +129,6 @@ export default function SchedularScreen() {
             {/* Calendar Day View */}
             <Animated.View style={[{flex: 1}, animatedCalendarStyle]}>
                 <CalendarDayView
-                    // currentDate={format(currentDate, 'yyy-MM-dd')}
                     ref={calendarDayViewRef}
                     selectedDate={selectedDate}
                     selectedDateShared={selectedDateShared}

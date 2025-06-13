@@ -1,15 +1,21 @@
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { View, Text, Button, StyleSheet } from 'react-native';
-import clients from '../../../../../../assets/mock-clients.json';
 import FormButton from '@/src/components/ui/FormButton';
 import { colors } from '@/src/styles/globalStyles';
+import dummyAppointments from "@/assets/mock-clients.json";
+import { FlatList } from 'react-native-gesture-handler';
+import { Appointment } from '@/src/components/types/Service';
+import { format } from 'date-fns';
+
+
 
 export default function ClientDetail() {
     const router = useRouter();
     const { id } = useLocalSearchParams();
 
-    const client = clients.find(c => c.id === id);
-    
+    const client = dummyAppointments.find(c => c.id === id);
+
+
     if (!client) {
         return (
             <View>
@@ -18,6 +24,23 @@ export default function ClientDetail() {
             </View>
         );
     }
+
+    const sortedAppointments = [...client.appointments].sort(
+        (a, b) => a.start_minutes - b.start_minutes
+    );
+
+
+    const renderItem = ({ item }: { item: any }) => (
+        <View style={{ paddingVertical: 8 }}>
+            <Text style={{ fontWeight: 'bold' }}>
+                {item.appointment_title.split('\n')[0]}
+            </Text>
+            <Text>
+                {format(item.start_minutes, 'eeee dd MMMM yyyy HH:mm')} -{' '}
+                {format(item.end_minutes,'HH:mm')}
+            </Text>
+        </View>
+    );
 
     return (
    
@@ -28,6 +51,16 @@ export default function ClientDetail() {
                 <Text>Email: {client.email}</Text>
                 <Text>Phone: {client.phone}</Text>
             </View>
+
+            <View style={styles.appointmentsContainer}>
+                <FlatList 
+                    data={sortedAppointments}
+                    keyExtractor={item => item.id}
+                    renderItem={renderItem}
+                />
+              
+            </View>
+              <Text>Add appointment +</Text>
 
             <View style={styles.buttonContainer}>
                 <FormButton title="Close" OnPress={() => router.back()} width={0.9} />
@@ -61,5 +94,10 @@ const styles = StyleSheet.create({
         flex: 1,
         justifyContent: 'center',
         alignItems: 'center',
-  },
+    },
+    appointmentsContainer: {
+        borderWidth: 1,
+        borderColor: 'red'
+    }
 });
+

@@ -77,8 +77,6 @@ export const DayColumn: React.FC<DayColumnProps> = ({
     }, [dateTimestamp]);
 
 
-
-
     useEffect(() => {
         if (hasPerformedInitialScroll) {
             return;
@@ -95,7 +93,6 @@ export const DayColumn: React.FC<DayColumnProps> = ({
 
         // Set up interval, which will stop once hasPerformedInitialScroll becomes true.
         const intervalId = setInterval(() => {
-            // Check the state that is updated by the worklet via runOnJS
             if (hasPerformedInitialScroll) { 
                 clearInterval(intervalId);
                 return;
@@ -125,7 +122,7 @@ export const DayColumn: React.FC<DayColumnProps> = ({
 
     
     useAnimatedReaction(() => {
-        const block = selectedTimeBlock.value
+        const block = selectedTimeBlock.value;
         return block !== null && 
                 block.startMinutes !== null && 
                 block.endMinutes !== null &&
@@ -146,12 +143,13 @@ export const DayColumn: React.FC<DayColumnProps> = ({
 
     const positionedAppointments = usePositionedAppointments(displayDate, allGroupedAppointments);
 
+
     const internalScrollHandler = useAnimatedScrollHandler({
         onBeginDrag: (event, context) => {
             'worklet';
             isUserDraggingThisColumn.value = true;
         },
-        onScroll: (event, context) => { // Added this
+        onScroll: (event, context) => {
             'worklet';
             if (isUserDraggingThisColumn.value) {
                 masterScrollOffsetY.value = event.contentOffset.y;
@@ -177,15 +175,14 @@ export const DayColumn: React.FC<DayColumnProps> = ({
     });
     
 
-
-
-   // Define animatedPaddingViewStyle using the new dynamicModalPadding prop
+   // Define animatedPaddingViewStyle using the new dynamicModalPadding prop on dummy element
     const animatedPaddingViewStyle = useAnimatedStyle(() => {
         'worklet';
         return {
             height: dynamicModalPadding.value,
         };
     }, [dynamicModalPadding]);
+
 
     return (
         <View 
@@ -209,7 +206,6 @@ export const DayColumn: React.FC<DayColumnProps> = ({
                         bounces={true}
                         overScrollMode="always"
                         scrollEventThrottle={16}
-    
                         showsVerticalScrollIndicator={false}
                         onScroll={internalScrollHandler}
                         style={{ 
@@ -217,7 +213,6 @@ export const DayColumn: React.FC<DayColumnProps> = ({
                             backgroundColor: '#fff',
                             paddingBottom: 300
                         }}
-                        // contentContainerStyle={internalScrollViewContentStyle}
                     >
                         <View style={{ height: 24 * HOUR_HEIGHT, position: 'relative' }}>
                             <HourGrid />
