@@ -58,6 +58,7 @@ export interface UseTimeBlockGesturesProps {
     initialEnd: SharedValue<number>;
     height: SharedValue<number>;
     startHeight: SharedValue<number>;
+    isTimeBlockTouched: SharedValue<boolean>
 
     // UI states
     isMonthVisible: boolean;

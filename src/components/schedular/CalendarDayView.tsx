@@ -33,8 +33,6 @@ const CalendarDayView = forwardRef<CalendarDayViewHandle, CalendarDayViewProps>(
     const flashListRef = useRef<FlashListType<number>>(null);
     const isSwiping = useSharedValue(false);
 
-    const isScrolling = useSharedValue(false);
-
     const EIGHT_AM_OFFSET = 8 * 60;
     const masterScrollOffsetY = useSharedValue(EIGHT_AM_OFFSET);
 

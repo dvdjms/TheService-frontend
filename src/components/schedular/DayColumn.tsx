@@ -3,7 +3,8 @@ import { View } from 'react-native';
 import { GestureDetector } from 'react-native-gesture-handler';
 import Animated, { runOnJS, SharedValue, useAnimatedReaction, useAnimatedStyle, 
     useSharedValue, runOnUI, scrollTo, useAnimatedRef, useAnimatedScrollHandler,
-    DerivedValue
+    DerivedValue,
+    withTiming
     } from 'react-native-reanimated';
 import { TimeBlock, Appointment } from '../types/Service';
 import { useTimeBlockGestures } from '@/src/components/hooks/useTimeBlockGestures';
@@ -42,9 +43,6 @@ export const DayColumn: React.FC<DayColumnProps> = ({
     dateTimestamp, itemActualHeight, itemActualWidth, dynamicModalPadding
 }) => {
 
-    const appointmentTitle = "Appointment 1" // temporary marker
-
-
     const [isBlockRenderable, setIsBlockRenderable] = useState(false);
     const containerRef = useRef<View>(null);
 
@@ -60,12 +58,12 @@ export const DayColumn: React.FC<DayColumnProps> = ({
     const [hasPerformedInitialScroll, setHasPerformedInitialScroll] = useState(false);
     const [displayDate, setDisplayDate] = useState<number>(dateTimestamp);
     const scrollViewRef = useAnimatedRef<Animated.ScrollView>();
-
+    const isTimeBlockTouched = useSharedValue(false);
 
     const { tapTimeBlockGesture, topResizeGesture, bottomResizeGesture, moveGesture 
     } = useTimeBlockGestures({ HOUR_HEIGHT, MINUTES_PER_STEP, PIXELS_PER_MINUTE, selectedDateShared,
         MIN_DURATION, MINUTES_IN_DAY, masterScrollOffsetY, selectedTimeBlock, isMonthVisible, 
-        isModalVisible, topInitialStart, bottomInitialEnd, initialStart, 
+        isModalVisible, topInitialStart, bottomInitialEnd, initialStart, isTimeBlockTouched,
         initialEnd, height, startHeight, setIsBlockRenderable, dateTimestamp, displayDate
     });
 
@@ -134,11 +132,18 @@ export const DayColumn: React.FC<DayColumnProps> = ({
 
     const appointmentBlockStyle = useAnimatedStyle(() => {
         const block = selectedTimeBlock.value;
+        
+        const expand = isTimeBlockTouched.value ? 2 : 0;
+        
         return {
             top: (block?.startMinutes ?? 0) * PIXELS_PER_MINUTE - masterScrollOffsetY.value + dayColumnY.value,
             height: block.endMinutes && block.startMinutes ? (block.endMinutes - block.startMinutes) * PIXELS_PER_MINUTE : 0,
+            left: 62 - expand,
+            right: 5 - expand,
         };
     });
+
+
 
 
     const positionedAppointments = usePositionedAppointments(displayDate, allGroupedAppointments);
@@ -230,7 +235,6 @@ export const DayColumn: React.FC<DayColumnProps> = ({
                 topResizeGesture={topResizeGesture}
                 moveGesture={moveGesture}
                 bottomResizeGesture={bottomResizeGesture}
-                appointmentTitle={appointmentTitle}
             />
         </View>
     );

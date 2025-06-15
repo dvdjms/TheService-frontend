@@ -1,6 +1,6 @@
 import { Text, StyleSheet, View } from "react-native";
 import { GestureDetector, PanGesture } from "react-native-gesture-handler";
-import Animated from "react-native-reanimated";
+import Animated, { SharedValue } from "react-native-reanimated";
 
 
 interface Props {
@@ -9,12 +9,13 @@ interface Props {
     topResizeGesture: PanGesture;
     moveGesture: PanGesture;
     bottomResizeGesture: PanGesture;
-    appointmentTitle: string
 }
 
 
+
+
 const SelectedTimeBlock = ({ isBlockRenderable, appointmentBlockStyle, topResizeGesture, 
-    moveGesture, bottomResizeGesture, appointmentTitle }: Props) => (
+    moveGesture, bottomResizeGesture }: Props) => (
 
     <>
         {isBlockRenderable && (
@@ -24,19 +25,19 @@ const SelectedTimeBlock = ({ isBlockRenderable, appointmentBlockStyle, topResize
             >
                 {/* Top edge drag zone */}
                 <GestureDetector gesture={topResizeGesture}>
-                    <View style={styles.topResizeGesture}/>
+                    <View style={styles.topResizeGesture} />
                 </GestureDetector>
 
                 {/* Middle drag zone */}
                 <GestureDetector gesture={moveGesture}>
-                    <View style={styles.moveGesture} >
-                        <Text style={ styles.appointmentTitle}>{appointmentTitle}</Text>
+                    <View style={styles.moveGesture}>
+                        <Text style={ styles.appointmentTitle}></Text>
                     </View>
                 </GestureDetector>
 
                 {/* Bottom edge drag zone */}
                 <GestureDetector gesture={bottomResizeGesture}>
-                    <View style={styles.bottomResizeGesture}/>
+                    <View style={styles.bottomResizeGesture} />
                 </GestureDetector>
             </Animated.View>
         )}
@@ -53,31 +54,55 @@ const styles = StyleSheet.create({
         position: 'absolute',
         left: 62,
         right: 5,
-        backgroundColor: 'rgba(33, 150, 243, 0.3)',
-        borderWidth: 3,
+        backgroundColor: 'rgba(33, 150, 243, 0.15)',
+        borderWidth: 2.5,
         borderColor: '#2196f3',
-        borderRadius: 3,
+        borderRadius: 5,
     },
     moveGesture: {
         flex: 1, 
         justifyContent: 'center' ,
     },
+    // topResizeGesture: {
+    //     position: 'absolute',
+    //     top: 0,
+    //     left: 0,
+    //     right: 0,
+    //     height: 5,
+    //     zIndex: 10,
+    // },
+    //     bottomResizeGesture:{
+    //     position: 'absolute',        
+    //     bottom: 0,
+    //     left: 0,
+    //     right: 0,
+    //     height: 5,
+    //     zIndex: 10,
+    // },
     topResizeGesture: {
         position: 'absolute',
-        top: 0,
-        left: 0,
+        backgroundColor: 'white',
+        borderColor: '#2196f3',
+        borderWidth: 2.5,
+        borderRadius: 50,
+        top: -7.5,
+        left: 10,
         right: 0,
-        height: 5,
-        backgroundColor: 'rgba(255, 0, 0, 0.2)', 
+        height: 15,
+        width: 15,
         zIndex: 10,
     },
     bottomResizeGesture:{
         position: 'absolute',
-        bottom: 0,
-        left: 0,
-        right: 0,
-        height: 5,
-        backgroundColor: 'rgba(255, 0, 0, 0.2)', 
+        backgroundColor: 'white',
+        borderColor: '#2196f3',
+        borderWidth: 2.5,
+        borderRadius: 50,      
+        bottom: -7.5,
+        // left: 0,
+        right: 10,
+        height: 15,
+        width: 15,
         zIndex: 10,
     },
 });

@@ -7,8 +7,9 @@ import { UseTimeBlockGesturesProps } from '@/src/components/types/Service';
 
 export function useTimeBlockGestures(Props: UseTimeBlockGesturesProps) {const {  
     PIXELS_PER_MINUTE, MINUTES_PER_STEP, MIN_DURATION, MINUTES_IN_DAY, HOUR_HEIGHT,
-    masterScrollOffsetY, selectedTimeBlock, isMonthVisible, selectedDateShared, dateTimestamp,displayDate,
-    isModalVisible, topInitialStart, bottomInitialEnd, initialStart, initialEnd, height, startHeight
+    masterScrollOffsetY, selectedTimeBlock, isMonthVisible, selectedDateShared,displayDate,
+    isModalVisible, topInitialStart, bottomInitialEnd, initialStart, initialEnd, 
+    height, startHeight, isTimeBlockTouched
     } = Props;
 
 
@@ -36,6 +37,9 @@ export function useTimeBlockGestures(Props: UseTimeBlockGesturesProps) {const {
     const topResizeGesture = useMemo(
         () =>
         Gesture.Pan()
+            .onTouchesDown(() => {
+                isTimeBlockTouched.value = true;
+            })
             .onBegin(() => {
                 'worklet';
                 if(selectedTimeBlock.value.startMinutes)
@@ -61,6 +65,9 @@ export function useTimeBlockGestures(Props: UseTimeBlockGesturesProps) {const {
                     ...selectedTimeBlock.value,
                     startMinutes: snappedStart,
                 };
+            })
+            .onFinalize(() => {
+                isTimeBlockTouched.value = false;
             }),
         [HOUR_HEIGHT, selectedTimeBlock, selectedDateShared.value]
     );
@@ -69,6 +76,9 @@ export function useTimeBlockGestures(Props: UseTimeBlockGesturesProps) {const {
     const bottomResizeGesture = useMemo(
         () =>
         Gesture.Pan()
+            .onTouchesDown(() => {
+                isTimeBlockTouched.value = true;
+            })
             .onBegin(() => {
             'worklet';
             if(selectedTimeBlock.value.endMinutes){
@@ -94,6 +104,9 @@ export function useTimeBlockGestures(Props: UseTimeBlockGesturesProps) {const {
                     ...selectedTimeBlock.value,
                     endMinutes: snappedEnd,
                 };
+            })         
+            .onFinalize(() => {
+                isTimeBlockTouched.value = false;
             }),
         [HOUR_HEIGHT, selectedTimeBlock, selectedDateShared.value]
     );
@@ -102,6 +115,9 @@ export function useTimeBlockGestures(Props: UseTimeBlockGesturesProps) {const {
     const moveGesture = useMemo(
         () =>
         Gesture.Pan()
+            .onTouchesDown(() => {
+                isTimeBlockTouched.value = true;
+            })
             .onStart(() => {
                 startHeight.value = height.value;
             })
@@ -134,6 +150,10 @@ export function useTimeBlockGestures(Props: UseTimeBlockGesturesProps) {const {
                     startMinutes: snappedStart,
                     endMinutes: snappedEnd,
                 };
+                isTimeBlockTouched.value = false;
+            })  
+            .onFinalize(() => {
+                isTimeBlockTouched.value = false;
             }),
         [HOUR_HEIGHT, selectedTimeBlock, selectedDateShared.value]
     );
