@@ -1,10 +1,8 @@
-import React, { useEffect, useMemo, useRef, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { View } from 'react-native';
 import { GestureDetector } from 'react-native-gesture-handler';
-import Animated, { runOnJS, SharedValue, useAnimatedReaction, useAnimatedStyle, 
-    useSharedValue, runOnUI, scrollTo, useAnimatedRef, useAnimatedScrollHandler,
-    DerivedValue,
-    withTiming
+import Animated, { runOnJS, SharedValue, useAnimatedReaction, useAnimatedStyle, useSharedValue, 
+    runOnUI, scrollTo, useAnimatedRef, useAnimatedScrollHandler, DerivedValue,
     } from 'react-native-reanimated';
 import { TimeBlock, Appointment } from '../types/Service';
 import { useTimeBlockGestures } from '@/src/components/hooks/useTimeBlockGestures';
@@ -34,12 +32,13 @@ interface DayColumnProps {
     itemActualWidth: number;
     masterScrollOffsetY: SharedValue<number>;
     dynamicModalPadding: DerivedValue<0 | 170 | 50>;
+    isModalExpanded: SharedValue<boolean>;
 }
 
 
 export const DayColumn: React.FC<DayColumnProps> = ({
     selectedDateShared, selectedTimeBlock, masterScrollOffsetY,
-    isMonthVisible, isModalVisible, allGroupedAppointments,
+    isMonthVisible, isModalVisible, allGroupedAppointments, isModalExpanded,
     dateTimestamp, itemActualHeight, itemActualWidth, dynamicModalPadding
 }) => {
 
@@ -55,7 +54,6 @@ export const DayColumn: React.FC<DayColumnProps> = ({
     const dayColumnY = useSharedValue(0)
     const isUserDraggingThisColumn = useSharedValue(false);
 
-    const [hasPerformedInitialScroll, setHasPerformedInitialScroll] = useState(false);
     const [displayDate, setDisplayDate] = useState<number>(dateTimestamp);
     const scrollViewRef = useAnimatedRef<Animated.ScrollView>();
     const isTimeBlockTouched = useSharedValue(false);
@@ -64,7 +62,7 @@ export const DayColumn: React.FC<DayColumnProps> = ({
     } = useTimeBlockGestures({ HOUR_HEIGHT, MINUTES_PER_STEP, PIXELS_PER_MINUTE, selectedDateShared,
         MIN_DURATION, MINUTES_IN_DAY, masterScrollOffsetY, selectedTimeBlock, isMonthVisible, 
         isModalVisible, topInitialStart, bottomInitialEnd, initialStart, isTimeBlockTouched,
-        initialEnd, height, startHeight, setIsBlockRenderable, dateTimestamp, displayDate
+        initialEnd, height, startHeight, setIsBlockRenderable, dateTimestamp, displayDate, isModalExpanded
     });
 
 
@@ -76,31 +74,23 @@ export const DayColumn: React.FC<DayColumnProps> = ({
 
 
     useEffect(() => {
-        if (hasPerformedInitialScroll) {
-            return;
-        }
-
         const attemptScrollWorklet = () => {
             'worklet';
             if (scrollViewRef.current) {
                 scrollTo(scrollViewRef, 0, masterScrollOffsetY.value, false); 
-                runOnJS(setHasPerformedInitialScroll)(true);
             }
         };
         runOnUI(attemptScrollWorklet)(); 
 
-        // Set up interval, which will stop once hasPerformedInitialScroll becomes true.
         const intervalId = setInterval(() => {
-            if (hasPerformedInitialScroll) { 
-                clearInterval(intervalId);
-                return;
+            if(scrollViewRef.current){
+                scrollTo(scrollViewRef, 0, masterScrollOffsetY.value,false)
             }
-            runOnUI(attemptScrollWorklet)();
         }, 100);
 
         return () => clearInterval(intervalId); 
 
-    }, [hasPerformedInitialScroll, masterScrollOffsetY, scrollViewRef, dateTimestamp]);
+    }, [masterScrollOffsetY, scrollViewRef, dateTimestamp]);
 
 
 
@@ -132,7 +122,6 @@ export const DayColumn: React.FC<DayColumnProps> = ({
 
     const appointmentBlockStyle = useAnimatedStyle(() => {
         const block = selectedTimeBlock.value;
-        
         const expand = isTimeBlockTouched.value ? 2 : 0;
         
         return {
@@ -142,8 +131,6 @@ export const DayColumn: React.FC<DayColumnProps> = ({
             right: 5 - expand,
         };
     });
-
-
 
 
     const positionedAppointments = usePositionedAppointments(displayDate, allGroupedAppointments);
@@ -165,6 +152,7 @@ export const DayColumn: React.FC<DayColumnProps> = ({
             if (isUserDraggingThisColumn.value) { 
                 masterScrollOffsetY.value = event.contentOffset.y;
             }
+            isUserDraggingThisColumn.value = false;
         },
         onMomentumBegin: (event, context) => {
             'worklet';
@@ -174,7 +162,9 @@ export const DayColumn: React.FC<DayColumnProps> = ({
         },
         onMomentumEnd: (event) => {
             'worklet';
-            masterScrollOffsetY.value = event.contentOffset.y;
+            if(isUserDraggingThisColumn.value){
+                masterScrollOffsetY.value = event.contentOffset.y;
+            }
             isUserDraggingThisColumn.value = false;
         },
     });
@@ -216,7 +206,6 @@ export const DayColumn: React.FC<DayColumnProps> = ({
                         style={{ 
                             flex: 1, 
                             backgroundColor: '#fff',
-                            paddingBottom: 300
                         }}
                     >
                         <View style={{ height: 24 * HOUR_HEIGHT, position: 'relative' }}>

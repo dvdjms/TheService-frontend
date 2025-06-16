@@ -66,6 +66,7 @@ export interface UseTimeBlockGesturesProps {
     selectedDateShared: SharedValue<number>;
     dateTimestamp: number;
     displayDate: number;
+    isModalExpanded:  SharedValue<boolean>;
     // Output
     setIsBlockRenderable: React.Dispatch<React.SetStateAction<boolean>>;
 }

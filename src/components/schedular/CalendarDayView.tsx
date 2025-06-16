@@ -6,7 +6,7 @@ import { FlashList } from '@shopify/flash-list';
 import type { FlashList as FlashListType } from "@shopify/flash-list";
 import { DayColumn } from './DayColumn';
 import { addDaysNumber } from '../utils/timeUtils';
-import { Appointment, CalendarDayViewHandle, TimeBlock } from '@/src/components/types/Service';
+import { CalendarDayViewHandle, TimeBlock } from '@/src/components/types/Service';
 import { useSwipeGestures } from '../hooks/useSwipeGestures';
 import dummyAppointments from "@/assets/mock-clients.json";
 
@@ -30,6 +30,8 @@ const CalendarDayView = forwardRef<CalendarDayViewHandle, CalendarDayViewProps>(
     selectedDate, selectedDateShared, isMonthVisible, isModalVisible, isModalExpanded, collapseMonth, 
     selectedTimeBlock, setSelectedDate, previewDate, dynamicModalPadding
 }, ref)  => {
+    const [layoutSize, setLayoutSize] = useState({ width: 0, height: 0 }); // Restored
+
     const flashListRef = useRef<FlashListType<number>>(null);
     const isSwiping = useSharedValue(false);
 
@@ -50,18 +52,6 @@ const CalendarDayView = forwardRef<CalendarDayViewHandle, CalendarDayViewProps>(
         translateY, collapseMonth, setSelectedDate, isContentReadyForSnap
     });
 
-
-
-//     const onDayColumnScroll = useAnimatedScrollHandler({
-//     // onEndDrag: (event) => {
-//     //     'worklet'
-//     //     masterScrollOffsetY.value = event.contentOffset.y;
-//     // },
-//     onMomentumEnd: (event) => {
-//         'worklet'
-//         masterScrollOffsetY.value = event.contentOffset.y;
-//     }
-// });
 
     const normalizeToDayTimestamp = (ts: number) => {
         const d = new Date(ts);
@@ -88,22 +78,12 @@ const CalendarDayView = forwardRef<CalendarDayViewHandle, CalendarDayViewProps>(
     useEffect(() => {
         runOnUI(() => {
             'worklet';
-            // if (isContentReadyForSnap.value === false) {
-                isContentReadyForSnap.value = true;
-            // }
+            isContentReadyForSnap.value = true;
         })();
     }, [selectedDate]); 
 
 
-
-
-
-    // Handle scroll events
-
-    // Update current date when scrolling stops
-
-
-        // Scroll to date when selectedDate changes externally
+    // Scroll to date when selectedDate changes externally
     // useEffect(() => {
     //     if (!flashListRef.current || isScrolling.value) return;
         
@@ -131,17 +111,15 @@ const CalendarDayView = forwardRef<CalendarDayViewHandle, CalendarDayViewProps>(
     }, [dates, selectedDate]);
 
 
-    const [layoutSize, setLayoutSize] = useState({ width: 0, height: 0 });
-
+    // Correct definition of onLayoutView within the component scope
     const onLayoutView = useCallback((event: LayoutChangeEvent) => {
         const { width, height } = event.nativeEvent.layout;
         if (width > 0 && height > 0) {
-            if (width !== layoutSize.width || height !== layoutSize.height) {
+            if (layoutSize.width !== width || layoutSize.height !== height) {
                 setLayoutSize({ width, height });
             }
         }
-    }, [layoutSize.width, layoutSize.height]); // Add dependencies to useCallback
-
+    }, [layoutSize.width, layoutSize.height]);
 
 
     const sharedProps = {
@@ -150,10 +128,11 @@ const CalendarDayView = forwardRef<CalendarDayViewHandle, CalendarDayViewProps>(
         isModalVisible,
         selectedTimeBlock,
         selectedDate,
-        onLayoutView,
         masterScrollOffsetY,
-        dynamicModalPadding
+        dynamicModalPadding,
+        isModalExpanded,
     }
+
 
     return (
         // <GestureDetector gesture={Gesture.Exclusive(tapGesture, panGesture)}>
@@ -164,7 +143,7 @@ const CalendarDayView = forwardRef<CalendarDayViewHandle, CalendarDayViewProps>(
                 onLayout={onLayoutView}
             >
                 {layoutSize.width > 0 && layoutSize.height > 0 ? (
-
+                // {shouldRenderFlashList ? (
                 <FlashList
                     ref={flashListRef}
                     data={dates}
@@ -184,15 +163,12 @@ const CalendarDayView = forwardRef<CalendarDayViewHandle, CalendarDayViewProps>(
                     showsHorizontalScrollIndicator={false}
                     keyExtractor={(item) => item.toString()}
                     getItemType={() => 'day'}
-
                     initialScrollIndex={initialScrollIndex}
-
                     scrollEventThrottle={16}
                     snapToInterval={screenWidth}
                     snapToAlignment="center"
                     decelerationRate="fast"
-                        contentContainerStyle={{ paddingBottom: isModalVisible.value ? (isModalExpanded.value ? 170 : 50) : 0 }}
-                    // contentContainerStyle={flashListContentContainerStyle}
+                    contentContainerStyle={{ paddingBottom: isModalVisible.value ? (isModalExpanded.value ? 170 : 50) : 0 }}
                 />
                 ): null}
      
@@ -213,25 +189,7 @@ export default CalendarDayView;
     // }));
 
 
-    // const scrollHandler = useAnimatedScrollHandler({
-    //     onScroll: (event) => {
-    //         const y = event.contentOffset.y;
-    //         scrollOffset.value = y;
 
-    //         // if (prevListRef) {
-    //         //     scrollTo(prevListRef, 0, y, false);
-    //         // }
-    //         // if (nextListRef) {
-    //         //     scrollTo(nextListRef, 0, y, false);
-    //         // }
-    //     },
-    //     onBeginDrag: (event) => {
-    //         if (selectedTimeBlock?.value?.startMinutes)
-    //         if (selectedTimeBlock?.value?.startMinutes < 1260){
-    //             isModalExpanded.value = false;
-    //         }
-    //     },
-    // });
 
     //swipe function referenced in CalendarMonthView
     // const swipeToDate = (targetDate: number) => {

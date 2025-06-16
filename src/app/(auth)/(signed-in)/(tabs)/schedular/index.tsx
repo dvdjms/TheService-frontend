@@ -1,4 +1,4 @@
-import { View, StyleSheet, TouchableOpacity, Text } from "react-native";
+import { View, StyleSheet, TouchableOpacity, Text, Platform, UIManager, LayoutAnimation } from "react-native";
 import React, { useRef, useState } from 'react';
 import CalendarMonthView from "@/src/components/schedular/CalendarMonthView";
 import CalendarDayView from "@/src/components/schedular/CalendarDayView";
@@ -7,23 +7,19 @@ import AppointmentBlock from "@/src/components/schedular/AppointmentBlock";
 import Animated, { runOnJS, useSharedValue, withTiming, Easing, useAnimatedStyle, useAnimatedReaction, useDerivedValue } from "react-native-reanimated";
 import { TimeBlock, CalendarDayViewHandle } from '@/src/components/types/Service';
 import { format } from "date-fns";
+import { GestureDetector, Gesture } from "react-native-gesture-handler";
 
 
 export default function SchedularScreen() {
-    // const [selectedDate, setSelectedDate] = useState(Date.now());
-    const [selectedDate, setSelectedDate] = useState(() => {
-        const initialDate = Date.now();
-        return initialDate;
-    });
-
+    const [selectedDate, setSelectedDate] = useState(Date.now());
     const [isMonthVisible, setIsMonthVisible] = useState(false);
     const calendarDayViewRef = useRef<CalendarDayViewHandle>(null);
+
     const monthHeight = useSharedValue<number>(0);
     const isModalVisible = useSharedValue(false);
     const isModalExpanded = useSharedValue(false);
     const selectedDateShared = useSharedValue(selectedDate);
     const previewDate = useSharedValue<number | null>(null);
-
     const selectedTimeBlock = useSharedValue<TimeBlock>({
         startMinutes: null,
         endMinutes: null,
@@ -35,7 +31,7 @@ export default function SchedularScreen() {
         const monthMaxHeight = 270;
         const toValue = isMonthVisible ? 0 : monthMaxHeight;
         monthHeight.value = withTiming(toValue, { duration: 200, easing: Easing.inOut(Easing.ease) }, () => {
-            runOnJS(setIsMonthVisible)(!isMonthVisible);
+            runOnJS(setIsMonthVisible)(!isMonthVisible)
         });
     };
 
@@ -81,13 +77,6 @@ export default function SchedularScreen() {
     });
 
 
-    const animatedCalendarStyle = useAnimatedStyle(() => {
-        return {
-            // flex: 1,
-        };
-    });
-
-
     const animatedModalStyle = useAnimatedStyle(() => {
         const isVisible = isModalVisible.value;
         return {
@@ -106,8 +95,20 @@ export default function SchedularScreen() {
     });
 
 
+    const handleOutsideTap = () => {
+        if (!isMonthVisible && isModalVisible.value && isModalExpanded.value) {
+            isModalExpanded.value = false;
+        }
+    };
+
+    const outsideTapGesture = Gesture.Tap().onEnd(() => {
+        runOnJS(handleOutsideTap)();
+    });
+
+
     return (
         <>
+        <GestureDetector gesture={outsideTapGesture}>
         <View style={styles.container}>
             {/* Toggle Button */}
             <TouchableOpacity onPress={toggleMonth}>
@@ -127,8 +128,9 @@ export default function SchedularScreen() {
             </Animated.View>
 
             {/* Calendar Day View */}
-            <Animated.View style={[{flex: 1}, animatedCalendarStyle]}>
+            <Animated.View style={{flex: 1}}>
                 <CalendarDayView
+                    key={isMonthVisible ? 'month_is_visible' : 'month_is_hidden'} 
                     ref={calendarDayViewRef}
                     selectedDate={selectedDate}
                     selectedDateShared={selectedDateShared}
@@ -143,7 +145,7 @@ export default function SchedularScreen() {
               />
             </Animated.View>
         </View>
-
+        </GestureDetector>
           {/* Sliding Appointment View */}
         <Animated.View
             style={[styles.appointmentBlock, animatedModalStyle]}

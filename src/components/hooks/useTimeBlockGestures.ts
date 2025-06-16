@@ -1,5 +1,4 @@
 import { Gesture } from 'react-native-gesture-handler';
-import { runOnJS, useAnimatedReaction } from 'react-native-reanimated';
 import { useMemo } from 'react';
 import { getTimeBlockFromY, snapToStep } from '@/src/components/utils/timeBlockUtils';
 import { UseTimeBlockGesturesProps } from '@/src/components/types/Service';
@@ -9,7 +8,7 @@ export function useTimeBlockGestures(Props: UseTimeBlockGesturesProps) {const {
     PIXELS_PER_MINUTE, MINUTES_PER_STEP, MIN_DURATION, MINUTES_IN_DAY, HOUR_HEIGHT,
     masterScrollOffsetY, selectedTimeBlock, isMonthVisible, selectedDateShared,displayDate,
     isModalVisible, topInitialStart, bottomInitialEnd, initialStart, initialEnd, 
-    height, startHeight, isTimeBlockTouched
+    height, startHeight, isTimeBlockTouched, isModalExpanded
     } = Props;
 
 
@@ -18,8 +17,13 @@ export function useTimeBlockGestures(Props: UseTimeBlockGesturesProps) {const {
         Gesture.Tap().onEnd((e) => {
             'worklet';
             if (!isMonthVisible) {
-                // const tappedY = e.y + masterScrollOffsetY.value;
-                // const block = getTimeBlockFromY(tappedY, HOUR_HEIGHT, displayDate);
+                console.log('[Worklet] DayColumn tapTimeBlockGesture: Fired.'); 
+                
+                // New logic: Collapse modal if it was expanded
+                if (isModalExpanded.value) {
+                    console.log('[Worklet] DayColumn tapTimeBlockGesture: Modal was expanded, setting isModalExpanded.value = false.');
+                    isModalExpanded.value = false;
+                }
 
                 const tapRelativeToScrollableTop = e.y;
                 const tappedYInScrollContent = tapRelativeToScrollableTop + masterScrollOffsetY.value;
@@ -28,9 +32,11 @@ export function useTimeBlockGestures(Props: UseTimeBlockGesturesProps) {const {
   
                 selectedTimeBlock.value = block;
                 isModalVisible.value = true;
+            } else {
+                console.log('[Worklet] DayColumn tapTimeBlockGesture: Fired, but month is visible, no action.');
             }
         }),
-        [isMonthVisible, displayDate, masterScrollOffsetY, selectedTimeBlock, isModalVisible, HOUR_HEIGHT]
+        [isMonthVisible, displayDate, masterScrollOffsetY, selectedTimeBlock, isModalVisible, HOUR_HEIGHT, isModalExpanded]
     );
 
 
@@ -57,6 +63,10 @@ export function useTimeBlockGestures(Props: UseTimeBlockGesturesProps) {const {
                         startMinutes: newStart,
                     };
                 }
+                if (isModalExpanded.value) {
+                    isModalExpanded.value = false;
+                    console.log('[Worklet] moveGesture.onEnd: Modal collapsed due to move.');
+                }
             })
             .onEnd(() => {
                 'worklet';
@@ -80,13 +90,13 @@ export function useTimeBlockGestures(Props: UseTimeBlockGesturesProps) {const {
                 isTimeBlockTouched.value = true;
             })
             .onBegin(() => {
-            'worklet';
-            if(selectedTimeBlock.value.endMinutes){
-                bottomInitialEnd.value = selectedTimeBlock.value.endMinutes;
-            }
+                'worklet';
+                if(selectedTimeBlock.value.endMinutes){
+                    bottomInitialEnd.value = selectedTimeBlock.value.endMinutes;
+                }
             })
             .onUpdate((e) => {
-            'worklet';
+                'worklet';
                 const delta = Math.round((e.translationY * 60) / HOUR_HEIGHT);
                 const newEnd = bottomInitialEnd.value + delta;
                 if (selectedTimeBlock.value.startMinutes)
@@ -95,6 +105,10 @@ export function useTimeBlockGestures(Props: UseTimeBlockGesturesProps) {const {
                         ...selectedTimeBlock.value,
                         endMinutes: newEnd,
                     };
+                }
+                if (isModalExpanded.value) {
+                    isModalExpanded.value = false;
+                    console.log('[Worklet] moveGesture.onEnd: Modal collapsed due to move.');
                 }
             })
             .onEnd(() => {
@@ -139,6 +153,10 @@ export function useTimeBlockGestures(Props: UseTimeBlockGesturesProps) {const {
                         startMinutes: newStart,
                         endMinutes: newEnd,
                     };
+                }
+                if (isModalExpanded.value) {
+                    isModalExpanded.value = false;
+                    console.log('[Worklet] moveGesture.onEnd: Modal collapsed due to move.');
                 }
             })
             .onEnd(() => {

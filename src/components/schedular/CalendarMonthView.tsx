@@ -55,7 +55,7 @@ export default function CalendarMonthView({ selectedDate, handleSelectedDate }: 
             style={{ 
                 flex: 1,
                 // height is 267 cannot be changed
-                maxHeight: 870,
+                maxHeight: 267,
                 backgroundColor: 'white', 
                 shadowColor: 'gray',
                 shadowOffset: { width: 0, height: 2 },

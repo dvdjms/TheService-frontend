@@ -1,6 +1,7 @@
+import { Background } from "@react-navigation/elements";
 import { Text, StyleSheet, View } from "react-native";
 import { GestureDetector, PanGesture } from "react-native-gesture-handler";
-import Animated, { SharedValue } from "react-native-reanimated";
+import Animated from "react-native-reanimated";
 
 
 interface Props {
@@ -10,8 +11,6 @@ interface Props {
     moveGesture: PanGesture;
     bottomResizeGesture: PanGesture;
 }
-
-
 
 
 const SelectedTimeBlock = ({ isBlockRenderable, appointmentBlockStyle, topResizeGesture, 
@@ -52,8 +51,8 @@ const styles = StyleSheet.create({
     },
     selectedTimeBlock: {
         position: 'absolute',
-        left: 62,
-        right: 5,
+        // left: 62,
+        // right: 5,
         backgroundColor: 'rgba(33, 150, 243, 0.15)',
         borderWidth: 2.5,
         borderColor: '#2196f3',
@@ -85,11 +84,11 @@ const styles = StyleSheet.create({
         borderColor: '#2196f3',
         borderWidth: 2.5,
         borderRadius: 50,
-        top: -7.5,
+        top: -7,
         left: 10,
         right: 0,
-        height: 15,
-        width: 15,
+        height: 12,
+        width: 12,
         zIndex: 10,
     },
     bottomResizeGesture:{
@@ -98,11 +97,11 @@ const styles = StyleSheet.create({
         borderColor: '#2196f3',
         borderWidth: 2.5,
         borderRadius: 50,      
-        bottom: -7.5,
+        bottom: -7,
         // left: 0,
         right: 10,
-        height: 15,
-        width: 15,
+        height: 12,
+        width: 12,
         zIndex: 10,
     },
 });
