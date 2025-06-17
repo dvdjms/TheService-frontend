@@ -1,94 +1,61 @@
 [
   {
-    "PK": "USER#1",
+    "PK": "CLIENT#1",
     "SK": "PROFILE",
-    "userId": "1",
-    "firstName": "Test",
-    "lastName": "User",
-    "email": "test@example.com"
-  },
-  {
-    "PK": "USER#1",
-    "SK": "CLIENT#1",
     "clientId": "1",
     "firstName": "Alice",
     "lastName": "Smith",
-    "email": "alice@example.com"
+    "email": "alice@example.com",
+    "phone": "123-456-7890"
   },
   {
-    "PK": "USER#1",
-    "SK": "CLIENT#2",
+    "PK": "CLIENT#1",
+    "SK": "APPOINTMENT#1749042000000",
+    "appointmentId": "1",
+    "title": "appointment 1\nWed, 4 Jun 14:00 - 15:00",
+    "timestamp": 1749042000000,
+    "end": 1749045600000,
+    "date": "2025-06-04",
+    "color": "#F0F2BD"
+  },
+  {
+    "PK": "CLIENT#1",
+    "SK": "APPOINTMENT#1749031200000",
+    "appointmentId": "2",
+    "title": "appointment 2\nWed, 4 June 2025 11:00 - 12:00",
+    "timestamp": 1749031200000,
+    "end": 1749038400000,
+    "date": "2025-06-04",
+    "color": "#FFC1C3"
+  },
+
+  {
+    "PK": "CLIENT#2",
+    "SK": "PROFILE",
     "clientId": "2",
     "firstName": "Bob",
     "lastName": "Johnson",
-    "email": "bob@example.com"
+    "email": "bob@example.com",
+    "phone": "987-654-3210"
   },
   {
-    "PK": "USER#1",
-    "SK": "CLIENT#3",
-    "clientId": "3",
-    "firstName": "Charlie",
-    "lastName": "Lee",
-    "email": "charlie@example.com"
-  },
-  {
-    "PK": "USER#1",
-    "SK": "APPT#1",
-    "appointmentId": "1",
-    "clientId": "1",
-    "title": "Alice Appointment 1",
-    "startMinutes": 1749042000000,
-    "endMinutes": 1749045600000,
-    "startTimeStr": "09:00",
-    "dateStr": "2025-05-29",
-    "color": "#FFC1C3"
-  },
-  {
-    "PK": "USER#1",
-    "SK": "APPT#2",
-    "appointmentId": "2",
-    "clientId": "1",
-    "title": "Alice Appointment 2",
-    "startMinutes": 1749031200000,
-    "endMinutes": 1749038400000,
-    "startTimeStr": "11:00",
-    "dateStr": "2025-05-29",
-    "color": "#FFC1C3"
-  },
-  {
-    "PK": "USER#1",
-    "SK": "APPT#3",
+    "PK": "CLIENT#2",
+    "SK": "APPOINTMENT#1749124800000",
     "appointmentId": "3",
-    "clientId": "2",
-    "title": "Bob Appointment 1",
-    "startMinutes": 1748952000000,
-    "endMinutes": 1748955600000,
-    "startTimeStr": "14:00",
-    "dateStr": "2025-05-30",
+    "title": "appointment 3\nThurs, 5 June 2025 13:00 - 14:00",
+    "timestamp": 1749124800000,
+    "end": 1749128400000,
+    "date": "2025-06-04",
     "color": "#F0F2BD"
   },
   {
-    "PK": "USER#1",
-    "SK": "APPT#4",
+    "PK": "CLIENT#2",
+    "SK": "APPOINTMENT#1748973600000",
     "appointmentId": "4",
-    "clientId": "2",
-    "title": "Bob Appointment 2",
-    "startMinutes": 1748962800000,
-    "endMinutes": 1748966400000,
-    "startTimeStr": "15:00",
-    "dateStr": "2025-05-30",
-    "color": "#F0F2BD"
-  },
-  {
-    "PK": "USER#1",
-    "SK": "APPT#5",
-    "appointmentId": "5",
-    "clientId": "3",
-    "title": "Charlie Appointment 1",
-    "startMinutes": 1748726400000,
-    "endMinutes": 1748730000000,
-    "startTimeStr": "18:00",
-    "dateStr": "2025-05-31",
-    "color": "#BDECF2"
+    "title": "appointment 4\nTues, 3 June 2025 19:00 - 20:00",
+    "timestamp": 1748973600000,
+    "end": 1748977200000,
+    "date": "2025-05-27",
+    "color": "#FFC1C3"
   }
 ]

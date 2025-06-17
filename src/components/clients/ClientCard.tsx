@@ -1,15 +1,15 @@
 import { Link } from 'expo-router';
-import { View, Text, StyleSheet, Pressable } from 'react-native';
-import { ScrollView } from 'react-native-gesture-handler';
+import { Text, StyleSheet, Pressable } from 'react-native';
+
 
 type Props = {
-  client: {
-    id: string;
-    firstName: string;
-    lastName: string;
-    email: string;
-    phone: string;
-  };
+    client: {
+        id: string;
+        firstName: string;
+        lastName: string;
+        email: string;
+        phone: string;
+    };
 };
 
 export default function ClientCard({ client }: Props) {
@@ -22,13 +22,6 @@ export default function ClientCard({ client }: Props) {
             </Pressable>
         </Link>
 
-
-
-        // <View style={styles.card}>
-        //     <Text style={styles.name}>{client.firstName} {client.lastName}</Text>
-        //     <Text style={styles.email}>{client.email}</Text>
-        //     <Text style={styles.phone}>{client.phone}</Text>
-        // </View>
     );
 }
 

@@ -1,5 +1,5 @@
-import { useLocalSearchParams, useRouter } from 'expo-router';
-import { View, Text, Button, StyleSheet } from 'react-native';
+import { Link, useLocalSearchParams, useRouter } from 'expo-router';
+import { View, Text, Button, StyleSheet, Pressable, InteractionManager } from 'react-native';
 import FormButton from '@/src/components/ui/FormButton';
 import { colors } from '@/src/styles/globalStyles';
 import dummyAppointments from "@/assets/mock-clients.json";
@@ -11,10 +11,14 @@ import { format } from 'date-fns';
 
 export default function ClientDetail() {
     const router = useRouter();
-    const { id } = useLocalSearchParams();
+    const { clientId } = useLocalSearchParams();
 
-    const client = dummyAppointments.find(c => c.id === id);
+    const client = dummyAppointments.find(c => c.id === clientId);
 
+
+    const goToAppointment = (appointmentId: string) => {          
+        router.push(`/clients/${clientId}/appointments/${appointmentId}`);
+    };
 
     if (!client) {
         return (
@@ -30,15 +34,20 @@ export default function ClientDetail() {
     );
 
 
-    const renderItem = ({ item }: { item: any }) => (
-        <View style={{ paddingVertical: 8 }}>
-            <Text style={{ fontWeight: 'bold' }}>
-                {item.appointment_title.split('\n')[0]}
-            </Text>
-            <Text>
-                {format(item.start_minutes, 'eeee dd MMMM yyyy HH:mm')} -{' '}
-                {format(item.end_minutes,'HH:mm')}
-            </Text>
+    const renderItem = ({ item }: { item: any}) => (
+        <View style={styles.appointment}>
+            <Pressable onPress={() => goToAppointment(item.id)} style={styles.card} >
+                <View>
+                    <Text style={{ fontWeight: 'bold' }}>
+                        {item.appointment_title.split('\n')[0]}
+                    </Text>
+                    <Text>
+                        {format(item.start_minutes, 'eeee dd MMMM yyyy HH:mm')} -{' '}
+                        {format(item.end_minutes,'HH:mm')}
+                    </Text>
+                
+                </View>
+            </Pressable>
         </View>
     );
 
@@ -57,6 +66,7 @@ export default function ClientDetail() {
                     data={sortedAppointments}
                     keyExtractor={item => item.id}
                     renderItem={renderItem}
+                    style={styles.FlatList}
                 />
               
             </View>
@@ -96,8 +106,27 @@ const styles = StyleSheet.create({
         alignItems: 'center',
     },
     appointmentsContainer: {
-        borderWidth: 1,
-        borderColor: 'red'
-    }
-});
+        // borderWidth: 1,
+        // borderColor: 'red'
+    },
+    FlatList: {
 
+    },
+    appointment: {
+        padding: 8,
+        gap: 5,
+        marginBottom: 5,
+        height: 60,
+        borderRadius: 5,
+        backgroundColor: 'brown'
+
+    },
+    card: {
+        // marginBottom: 16,
+        // padding: 12,
+        // backgroundColor: '#F2F2F2',
+        borderRadius: 8,
+        width: '95%',
+        alignSelf: 'center'
+    },
+});

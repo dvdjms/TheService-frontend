@@ -20,6 +20,7 @@ export default function SchedularScreen() {
     const isModalExpanded = useSharedValue(false);
     const selectedDateShared = useSharedValue(selectedDate);
     const previewDate = useSharedValue<number | null>(null);
+    
     const selectedTimeBlock = useSharedValue<TimeBlock>({
         startMinutes: null,
         endMinutes: null,
