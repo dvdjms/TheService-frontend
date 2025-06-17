@@ -43,8 +43,8 @@
     "SK": "APPOINTMENT#1749124800000",
     "appointmentId": "3",
     "title": "appointment 3\nThurs, 5 June 2025 13:00 - 14:00",
-    "timestamp": 1749124800000,
-    "end": 1749128400000,
+    "startTimestamp": 1749124800000,
+    "endTimeStamp": 1749128400000,
     "date": "2025-06-04",
     "color": "#F0F2BD"
   },

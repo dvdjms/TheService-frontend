@@ -1,7 +1,8 @@
 
 import React from "react";
-import { View, StyleSheet, TextInput, Button, Text, Animated, Dimensions, TouchableOpacity } from "react-native";
+import { StyleSheet, Text, Pressable } from "react-native";
 import { PositionedAppointment } from "../types/Service";
+import { router } from "expo-router";
 
 
 interface Props {
@@ -10,11 +11,19 @@ interface Props {
 
 const AppointmentBlocks = React.memo(({ appointments }: Props) => {
 
+    const goToAppointment = (appointmentId: string) => {     
+        // use a modal and reuse appointment component
+        router.push(`/clients/${1}/appointments/${appointmentId}`);
+    };
+
+
     return (
         <>
             {appointments.map((app) => (
-                <View
-                    key={app.appointmentId || app.start_minutes}
+                
+                <Pressable
+                    onPress={() => goToAppointment(app.id)}
+                    key={app.id || app.start_minutes}
                     style={{
                         position: 'absolute',
                         top: app.topOffset,
@@ -30,7 +39,8 @@ const AppointmentBlocks = React.memo(({ appointments }: Props) => {
                     }}
                 >
                 <Text>{app.appointment_title}</Text>
-                </View>
+                 <Text>{app.id}</Text>
+                </Pressable>
             ))}
         </>
     );

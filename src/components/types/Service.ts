@@ -75,6 +75,7 @@ export interface UseTimeBlockGesturesProps {
 export interface Appointment {
     PK: string;
     SK: string;
+    id: string;
     appointmentId: string;
     clientId: string;
     appointment_title: string;

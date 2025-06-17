@@ -17,6 +17,9 @@ export default function AppointmentDetail() {
         return (
         <View>
             <Text>Appointment not found.</Text>
+            <View style={styles.buttonContainer}>
+                <FormButton title="Close" OnPress={() => router.back()} width={0.9} />
+            </View>
         </View>
         );
     }

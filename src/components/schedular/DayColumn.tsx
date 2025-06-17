@@ -184,7 +184,7 @@ export const DayColumn: React.FC<DayColumnProps> = ({
             style={{ height: itemActualHeight, width: itemActualWidth}} 
             pointerEvents="auto"
             ref={containerRef} 
-            >
+        >
 
             <DateHeader isMonthVisible={isMonthVisible} displayDate={displayDate} selectedDate={displayDate}/>
             
