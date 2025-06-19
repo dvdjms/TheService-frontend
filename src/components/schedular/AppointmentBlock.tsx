@@ -1,32 +1,24 @@
 import { useState } from "react";
-import { View, StyleSheet, TextInput, Text, Dimensions, TouchableOpacity } from "react-native";
+import { View, StyleSheet, TextInput, Text, TouchableOpacity } from "react-native";
 import { yToTime, yToTime11 } from '../utils/timeUtils';
 import { TimeBlock } from "../types/Service";
-
 import { runOnJS, runOnUI, SharedValue, useAnimatedReaction } from "react-native-reanimated";
 import { format } from "date-fns";
 import { Ionicons } from "@expo/vector-icons";
+import { convertMinutesToTimeStamp } from "../utils/timeBlockUtils";
+import { createAppointment } from "@/src/api/appointments";
 
-const SCREEN_HEIGHT = Dimensions.get('window').height;
-const MODAL_COLLAPSED_HEIGHT = 30;
-const MODAL_EXPANDED_HEIGHT = 200;
 
 interface AppointmentBlockProps {
-    onSave: (title: string) => void;
     selectedTimeBlock: SharedValue<TimeBlock>;
-    selectedDate: number;
-    isModalExpanded: SharedValue<boolean>;
     isModalVisible: SharedValue<boolean>;
+    isModalExpanded: SharedValue<boolean>;
 }   
 
-const AppointmentBlock = ({ onSave, selectedDate, selectedTimeBlock, isModalVisible, isModalExpanded }: AppointmentBlockProps) => {
+const AppointmentBlock = ({ selectedTimeBlock, isModalVisible, isModalExpanded }: AppointmentBlockProps) => {
     const [title, setTitle] = useState('');
     const [displayBlock, setDisplayBlock] = useState<TimeBlock>();
     const [expandedJS, setExpandedJS] = useState(false);
-    // const expanded = useSharedValue(false);
-
-    //convert to date
-    const newDate = new Date(selectedDate);
 
     useAnimatedReaction(
         () => selectedTimeBlock.value,
@@ -57,8 +49,31 @@ const AppointmentBlock = ({ onSave, selectedDate, selectedTimeBlock, isModalVisi
 
 
     const handleSave = () => {
-        onSave(title);
-        handleClose();
+        const date = displayBlock?.date
+        const startTimestamp = displayBlock?.startMinutes
+        const endTimestamp = displayBlock?.endMinutes
+
+        if(!title){
+            console.log('please add title');
+            // create on screen display
+            return;
+        }
+
+        if(date && startTimestamp && endTimestamp){
+            const appointmentData = {
+                userId: "",   /////UUID
+                clientId: "", ////
+                title: title,
+                startTime: convertMinutesToTimeStamp(date, startTimestamp),
+                endTime: convertMinutesToTimeStamp(date, endTimestamp),
+                date: displayBlock?.date,
+            };
+            const response = createAppointment(appointmentData)
+            console.log("response", response)
+            console.log('Saving appointment:', appointmentData);
+            setTitle("");
+            handleClose();
+        }
     };
 
 
@@ -96,9 +111,6 @@ const AppointmentBlock = ({ onSave, selectedDate, selectedTimeBlock, isModalVisi
                             {" – "}
                             {displayBlock?.endMinutes ? yToTime11(displayBlock.endMinutes) : '--:--'}
                         </Text>
-                        {/* <Text>selectedDate: {newDate.toString()}</Text> */}
-                        {/* <Text>displayBlock: {displayBlock?.date ? format(displayBlock?.date, 'eee dd MMM yyy') : '---'}</Text> */}
-                        
 
                         <TextInput
                             style={styles.input}

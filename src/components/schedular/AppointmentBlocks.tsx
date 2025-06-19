@@ -20,7 +20,6 @@ const AppointmentBlocks = React.memo(({ appointments }: Props) => {
     return (
         <>
             {appointments.map((app) => (
-                
                 <Pressable
                     onPress={() => goToAppointment(app.id)}
                     key={app.id || app.start_minutes}
@@ -38,8 +37,8 @@ const AppointmentBlocks = React.memo(({ appointments }: Props) => {
                         borderColor: 'red'
                     }}
                 >
-                <Text>{app.appointment_title}</Text>
-                 <Text>{app.id}</Text>
+                    <Text>{app.appointment_title}</Text>
+                    {/* <Text>{app.id}</Text> */}
                 </Pressable>
             ))}
         </>

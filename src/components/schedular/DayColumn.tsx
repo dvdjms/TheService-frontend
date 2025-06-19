@@ -152,7 +152,7 @@ export const DayColumn: React.FC<DayColumnProps> = ({
             if (isUserDraggingThisColumn.value) { 
                 masterScrollOffsetY.value = event.contentOffset.y;
             }
-            isUserDraggingThisColumn.value = false;
+            //isUserDraggingThisColumn.value = false;
         },
         onMomentumBegin: (event, context) => {
             'worklet';

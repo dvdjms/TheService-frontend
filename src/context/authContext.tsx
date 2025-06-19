@@ -5,12 +5,15 @@ import * as SecureStore from 'expo-secure-store';
 import { 
     signIn as cognitoSignIn, 
     signOut as cognitoSignOut,
+    extractTokens,
+    getUserSession,
     refreshSession,
  } from '@/src/lib/auth/cognitoService';
 import { router } from 'expo-router';
 import { jwtDecode } from 'jwt-decode';
 
 type AuthContextType = {
+    userId: string;
     email: string;
     setEmail: (email: string) => void;
     firstName: string;
@@ -26,6 +29,7 @@ type AuthContextType = {
 };
 
 interface DecodedIdToken {
+    userId: string;
     email: string;
     given_name?: string;
     ['custom:subscriptionTier']?: 'free' | 'business' | 'premium';
@@ -35,6 +39,7 @@ interface DecodedIdToken {
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
+    const [userId, setUserId] = useState<string>('');
     const [email, setEmail] = useState<string>('');
     const [firstName, setFirstName] = useState<string>('Guest');
     const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
@@ -60,16 +65,13 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
                 return;
             }
 
-            const sessionJson = await SecureStore.getItemAsync('user_session');
-            // const sessionJson = await EncryptedStorage.getItem('user_session');
-            const session = sessionJson ? JSON.parse(sessionJson) : null;
-
-            if (!session) {
+            const { userId, idToken, accessToken, refreshToken } = await getUserSession();
+            console.log("userId", userId)
+            if (!idToken || !userId) {
                 setIsAuthenticated(false);
                 return;
             }
 
-            const { idToken, refreshToken } = session;
             const decoded: DecodedIdToken = jwtDecode(idToken);
             const now = Math.floor(Date.now() / 1000);
             
@@ -84,6 +86,36 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
             //     }
             // }
 
+            // Refresh token if expired or about to expire within 5 minutes
+            if (decoded.exp < now + 300 && refreshToken) {
+                const refreshedSession = await refreshSession(refreshToken);
+                if (!refreshedSession) {
+                    // Clear stored tokens on failed refresh
+                    await SecureStore.deleteItemAsync('user_id');
+                    await SecureStore.deleteItemAsync('id_token');
+                    await SecureStore.deleteItemAsync('access_token');
+                    await SecureStore.deleteItemAsync('refresh_token');
+                    setIsAuthenticated(false);
+                    return;
+                }
+                
+                // Save refreshed tokens
+                const { idToken: newIdToken, accessToken: newAccessToken, refreshToken: newRefreshToken } = extractTokens(refreshedSession);
+                await SecureStore.setItemAsync('id_token', newIdToken);
+                await SecureStore.setItemAsync('access_token', newAccessToken);
+                await SecureStore.setItemAsync('refresh_token', newRefreshToken);
+
+                // Update decoded token and userId for fresh session
+                const newDecoded: DecodedIdToken = jwtDecode(newIdToken);
+                setUserId(newDecoded.sub);
+                setEmail(newDecoded.email);
+                setFirstName(newDecoded.given_name ?? 'Guest');
+                setSubscriptionTier(newDecoded['custom:subscriptionTier'] ?? null);
+                setIsAuthenticated(true);
+                return;
+            }
+
+            setUserId(userId);
             setEmail(decoded.email);
             setFirstName(decoded.given_name ?? 'Guest');
             setSubscriptionTier(decoded['custom:subscriptionTier'] ?? null);
@@ -117,6 +149,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         // await EncryptedStorage.removeItem('user_session');
         await SecureStore.deleteItemAsync('user_session');
         cognitoSignOut();
+        setUserId('');
         setEmail('');
         setFirstName('Guest');
         setIsAuthenticated(false);
@@ -127,6 +160,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     return (
         <AuthContext.Provider
             value={{
+                userId,
                 email,
                 setEmail,
                 firstName,

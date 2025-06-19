@@ -4,7 +4,7 @@ import type { AuthService } from './authTypes';
 
 // USE_MOCK is for testing purposes - change to true for testing
 const USE_MOCK = false;
-console.log("USE_MOCK", USE_MOCK)
+// console.log("USE_MOCK", USE_MOCK)
 
 const auth: AuthService = USE_MOCK ? {
     // Core functions

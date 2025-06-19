@@ -1,4 +1,3 @@
-// import EncryptedStorage from 'react-native-encrypted-storage';
 import * as SecureStore from 'expo-secure-store';
 
 import { 
@@ -64,13 +63,12 @@ export function signIn(username: string, password: string) {
             onSuccess: async (session) => {
                 const { idToken, accessToken, refreshToken } = extractTokens(session);
 
-                await SecureStore.setItemAsync(
-                    'user_session',
-                    JSON.stringify({ idToken, accessToken, refreshToken })
-                );
+                const userId = session.getIdToken().decodePayload().sub;
 
-                // await EncryptedStorage.setItem('user_session', JSON.stringify({ idToken, accessToken, refreshToken }));
-
+                await SecureStore.setItemAsync('user_id', userId);
+                await SecureStore.setItemAsync('id_token', idToken);
+                await SecureStore.setItemAsync('access_token', accessToken);
+                await SecureStore.setItemAsync('refresh_token', refreshToken);
 
                 resolve(session);
             },
@@ -108,6 +106,7 @@ export function verifySignUp(email: string, code: string): Promise<string> {
 export async function signOut() {
     try{
         const user = userPool.getCurrentUser();
+        console.log("user", user)
         if (user) {
             user.signOut();
             console.log('User signed out');
@@ -123,18 +122,19 @@ export async function signOut() {
 
 export async function getCurrentUser(): Promise<{
     user: CognitoUser; 
-    session: CognitoUserSession
+    session: CognitoUserSession;
+    userId: string;
 } | null> {
     const user = userPool.getCurrentUser();
-
-    if (!user) return null;
+    if(!user) return null;
 
     return new Promise((resolve) => {
         user.getSession((err: any, session: CognitoUserSession) => {
             if (err || !session.isValid()) {
                 resolve(null);
             } else {
-                resolve({ user, session });
+                const userId = session.getIdToken().decodePayload().sub;
+                resolve({ user, session, userId });
             }
         });
     });
@@ -165,4 +165,13 @@ export const extractTokens = (session: CognitoUserSession) => {
         accessToken: session.getAccessToken().getJwtToken(),
         refreshToken: session.getRefreshToken().getToken(),
     };
+}
+
+  // helper function
+export async function getUserSession() {
+    const userId = await SecureStore.getItemAsync('user_id');
+    const idToken = await SecureStore.getItemAsync('id_token');
+    const accessToken = await SecureStore.getItemAsync('access_token');
+    const refreshToken = await SecureStore.getItemAsync('refresh_token');
+    return { userId, idToken, accessToken, refreshToken };
 }

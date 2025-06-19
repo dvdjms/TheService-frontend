@@ -35,9 +35,9 @@ export const yToDate = (y: number, baseDate: Date): Date => {
 }
 
 export const yToTime11 = (minutes: number): string => {
-  const hrs = Math.floor(minutes / 60);
-  const mins = minutes % 60;
-  return `${String(hrs).padStart(2, '0')}:${String(mins).padStart(2, '0')}`;
+    const hrs = Math.floor(minutes / 60);
+    const mins = minutes % 60;
+    return `${String(hrs).padStart(2, '0')}:${String(mins).padStart(2, '0')}`;
 };
 
 export const formatTime = ({ hours, minutes }: { hours: number; minutes: number }): string =>{
@@ -61,6 +61,7 @@ export const useAdjacentDates = (baseDate: Date) => {
         return { prevDate, nextDate };
     }, [baseDate.getDate()]);
 }
+
 
 const MS_IN_DAY = 24 * 60 * 60 * 1000;
 export const addDaysNumber = (timestamp: number, days: number) => {

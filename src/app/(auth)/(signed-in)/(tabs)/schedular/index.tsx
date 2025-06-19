@@ -152,14 +152,9 @@ export default function SchedularScreen() {
             style={[styles.appointmentBlock, animatedModalStyle]}
             >
             <AppointmentBlock
-                isModalExpanded={isModalExpanded}
                 selectedTimeBlock={selectedTimeBlock}
-                selectedDate={selectedDate}
                 isModalVisible={isModalVisible}
-                onSave={(title) => {
-                    // Handle saving the appointment
-                    // console.log(`Saved appointment for ${selectedTimeBlock.value?.startMinutes}:00 - ${title}`);
-                }}
+                isModalExpanded={isModalExpanded}
             >
             </AppointmentBlock>
         </Animated.View>

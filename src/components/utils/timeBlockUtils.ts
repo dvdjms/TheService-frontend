@@ -13,6 +13,23 @@ export const getTimeBlockFromY = (y: number, hourHeight: number, date: number) =
 };
 
 
+export const convertMinutesToTimeStamp = (dateTimestamp: number, minutesSinceMidnight: number) => {
+  if (!dateTimestamp || minutesSinceMidnight == null) return null;
+
+  // 1. Create a new Date object from the timestamp (resets to midnight)
+  const date = new Date(dateTimestamp);
+
+  // 2. Set hours, minutes, seconds, ms based on minutesSinceMidnight
+  const hours = Math.floor(minutesSinceMidnight / 60);
+  const minutes = minutesSinceMidnight % 60;
+
+  date.setHours(hours, minutes, 0, 0);
+
+  // 3. Return the timestamp in milliseconds
+  return date.getTime();
+};
+
+
 // export const getYFromTimeBlock = (
 //     block: TimeBlock,
 //     HOUR_HEIGHT: number
