@@ -1,4 +1,4 @@
-import { fetchRequest } from './config';
+import { fetchRequest } from './base';
 
 
 export const getUsers = () => {

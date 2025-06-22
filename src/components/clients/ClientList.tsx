@@ -14,11 +14,13 @@ export default function ClientList() {
 
 const styles = StyleSheet.create({
     container: {
+        flex: 1,
         padding: 16,
-        width: '100%',
 
     },
     clientCard: {
+        flex: 1,
+
         marginBottom: 16,
         padding: 12,
         backgroundColor: '#f2f2f2',

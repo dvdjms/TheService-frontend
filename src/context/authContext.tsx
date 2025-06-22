@@ -146,7 +146,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
 
     const signOut = async () => {
-        // await EncryptedStorage.removeItem('user_session');
         await SecureStore.deleteItemAsync('user_session');
         cognitoSignOut();
         setUserId('');

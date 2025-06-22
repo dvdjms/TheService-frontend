@@ -27,11 +27,12 @@ export default function ClientCard({ client }: Props) {
 
 const styles = StyleSheet.create({
     card: {
+        flex: 1,
         marginBottom: 16,
         padding: 12,
         backgroundColor: '#F2F2F2',
         borderRadius: 8,
-        width: '95%',
+        width: '100%',
         alignSelf: 'center'
     },
     name: {
