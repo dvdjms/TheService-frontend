@@ -7,6 +7,7 @@ import { useAuth } from '@/src/context/authContext';
 import FormButton from '../ui/FormButton';
 import { colors } from '@/src/styles/globalStyles';
 
+
 const VerifyEmailForm = () => {
     const [error, setError] = useState('');
     const [loading, setLoading] = useState(false);
@@ -40,7 +41,17 @@ const VerifyEmailForm = () => {
     return (
         <ScrollView>
             <View style={styles.container}>
-                <FormField autoFocus autoComplete="sms-otp" label="Enter Code" value={code} onChangeText={setCode} placeholder="Enter Code" width={0.9} keyboardType="number-pad" textContentType="oneTimeCode" />
+                <FormField 
+                    autoFocus autoComplete="sms-otp" 
+                    label="Enter Code" 
+                    value={code} 
+                    onChangeText={setCode} 
+                    placeholder="Enter Code" 
+                    width={0.9} 
+                    keyboardType="number-pad" 
+                    textContentType="oneTimeCode"
+                    iconName={"keypad-outline"}
+                    />
                 <FormButton OnPress={handleSubmit} title={loading ? 'Verifying...' : 'Verify'} width={0.4} />
 
                 {error ? <Text style={styles.error}>{error}</Text> : null}

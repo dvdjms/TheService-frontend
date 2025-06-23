@@ -4,6 +4,7 @@ import { ScrollView } from "react-native-gesture-handler";
 import { colors } from '@/src/styles/globalStyles';
 import { AddButton } from "@/src/components/ui/AddButton";
 import { useState } from "react";
+import ClientForm from "@/src/components/forms/ClientForm";
 
 const screenWidth = Dimensions.get('window').width;
 
@@ -36,36 +37,11 @@ export default function ClientScreen() {
                 animationType="slide"
                 transparent={true}
                 visible={modalVisible}
-                onRequestClose={() => setModalVisible(false)}
+                // onRequestClose={() => setModalVisible(false)}
             >
                 <View style={styles.modalOverlay}>
                     <View style={styles.modalContent}>
-                        <Text style={styles.modalTitle}>Add New Client</Text>
-                        
-                        <TextInput
-                            style={styles.input}
-                            placeholder="Client Name"
-                            value={newClientName}
-                            onChangeText={setNewClientName}
-                            autoFocus
-                        />
-                        
-                        <View style={styles.buttonRow}>
-                            <TouchableOpacity
-                                style={[styles.button, styles.cancelButton]}
-                                onPress={() => setModalVisible(false)}
-                            >
-                                <Text style={styles.buttonText}>Cancel</Text>
-                            </TouchableOpacity>
-                            
-                            <TouchableOpacity
-                                style={[styles.button, styles.addButton, !newClientName.trim() && styles.disabledButton]}
-                                onPress={handleAddClient}
-                                disabled={!newClientName.trim()}
-                            >
-                                <Text style={styles.buttonText}>Add</Text>
-                            </TouchableOpacity>
-                        </View>
+                        <ClientForm setModalVisible={setModalVisible} />
                     </View>
                 </View>
             </Modal>
@@ -101,15 +77,12 @@ const styles = StyleSheet.create({
         backgroundColor: 'rgba(0,0,0,0.5)',
     },
     modalContent: {
-        width: '85%',
+        flex: 1,
+        top: 70,
+        width: screenWidth,
         backgroundColor: 'white',
         borderRadius: 10,
-        padding: 20,
-        shadowColor: '#000',
-        shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.25,
-        shadowRadius: 4,
-        elevation: 5,
+        padding: 15,
     },
     modalTitle: {
         fontSize: 20,
@@ -117,18 +90,7 @@ const styles = StyleSheet.create({
         marginBottom: 20,
         textAlign: 'center',
     },
-    input: {
-        borderWidth: 1,
-        borderColor: '#ddd',
-        borderRadius: 8,
-        padding: 12,
-        marginBottom: 20,
-        fontSize: 16,
-    },
-    buttonRow: {
-        flexDirection: 'row',
-        justifyContent: 'space-between',
-    },
+
     button: {
         borderRadius: 8,
         paddingVertical: 12,

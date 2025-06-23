@@ -1,3 +1,4 @@
+import { Ionicons } from '@expo/vector-icons';
 import { View, TextInput, Text, StyleSheet, Dimensions, KeyboardTypeOptions, TextInputProps, Platform } from 'react-native';
 
 type FormFieldProps = {
@@ -14,6 +15,7 @@ type FormFieldProps = {
     textContentType?: TextInputProps['textContentType'];
     value: string;
     width: number;
+    iconName: keyof typeof Ionicons.glyphMap;
 };
     
 export default function FormField({
@@ -29,7 +31,8 @@ export default function FormField({
     secureTextEntry,
     textContentType,
     value,
-    width
+    width,
+    iconName
 }: FormFieldProps) {
 
         const screenWidth = Dimensions.get('window').width;
@@ -38,22 +41,31 @@ export default function FormField({
     return (
         <View style={[styles.container, {width: dynamicWidth}]} >
             <Text style={styles.label}>{label}</Text>
-            <TextInput
-                {...(Platform.OS === 'android' ? { autoComplete: autoComplete || 'off' } : {})}
-                autoComplete="off"
-                autoCapitalize="none"
-                autoFocus={autoFocus}
-                importantForAutofill="no"
-                keyboardType={keyboardType || 'default'}
-                onChangeText={onChangeText}
-                placeholder={placeholder}
-                secureTextEntry={secureTextEntry}
-                style={[styles.input, error && styles.errorInput]}
-                textContentType={textContentType || 'none'}
-                value={value}
-                onSubmitEditing={onSubmitEditing}
-                returnKeyType={returnKeyType}
-            />
+            <View style={styles.inputContainer}>
+                <Ionicons 
+                    name={iconName}
+                    size={18}
+                    color="gray"
+                    style={styles.icon} />
+                <TextInput
+                    {...(Platform.OS === 'android' ? { autoComplete: autoComplete || 'off' } : {})}
+                    autoComplete="off"
+                    autoCapitalize="none"
+                    autoFocus={autoFocus}
+                    importantForAutofill="no"
+                    keyboardType={keyboardType || 'default'}
+                    onChangeText={onChangeText}
+                    placeholder={placeholder}
+                    secureTextEntry={secureTextEntry}
+                    style={[styles.input, error && styles.errorInput]}
+                    textContentType={textContentType || 'none'}
+                    value={value}
+                    onSubmitEditing={onSubmitEditing}
+                    returnKeyType={returnKeyType}
+                    numberOfLines={1}
+                    multiline={false}
+                />
+            </View>
             {error ? <Text style={styles.error}>{error}</Text> : null}
         </View>
     );
@@ -61,7 +73,7 @@ export default function FormField({
     
 const styles = StyleSheet.create({
     container: { 
-        marginBottom: 16, 
+        overflow: 'hidden'
     },
     label: { 
         marginBottom: 4, 
@@ -70,11 +82,12 @@ const styles = StyleSheet.create({
         paddingLeft: 5,
      },
     input: {
-        borderWidth: 1,
+        // borderWidth: 1,
         borderColor: '#ccc',
         borderRadius: 8,
         padding: 10,
         fontSize: 16,
+        height: 50,
     },
     errorInput: {
         borderColor: 'red',
@@ -84,5 +97,17 @@ const styles = StyleSheet.create({
         color: 'red',
         fontSize: 14,
     },
+    inputContainer: {
+        flexDirection: 'row',
+        borderWidth: 1,
+        borderRadius: 11,
+        borderColor: '#ccc',
+        alignItems: 'center',
+
+    },
+    icon: {
+        paddingLeft: 7
+        // color: 'green'
+    }
 });
     

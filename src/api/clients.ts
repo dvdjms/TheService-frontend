@@ -1,7 +1,7 @@
 import { fetchRequest } from './base';
 
 
-export const getClients = () => {
+export const getAllClients = () => {
     return fetchRequest('/clients');
 }
 

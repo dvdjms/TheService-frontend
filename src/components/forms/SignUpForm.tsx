@@ -56,9 +56,35 @@ const SignUpForm = () => {
     return (
         <ScrollView>
             <View style={styles.container}>
-                <FormField autoFocus autoComplete="email" label="Email" value={email} onChangeText={setEmailLocal} placeholder="Enter your email" width={0.9} keyboardType="email-address" />
-                <FormField autoComplete="password" label="Password" value={password} onChangeText={setPassword} placeholder="Enter password" width={0.9} secureTextEntry />
-                <FormField autoComplete="password" label="Confirm Password" value={confirmPassword} onChangeText={setConfirmPassword} placeholder="Confirm password" width={0.9} secureTextEntry />
+                <FormField 
+                    autoFocus autoComplete="email" 
+                    label="Email" value={email} 
+                    onChangeText={setEmailLocal} 
+                    placeholder="Enter your email" 
+                    width={0.9} 
+                    keyboardType="email-address" 
+                    iconName={"mail-outline"}
+                    />
+                <FormField 
+                    autoComplete="password" 
+                    label="Password" 
+                    value={password} 
+                    onChangeText={setPassword} 
+                    placeholder="Enter password" 
+                    width={0.9} 
+                    secureTextEntry
+                    iconName={"lock-closed-outline"}
+                    />
+                <FormField 
+                    autoComplete="password" 
+                    label="Confirm Password" 
+                    value={confirmPassword} 
+                    onChangeText={setConfirmPassword} 
+                    placeholder="Confirm password" 
+                    width={0.9} 
+                    secureTextEntry
+                    iconName={"lock-closed-outline"}
+                    />
                 
                 <FormButton OnPress={handleSubmit} title={loading ? 'Registering...' : 'Register'} width={0.9}/>
                 

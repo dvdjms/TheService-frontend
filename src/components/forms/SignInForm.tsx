@@ -59,7 +59,9 @@ const SignInForm = () => {
                     onChangeText={setEmail} 
                     placeholder="Enter your email" 
                     width={0.9} 
-                    keyboardType="email-address" />
+                    keyboardType="email-address" 
+                    iconName={"mail-outline"}
+                    />
                 <FormField 
                     autoComplete="password" 
                     label="Password" 
@@ -69,7 +71,9 @@ const SignInForm = () => {
                     width={0.9} 
                     secureTextEntry
                     onSubmitEditing={handleSubmit} 
-                    returnKeyType={"done"}/>
+                    returnKeyType={"done"}
+                    iconName={"lock-closed-outline"}
+                    />
 
                 <FormButton OnPress={handleSubmit} title={loading ? 'Signing in...' : 'Sign In'} width={0.9} />
                 

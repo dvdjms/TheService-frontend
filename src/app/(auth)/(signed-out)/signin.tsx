@@ -8,22 +8,21 @@ import { colors } from '@/src/styles/globalStyles';
 export default function SignInScreen() {
 
     return (
-        <DismissKeyboardView>
+         <DismissKeyboardView>
             <View style={styles.container}>
                 <ScreenTitle title="Sign in" />
                 <SignInForm />
                 <Link style={styles.link} href="/signup">Sign up</Link>
                 <Link style={styles.link} href="/home">home</Link>
             </View>
-
-        </DismissKeyboardView>
+         </DismissKeyboardView>
     );
 }
 
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        backgroundColor: colors.background,
+        // backgroundColor: colors.background,
         justifyContent: 'center',
         alignItems: 'center',
     },
