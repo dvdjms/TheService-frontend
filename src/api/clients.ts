@@ -1,30 +1,32 @@
 import { fetchRequest } from './base';
 
 
-export const getAllClients = () => {
-    return fetchRequest('/clients');
+export const getAllClients = async (userId: string, accessToken: string) => {
+    return await fetchRequest(`/clients?userId=${userId}`, accessToken,);
 }
 
-export const getClient = (id: string) => {
-    return fetchRequest(`/clients/${id}`)
+export const getClient = async (userId: string, accessToken: string) => {
+    return await fetchRequest(`clients/${userId}`, accessToken)
 }
 
-export const updateClient = (id: string, data: any) => {
-    return fetchRequest(`/clients/${id}`, {
+export const updateClient = async (id: string, accessToken: string, data: any) => {
+    return await fetchRequest(`clients/${id}`, accessToken, {
         method: 'PUT',
         body: JSON.stringify(data),
     })
 }
 
-export const createClient = (data: any) => {
-    return fetchRequest('/clients', {
+// works nicely
+export const createClient = async (accessToken: string | null, data: any) => {
+    if (!accessToken) throw new Error('Access token required');
+    return await fetchRequest('clients', accessToken, {
         method: 'POST',
         body: JSON.stringify(data),
     });
 }
 
-export const deleteClient = (id: string) => {
-    return fetchRequest(`/clients/${id}`, {
+export const deleteClient = async (id: string, accessToken: string) => {
+    return await fetchRequest(`clients/${id}`, accessToken, {
         method: 'DELETE',
     });
 }

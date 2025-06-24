@@ -63,9 +63,6 @@ export function signIn(username: string, password: string) {
             onSuccess: async (session) => {
                 const { idToken, accessToken, refreshToken } = extractTokens(session);
 
-                const userId = session.getIdToken().decodePayload().sub;
-
-                await SecureStore.setItemAsync('user_id', userId);
                 await SecureStore.setItemAsync('id_token', idToken);
                 await SecureStore.setItemAsync('access_token', accessToken);
                 await SecureStore.setItemAsync('refresh_token', refreshToken);
@@ -126,6 +123,7 @@ export async function getCurrentUser(): Promise<{
     userId: string;
 } | null> {
     const user = userPool.getCurrentUser();
+
     if(!user) return null;
 
     return new Promise((resolve) => {
@@ -142,20 +140,20 @@ export async function getCurrentUser(): Promise<{
 
 
 export function refreshSession(refreshTokenStr: string): Promise<CognitoUserSession | null> {
-  return new Promise((resolve) => {
-    const user = userPool.getCurrentUser();
-    if (!user) return resolve(null);
+    return new Promise((resolve) => {
+        const user = userPool.getCurrentUser();
+        if (!user) return resolve(null);
 
-    const refreshToken = new CognitoRefreshToken({ RefreshToken: refreshTokenStr });
+        const refreshToken = new CognitoRefreshToken({ RefreshToken: refreshTokenStr });
 
-    user.refreshSession(refreshToken, (err, session) => {
-      if (err || !session?.isValid()) {
-        console.error('Failed to refresh session:', err);
-        return resolve(null);
-      }
-      resolve(session);
+        user.refreshSession(refreshToken, (err, session) => {
+        if (err || !session?.isValid()) {
+            console.error('Failed to refresh session:', err);
+            return resolve(null);
+        }
+        resolve(session);
+        });
     });
-  });
 }
 
   // helper function
@@ -169,9 +167,8 @@ export const extractTokens = (session: CognitoUserSession) => {
 
   // helper function
 export async function getUserSession() {
-    const userId = await SecureStore.getItemAsync('user_id');
     const idToken = await SecureStore.getItemAsync('id_token');
     const accessToken = await SecureStore.getItemAsync('access_token');
     const refreshToken = await SecureStore.getItemAsync('refresh_token');
-    return { userId, idToken, accessToken, refreshToken };
+    return { idToken, accessToken, refreshToken };
 }

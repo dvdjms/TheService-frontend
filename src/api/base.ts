@@ -1,15 +1,17 @@
-import { getUserSession } from "../lib/auth/cognitoService";
+import { useAuth } from "../context/authContext";
+import Constants from 'expo-constants';
 
-const API_BASE_URL = process.env.API_BASE_URL;
+
+const API_BASE_URL = Constants.expoConfig?.extra?.API_BASE_URL ?? '';
+
+console.log("API_BASE_URL",API_BASE_URL)
+
 
 export const fetchRequest = async (
     path: string,
+    accessToken: string,
     options: RequestInit = {}
 ): Promise<any> => {
-    console.log("api options", options)
-    const { accessToken } = await getUserSession();
-
-    // return // until backend sorted
     const res = await fetch(`${API_BASE_URL}${path}`, {
         ...options,
         headers: {
@@ -18,7 +20,6 @@ export const fetchRequest = async (
             ...(options.headers || {}),
         },
     });
-
     let responseBody: any;
     
     try {

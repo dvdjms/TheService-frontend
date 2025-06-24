@@ -6,8 +6,9 @@ import { ScrollView } from 'react-native-gesture-handler';
 import { colors } from '@/src/styles/globalStyles';
 import { Ionicons } from '@expo/vector-icons';
 import { createClient } from '@/src/api/clients';
+import { useAuth } from '@/src/context/authContext';
 
-const screenWidth = Dimensions.get('window').width;
+
 
 interface Props {
     setModalVisible: Dispatch<SetStateAction<boolean>>;
@@ -29,7 +30,11 @@ const ClientForm = ({ setModalVisible }: Props) => {
     const [error, setError] = useState<string>('');
     const [loading, setLoading] = useState<boolean>(false);
 
-    const userId = '';
+    const { userId, accessToken } = useAuth();
+
+    if(!accessToken){
+        throw new Error('No access token available, please log in');
+    }
 
     const expandAddress = () => {
 
@@ -38,7 +43,6 @@ const ClientForm = ({ setModalVisible }: Props) => {
     const expandNote = () => {
 
     }
-
 
 
     // Function to handle login submission
@@ -60,16 +64,16 @@ const ClientForm = ({ setModalVisible }: Props) => {
                 firstName: firstName, 
                 lastName: lastName, 
                 email: email,
-                phone: phone,
-                notes: notes,
-                address1: address1,
-                address2: address2,
-                city: city,
-                stateOrProvince: stateOrProvince,
-                postalCode: postalCode,
+                phone: phone || '',
+                notes: notes || '',
+                address1: address1 || '',
+                address2: address2 || '',
+                city: city || '',
+                stateOrProvince: stateOrProvince || '',
+                postalCode: postalCode || '',
             }
 
-            const response = await createClient(body)
+            const response = await createClient(accessToken, body)
             console.log("response", response)
 
             setModalVisible(false);
@@ -109,8 +113,8 @@ const ClientForm = ({ setModalVisible }: Props) => {
                 <FormField 
                     autoComplete="email" 
                     label="" 
-                    value={lastName} 
-                    onChangeText={setLastName} 
+                    value={email} 
+                    onChangeText={setEmail} 
                     placeholder="Email" 
                     width={0.92} 
                     returnKeyType={"done"} 
@@ -118,9 +122,9 @@ const ClientForm = ({ setModalVisible }: Props) => {
                     />
                 <FormField 
                     autoComplete="phone" 
-                    label="" 
-                    value={lastName} 
-                    onChangeText={setLastName} 
+                    label=""
+                    value={phone} 
+                    onChangeText={setPhone} 
                     placeholder="Phone number" 
                     width={0.92} 
                     returnKeyType={"done"}

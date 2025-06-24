@@ -27,9 +27,9 @@ export default function ClientScreen() {
                 <AddButton onPress={handleAddClient}/>
             </View>
     
-            <ScrollView contentContainerStyle={{ flexGrow: 1, width: screenWidth-5 }}>
+            <View style={{ flex: 1, width: screenWidth-5 }}>
                 <ClientList />
-            </ScrollView>
+            </View>
 
 
             {/* Add Client Modal */}

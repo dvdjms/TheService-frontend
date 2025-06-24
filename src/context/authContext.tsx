@@ -26,6 +26,7 @@ type AuthContextType = {
     signOut: () => Promise<void>;
     isLoading: boolean;
     hasCheckedAuth: boolean;
+    accessToken: string | null;
 };
 
 interface DecodedIdToken {
@@ -46,6 +47,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     const [isLoading, setIsLoading] = useState<boolean>(true);
     const [subscriptionTier, setSubscriptionTier] = useState<'free' | 'business' | 'premium' | null>(null);
     const [hasCheckedAuth, setHasCheckedAuth] = useState<boolean>(false);
+    const [accessToken, setAccessToken] = useState<string | null>(null);
 
     useEffect(() => {
         init();
@@ -64,10 +66,9 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
                 setIsAuthenticated(false);
                 return;
             }
+            const { idToken, accessToken, refreshToken } = await getUserSession();
 
-            const { userId, idToken, accessToken, refreshToken } = await getUserSession();
-            console.log("userId", userId)
-            if (!idToken || !userId) {
+            if (!idToken) {
                 setIsAuthenticated(false);
                 return;
             }
@@ -91,7 +92,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
                 const refreshedSession = await refreshSession(refreshToken);
                 if (!refreshedSession) {
                     // Clear stored tokens on failed refresh
-                    await SecureStore.deleteItemAsync('user_id');
+
                     await SecureStore.deleteItemAsync('id_token');
                     await SecureStore.deleteItemAsync('access_token');
                     await SecureStore.deleteItemAsync('refresh_token');
@@ -112,14 +113,16 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
                 setFirstName(newDecoded.given_name ?? 'Guest');
                 setSubscriptionTier(newDecoded['custom:subscriptionTier'] ?? null);
                 setIsAuthenticated(true);
+                setAccessToken(newAccessToken);
                 return;
             }
 
-            setUserId(userId);
+            setUserId(decoded.sub);
             setEmail(decoded.email);
             setFirstName(decoded.given_name ?? 'Guest');
             setSubscriptionTier(decoded['custom:subscriptionTier'] ?? null);
             setIsAuthenticated(true);
+            setAccessToken(accessToken);
   
         } catch(error){
             console.error('checkAuth error:', error);
@@ -146,7 +149,9 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
 
     const signOut = async () => {
-        await SecureStore.deleteItemAsync('user_session');
+        await SecureStore.deleteItemAsync('id_token');
+        await SecureStore.deleteItemAsync('access_token');
+        await SecureStore.deleteItemAsync('refresh_token');
         cognitoSignOut();
         setUserId('');
         setEmail('');
@@ -171,7 +176,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
                 signOut,
                 signIn,
                 isLoading,
-                hasCheckedAuth
+                hasCheckedAuth,
+                accessToken
             }}
         >
             {children}

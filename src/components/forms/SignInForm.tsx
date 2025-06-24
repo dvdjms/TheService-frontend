@@ -54,17 +54,17 @@ const SignInForm = () => {
             <View style={styles.container}>
                 <FormField 
                     autoFocus autoComplete="email" 
-                    label="Email" 
+                    label="" 
                     value={email} 
                     onChangeText={setEmail} 
-                    placeholder="Enter your email" 
+                    placeholder="Enter email" 
                     width={0.9} 
                     keyboardType="email-address" 
                     iconName={"mail-outline"}
                     />
                 <FormField 
                     autoComplete="password" 
-                    label="Password" 
+                    label="" 
                     value={password} 
                     onChangeText={setPassword} 
                     placeholder="Enter password" 
@@ -74,9 +74,9 @@ const SignInForm = () => {
                     returnKeyType={"done"}
                     iconName={"lock-closed-outline"}
                     />
-
-                <FormButton OnPress={handleSubmit} title={loading ? 'Signing in...' : 'Sign In'} width={0.9} />
-                
+                <View style={styles.buttonContainer}> 
+                    <FormButton OnPress={handleSubmit} title={loading ? 'Signing in...' : 'Sign In'} width={0.9} />
+                </View>
                 {error ? <Text style={styles.error}>{error}</Text> : null}
             </View>
         </ScrollView>
@@ -104,7 +104,10 @@ const styles = StyleSheet.create({
     error: {
         marginTop: 10,
         color: 'red',
-      },
+    },
+    buttonContainer: {
+        marginTop: 30
+    }
 });
 
 export default SignInForm;
