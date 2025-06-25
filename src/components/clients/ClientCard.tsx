@@ -1,50 +1,25 @@
-import { Link, router } from 'expo-router';
 import { Text, StyleSheet, Pressable } from 'react-native';
+import { Client } from '../types/Service';
 
 
 type Props = {
-    client: {
-        clientId: string;
-        firstName: string;
-        lastName: string;
-        email: string;
-        phone: string;
-    };
+    client: Client
+    goToClient: (client: Client) => void;
 };
 
 
-
-export default function ClientCard({ client }: Props) {
-
-
-    const handlePress = () => {
-        // const appointment = client?.appointments?.[0]; // Example: first appointment
-        // if (!appointment) return;
-
-        // router.push({
-        //     pathname: '/appointments/detail',
-        //     params: {
-        //         clientId: client.clientId,
-        //         appointmentId: appointment.id,
-        //         appointment: JSON.stringify(appointment),
-        //     }
-        // });
-    };
-
+export default function ClientCard({ client, goToClient }: Props) {
 
     return (
-        // <Link href={`/clients/${client.clientId}`} asChild>
-
-            <Pressable style={styles.card} onPress={handlePress}>
-                <Text style={styles.name}>{client.firstName} {client.lastName}</Text>
-                <Text style={styles.email}>{client.email}</Text>
-                <Text style={styles.phone}>{client.phone}</Text>
-                <Text style={styles.phone}>{client.clientId}</Text>
-            </Pressable>
-        // </Link>
-
+        <Pressable style={styles.card} onPress={() => goToClient(client)}>
+            <Text style={styles.name}>{client.firstName} {client.lastName}</Text>
+            <Text style={styles.email}>{client.email}</Text>
+            <Text style={styles.phone}>{client.phone}</Text>
+            <Text style={styles.phone}>{client.clientId}</Text>
+        </Pressable>
     );
 }
+
 
 const styles = StyleSheet.create({
     card: {

@@ -1,46 +1,22 @@
-import { View, Text, StyleSheet, FlatList } from 'react-native';
+import { StyleSheet, FlatList } from 'react-native';
 // import clients from '../../../assets/mock-clients.json';
 import ClientCard from './ClientCard';
-import { getAllClients } from '@/src/api/clients';
-import { useAuth } from '@/src/context/authContext';
-import { useEffect, useState } from 'react';
-
-export default function ClientList() {
-    const [clients, setClients] = useState<Array<any>>([]);
-    const [loading, setLoading] = useState<boolean>(true);
-    const { userId, accessToken } = useAuth();
-
-    useEffect(() => {
-        if(!accessToken){
-            console.log("Missing access token");
-            return;
-        }
-
-        const fetchClients = async () => {
-            try {
-                const response = await getAllClients(userId, accessToken);
-                console.log("result", response);
-                setClients(response.clients || []);
-        
-            } catch (error) {
-                console.error('Failed to fetch clients', error);
-            } finally {
-                setLoading(false);
-            }
-        }
-        fetchClients()
-    },[accessToken, userId])
-
-    if(loading) {
-        return <View><Text>Loading...</Text></View>;
-    }
+import { Client } from '../types/Service';
+import { useClientStore } from '@/src/store/clientStore';
 
 
+interface Props {
+    goToClient: (client: Client) => void;
+}
+
+export default function ClientList({ goToClient }: Props) {
+    const clients = useClientStore(state => state.clients);
+    
     return (
         <FlatList
             data={clients}
             keyExtractor={(item) => item.clientId}
-            renderItem={({ item }) => <ClientCard client={item} />}
+            renderItem={({ item }) => <ClientCard client={item} goToClient={goToClient} />}
             contentContainerStyle={{ paddingHorizontal: 10, paddingVertical: 20 }}
         />
     );

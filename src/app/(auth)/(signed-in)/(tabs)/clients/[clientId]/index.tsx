@@ -1,26 +1,56 @@
-import { Link, useLocalSearchParams, useRouter } from 'expo-router';
-import { View, Text, Button, StyleSheet, Pressable, InteractionManager } from 'react-native';
+import { useLocalSearchParams, useRouter } from 'expo-router';
+import { View, Text, Button, StyleSheet, Pressable } from 'react-native';
 import FormButton from '@/src/components/ui/FormButton';
 import { colors } from '@/src/styles/globalStyles';
 import dummyAppointments from "@/assets/mock-clients.json";
 import { FlatList } from 'react-native-gesture-handler';
-import { Appointment } from '@/src/components/types/Service';
+import { Appointment, Client } from '@/src/components/types/Service';
 import { format } from 'date-fns';
+import { useClientStore } from '@/src/store/clientStore';
+import React, { useEffect, useState } from 'react';
+import { getClient } from '@/src/api/clients';
+import { useAuth } from '@/src/context/authContext';
 
 
 
 export default function ClientDetail() {
     const router = useRouter();
     const { clientId } = useLocalSearchParams();
+    const { userId, accessToken } = useAuth();
+    const selectedClient = useClientStore(state => state.selectedClient);
+    const setSelectedClient = useClientStore(state => state.setSelectedClient);
 
-    const client = dummyAppointments.find(c => c.id === clientId);
+    const [loading, setLoading] = useState(false);
+    
+    const clientIdString = Array.isArray(clientId) ? clientId[0] : clientId;
+
+    useEffect(() => {
+        // If no client in store or different clientId, fetch client from API
+        if (!selectedClient || selectedClient.clientId !== clientIdString) {
+            setLoading(true);
+
+            const fetchClients = async () => {
+                if(accessToken){
+                    const client = await getClient(userId, clientIdString, accessToken);
+                    setSelectedClient(client)
+                }
+            }
+            setLoading(false);
+            fetchClients()
+        }
+    }, [clientIdString, accessToken]);
+
+    if (loading) return <View></View>//LoadingSpinner />;
+
+    if (!selectedClient) return <Text>No client found</Text>;
+
 
 
     const goToAppointment = (appointmentId: string) => {          
         router.push(`/clients/${clientId}/appointments/${appointmentId}`);
     };
 
-    if (!client) {
+    if (!selectedClient) {
         return (
             <View>
                 <Text>Client not found</Text>
@@ -29,9 +59,9 @@ export default function ClientDetail() {
         );
     }
 
-    const sortedAppointments = [...client.appointments].sort(
-        (a, b) => a.start_minutes - b.start_minutes
-    );
+    // const sortedAppointments = [...client.appointments].sort(
+    //     (a, b) => a.start_minutes - b.start_minutes
+    // );
 
 
     const renderItem = ({ item }: { item: any}) => (
@@ -56,18 +86,18 @@ export default function ClientDetail() {
         <View style={styles.container}>
             <View style={styles.details}>
                 <Text style={styles.title}>Client Detail Screen</Text>
-                <Text>Name: {client.firstName} {client.lastName}</Text>
-                <Text>Email: {client.email}</Text>
-                <Text>Phone: {client.phone}</Text>
+                <Text>Name: {selectedClient.firstName} {selectedClient.lastName}</Text>
+                <Text>Email: {selectedClient.email}</Text>
+                <Text>Phone: {selectedClient.phone}</Text>
             </View>
 
             <View style={styles.appointmentsContainer}>
-                <FlatList 
+                {/* <FlatList 
                     data={sortedAppointments}
                     keyExtractor={item => item.id}
                     renderItem={renderItem}
                     style={styles.FlatList}
-                />
+                /> */}
               
             </View>
               <Text>Add appointment +</Text>

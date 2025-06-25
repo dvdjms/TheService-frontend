@@ -1,16 +1,58 @@
-import { Text, View, StyleSheet, Dimensions, Modal, TextInput, TouchableOpacity } from "react-native";
+import { Text, View, StyleSheet, Dimensions, Modal } from "react-native";
 import { ClientList } from "@/src/components/clients";
-import { ScrollView } from "react-native-gesture-handler";
 import { colors } from '@/src/styles/globalStyles';
 import { AddButton } from "@/src/components/ui/AddButton";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import ClientForm from "@/src/components/forms/ClientForm";
+import { useAuth } from "@/src/context/authContext";
+import { getAllClients } from "@/src/api/clients";
+import { router } from "expo-router";
+import { Client } from "@/src/components/types/Service";
+import { useClientStore } from "@/src/store/clientStore";
+
 
 const screenWidth = Dimensions.get('window').width;
 
 export default function ClientScreen() {
     const [modalVisible, setModalVisible] = useState(false);
     const [newClientName, setNewClientName] = useState('');
+    const [loading, setLoading] = useState<boolean>(true);
+    const { userId, accessToken } = useAuth();
+
+    const { setClients } = useClientStore();
+
+    useEffect(() => {
+        if(!accessToken){
+            console.log("Missing access token");
+            return;
+        }
+
+        const fetchClients = async () => {
+            try {
+                const response = await getAllClients(userId, accessToken);
+                const fetchedClients = response.clients || []
+
+                setClients(fetchedClients); // ✅ store in Zustand
+            } catch (error) {
+                console.error('Failed to fetch clients', error);
+            } finally {
+                setLoading(false);
+            }
+        }
+        fetchClients()
+    },[accessToken, userId])
+
+    if(loading) {
+        return <View><Text>Loading...</Text></View>;
+    }
+
+
+    const goToClient = (client: Client) => {
+        if (!client) return;
+        useClientStore.getState().setSelectedClient(client); // 💾 store in Zustand
+        router.push(`/clients/${client.clientId}`);
+    };
+
 
     const handleAddClient = () => {
         //open modal form for add client
@@ -28,7 +70,7 @@ export default function ClientScreen() {
             </View>
     
             <View style={{ flex: 1, width: screenWidth-5 }}>
-                <ClientList />
+                <ClientList goToClient={goToClient}/>
             </View>
 
 
@@ -113,4 +155,5 @@ const styles = StyleSheet.create({
         fontSize: 16,
     },
 });
+
 

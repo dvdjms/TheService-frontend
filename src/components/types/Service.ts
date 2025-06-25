@@ -88,6 +88,31 @@ export interface Appointment {
     color: string;
 }
 
+export interface Client {
+    PK: string;
+    SK: string;
+    userId: string
+    clientId: string;
+    firstName: string,
+    lastName: string,
+    fullName: string,
+    email: string,
+    phone: string,
+    notes: string,
+    address1: string,
+    address2: string,
+    city: string,
+    stateOrProvince: string,
+    postalCode: string,
+    countryCode: string,
+    lat: number,
+    lng: number,
+    type: string,
+    createdAt: string,
+    updatedAt: string,
+}
+
+
 export interface PositionedAppointment extends Appointment {
     topOffset: number;
     blockHeight: number;

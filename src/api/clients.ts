@@ -5,8 +5,8 @@ export const getAllClients = async (userId: string, accessToken: string) => {
     return await fetchRequest(`/clients?userId=${userId}`, accessToken,);
 }
 
-export const getClient = async (userId: string, accessToken: string) => {
-    return await fetchRequest(`clients/${userId}`, accessToken)
+export const getClient = async (userId: string, clientId: string, accessToken: string) => {
+    return await fetchRequest(`clients/${clientId}?userId=${userId}`, accessToken)
 }
 
 export const updateClient = async (id: string, accessToken: string, data: any) => {
