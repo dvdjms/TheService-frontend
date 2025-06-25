@@ -1,31 +1,32 @@
+import { Appointment } from '../components/types/Service';
 import { fetchRequest } from './base';
 
 
-export const getAppointments = () => {
-    return fetchRequest('/appointments');
+export const getAllAppointments = async (userId: string, clientId: string, accessToken: string) => {
+    return await fetchRequest(`/appointments/?userId=${userId}&clientId=${clientId}`, accessToken);
 }
 
-export const getAppointment = (id: string) => {
-    return fetchRequest(`/appointments/${id}`);
+export const getAppointment = async (userId: string, clientId: string, apptId: string, accessToken: string) => {
+    return await fetchRequest(`/appointments/${apptId}?userId=${userId}&clientId=${clientId}`, accessToken);
 }
 
-export const updateAppointment = (id: string, data: any) => {
-    return fetchRequest(`/appointments/${id}`, {
+export const updateAppointment = async (userId: string, clientId: string, apptId: string, accessToken: string, data: any) => {
+    return await fetchRequest(`/appointments/${apptId}?userId=${userId}&clientId=${clientId}`, accessToken, {
         method: 'PUT',
         body: JSON.stringify(data),
     });
 }
 
-export const createAppointment = async (data: any) => {
-    return fetchRequest('/appointments', {
+export const createAppointment = async (userId: string, accessToken: string, data: any) => {
+    return await fetchRequest(`/appointments/?userId=${userId}`, accessToken, {
         method: 'POST',
         body: JSON.stringify(data),
     });
 }
 
 
-export const deleteAppointment = (id: string) => {
-    return fetchRequest(`/appointments/${id}`, {
+export const deleteAppointment = (userId: string, clientId: string, apptId: string, accessToken: string, data: any) => {
+    return fetchRequest(`/appointments/${apptId}?userId=${userId}&clientId=${clientId}`, accessToken, {
         method: 'DELETE',
     });
 }

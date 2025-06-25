@@ -12,7 +12,6 @@ import { getClient } from '@/src/api/clients';
 import { useAuth } from '@/src/context/authContext';
 
 
-
 export default function ClientDetail() {
     const router = useRouter();
     const { clientId } = useLocalSearchParams();

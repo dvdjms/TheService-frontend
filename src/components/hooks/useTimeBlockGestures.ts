@@ -17,11 +17,11 @@ export function useTimeBlockGestures(Props: UseTimeBlockGesturesProps) {const {
         Gesture.Tap().onEnd((e) => {
             'worklet';
             if (!isMonthVisible) {
-                console.log('[Worklet] DayColumn tapTimeBlockGesture: Fired.'); 
+                //console.log('[Worklet] DayColumn tapTimeBlockGesture: Fired.'); 
                 
                 // New logic: Collapse modal if it was expanded
                 if (isModalExpanded.value) {
-                    console.log('[Worklet] DayColumn tapTimeBlockGesture: Modal was expanded, setting isModalExpanded.value = false.');
+                    //console.log('[Worklet] DayColumn tapTimeBlockGesture: Modal was expanded, setting isModalExpanded.value = false.');
                     isModalExpanded.value = false;
                 }
 
@@ -65,7 +65,7 @@ export function useTimeBlockGestures(Props: UseTimeBlockGesturesProps) {const {
                 }
                 if (isModalExpanded.value) {
                     isModalExpanded.value = false;
-                    console.log('[Worklet] moveGesture.onEnd: Modal collapsed due to move.');
+                    //console.log('[Worklet] moveGesture.onEnd: Modal collapsed due to move.');
                 }
             })
             .onEnd(() => {
@@ -108,7 +108,7 @@ export function useTimeBlockGestures(Props: UseTimeBlockGesturesProps) {const {
                 }
                 if (isModalExpanded.value) {
                     isModalExpanded.value = false;
-                    console.log('[Worklet] moveGesture.onEnd: Modal collapsed due to move.');
+                    //console.log('[Worklet] moveGesture.onEnd: Modal collapsed due to move.');
                 }
             })
             .onEnd(() => {
@@ -156,7 +156,7 @@ export function useTimeBlockGestures(Props: UseTimeBlockGesturesProps) {const {
                 }
                 if (isModalExpanded.value) {
                     isModalExpanded.value = false;
-                    console.log('[Worklet] moveGesture.onEnd: Modal collapsed due to move.');
+                    //console.log('[Worklet] moveGesture.onEnd: Modal collapsed due to move.');
                 }
             })
             .onEnd(() => {

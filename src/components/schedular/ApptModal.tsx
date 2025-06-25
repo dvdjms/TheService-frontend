@@ -1,12 +1,14 @@
-import { useState } from "react";
+import React, { useState } from "react";
 import { View, StyleSheet, TextInput, Text, TouchableOpacity } from "react-native";
 import { yToTime, yToTime11 } from '../utils/timeUtils';
-import { TimeBlock } from "../types/Service";
+import { Client, TimeBlock } from "../types/Service";
 import { runOnJS, runOnUI, SharedValue, useAnimatedReaction } from "react-native-reanimated";
 import { format } from "date-fns";
 import { Ionicons } from "@expo/vector-icons";
 import { convertMinutesToTimeStamp } from "../utils/timeBlockUtils";
 import { createAppointment } from "@/src/api/appointments";
+import { useAuth } from "@/src/context/authContext";
+import ClientSelectModal from "@/src/components/schedular/ClientSelectModal";
 
 
 interface AppointmentBlockProps {
@@ -16,9 +18,12 @@ interface AppointmentBlockProps {
 }   
 
 const AppointmentBlock = ({ selectedTimeBlock, isModalVisible, isModalExpanded }: AppointmentBlockProps) => {
-    const [title, setTitle] = useState('');
+    const [title, setTitle] = useState<string>('');
     const [displayBlock, setDisplayBlock] = useState<TimeBlock>();
-    const [expandedJS, setExpandedJS] = useState(false);
+    const [expandedJS, setExpandedJS] = useState<boolean>(false);
+    const [showClientModal, setShowClientModal] = useState<boolean>(false);
+    const [selectedClient, setSelectedClient] = useState<Client | null>(null);
+    const { userId, accessToken } = useAuth();
 
     useAnimatedReaction(
         () => selectedTimeBlock.value,
@@ -48,39 +53,45 @@ const AppointmentBlock = ({ selectedTimeBlock, isModalVisible, isModalExpanded }
     };
 
 
-    const handleSave = () => {
+    const handleSave = async () => {
         const date = displayBlock?.date
         const startTimestamp = displayBlock?.startMinutes
         const endTimestamp = displayBlock?.endMinutes
 
-        if(!title){
-            console.log('please add title');
+        if(!title || !selectedClient){
+            console.log('please add both title and client');
             // create on screen display
             return;
         }
 
         if(date && startTimestamp && endTimestamp){
             const appointmentData = {
-                userId: "",   /////UUID
-                clientId: "", ////
+                userId: userId,
+                clientId: selectedClient.clientId,
                 title: title,
                 startTime: convertMinutesToTimeStamp(date, startTimestamp),
                 endTime: convertMinutesToTimeStamp(date, endTimestamp),
                 date: displayBlock?.date,
             };
-            const response = createAppointment(appointmentData)
-            console.log("response", response)
-            console.log('Saving appointment:', appointmentData);
-            setTitle("");
-            handleClose();
+            try {
+                if(accessToken){
+                    const response = await createAppointment(userId, accessToken, appointmentData)
+                    console.log("response", response)
+                    console.log('Saving appointment:', appointmentData);
+                    setTitle("");
+                    setSelectedClient(null);
+                    handleClose();
+                } 
+            } catch (error) {
+                console.error("Failed to save appointment")
+            }
         }
     };
 
-
     return (
-
+        <>
         <View style={[styles.modalOverlay]}>
-            {isModalVisible && (
+            {isModalVisible.value && (
             <>
                 <TouchableOpacity
                     onPress={() => {
@@ -95,7 +106,11 @@ const AppointmentBlock = ({ selectedTimeBlock, isModalVisible, isModalExpanded }
                 {expandedJS && (
                     <View style={styles.modalContainer}>
                         <View style={styles.modalButtons}>
-                            <TouchableOpacity onPress={handleClose}>
+                            <TouchableOpacity 
+                                onPress={() => {
+                                    handleClose(),
+                                    setSelectedClient(null)
+                                }}>
                                 <Text style={styles.buttons}>Cancel</Text>
                             </TouchableOpacity>
 
@@ -119,16 +134,32 @@ const AppointmentBlock = ({ selectedTimeBlock, isModalVisible, isModalExpanded }
                             onChangeText={setTitle}
                         />
 
-                        <TouchableOpacity style={ styles.addClientContainer }>
+                        <TouchableOpacity style={ styles.addClientContainer } onPress={() => setShowClientModal(true)}>
                             <Ionicons name="people-outline" size={18} />
-                            <Text style={ styles.label }>Add client</Text>
+                            {selectedClient ? (
+                                <Text style={styles.label}>
+                                    {selectedClient.firstName} {selectedClient.lastName}
+                                </Text>
+                            ):(
+                                <Text style={ styles.label }>Add client</Text>
+                            )}
                         </TouchableOpacity>
                     </View>
                 )}
             </>
             )}
-        </View>  
 
+        </View>
+
+        <ClientSelectModal
+            visible={showClientModal}
+            onSelect={(client) => {
+                setSelectedClient(client);
+                setShowClientModal(false);
+            }}
+            onClose={() => setShowClientModal(false)}
+        />
+        </>
     )
 };
 
@@ -201,6 +232,9 @@ const styles = StyleSheet.create({
         alignSelf: 'center',
         zIndex: 100,
         alignItems: 'center',
+    },
+    selectedClient: {
+
     }
 });
 

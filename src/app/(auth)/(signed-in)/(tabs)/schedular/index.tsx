@@ -3,7 +3,7 @@ import React, { useRef, useState } from 'react';
 import CalendarMonthView from "@/src/components/schedular/CalendarMonthView";
 import CalendarDayView from "@/src/components/schedular/CalendarDayView";
 import { Ionicons } from '@expo/vector-icons';
-import AppointmentBlock from "@/src/components/schedular/AppointmentBlock";
+import AppointmentBlock from "@/src/components/schedular/ApptModal";
 import Animated, { runOnJS, useSharedValue, withTiming, Easing, useAnimatedStyle, useAnimatedReaction, useDerivedValue } from "react-native-reanimated";
 import { TimeBlock, CalendarDayViewHandle } from '@/src/components/types/Service';
 import { format } from "date-fns";
