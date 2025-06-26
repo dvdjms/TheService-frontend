@@ -1,4 +1,4 @@
-import React, { Dispatch, SetStateAction, forwardRef, useCallback, useEffect, useImperativeHandle, useMemo, useRef, useState  } from 'react';
+import React, { Dispatch, SetStateAction, forwardRef, useCallback, useEffect, useMemo, useRef, useState  } from 'react';
 import { GestureDetector, Gesture } from 'react-native-gesture-handler';
 import Animated, { useSharedValue, SharedValue, runOnUI, DerivedValue} from 'react-native-reanimated';
 import { View, Dimensions, LayoutChangeEvent } from 'react-native';
@@ -9,6 +9,10 @@ import { addDaysNumber } from '../utils/timeUtils';
 import { CalendarDayViewHandle, TimeBlock } from '@/src/components/types/Service';
 import { useSwipeGestures } from '../hooks/useSwipeGestures';
 import dummyAppointments from "@/assets/mock-clients.json";
+import { getAllAppointments } from '@/src/api/appointments';
+import { useAuth } from '@/src/context/authContext';
+import { getMinutesSinceMidnight } from '../utils/timeBlockUtils';
+import { useApptStore } from '@/src/store/apptStore';
 
 
 const screenWidth = Dimensions.get('window').width;
@@ -45,6 +49,9 @@ const CalendarDayView = forwardRef<CalendarDayViewHandle, CalendarDayViewProps>(
     const verticalThreshold = 60;
     const velocityThreshold = 500;
     const isContentReadyForSnap = useSharedValue(false); // Added for handshake
+    const [allAppointments, setAllAppointments] = useState<Array<any>>([])
+
+    const { userId, accessToken } = useAuth();
 
  
     const {panGesture, tapGesture } = useSwipeGestures({ selectedDateShared, isSwiping, isMonthVisible,
@@ -53,15 +60,30 @@ const CalendarDayView = forwardRef<CalendarDayViewHandle, CalendarDayViewProps>(
     });
 
 
+    // const fetchAllAppointment = async () => {
+    //     const repsonse =  useAppts()
+    //     if(accessToken){
+    //         const response = await getAllAppointments(userId, accessToken);
+    //         if (response?.appointments) {
+    //             const fetchedAppointments = response.appointments || []
+    //             // setAllAppointments(response.appointments); // store in state
+    //             setAppts(fetchedAppointments); // ✅ store in Zustand
+    //         }
+    //     }
+    // }
+
+    const appts = useApptStore(state => state.appts);
+
     const normalizeToDayTimestamp = (ts: number) => {
         const d = new Date(ts);
         d.setHours(0, 0, 0, 0); // midnight
         return d.getTime(); // timestamp at start of the day
     };
 
+
     const groupAppointmentsByDay = (appointments: any[]) => {
         return appointments.reduce((acc, app) => {
-            const dateKey = normalizeToDayTimestamp(app.start_minutes);
+            const dateKey = normalizeToDayTimestamp(app.startTime);
             if (!acc[dateKey]) acc[dateKey] = [];
                 acc[dateKey].push(app);
             return acc;
@@ -70,9 +92,18 @@ const CalendarDayView = forwardRef<CalendarDayViewHandle, CalendarDayViewProps>(
 
 
     const groupedAppointments = useMemo(() => {
-        const flatAppointments = dummyAppointments.flatMap(client => client.appointments);
-        return groupAppointmentsByDay(flatAppointments);
-    }, []);
+        if (!appts?.length) return {};
+        console.log('this')
+        const enrichedAppointments = appts.map(appt => ({
+            ...appt,
+            startHour: getMinutesSinceMidnight(appt.startTime),
+            endHour: getMinutesSinceMidnight(appt.endTime),
+        }));
+        const sorted = enrichedAppointments.sort((a, b) => a.startTime - b.startTime);
+        console.log("sorted", sorted)
+        return groupAppointmentsByDay(sorted);
+    }, [allAppointments]);
+    //console.log("groupedAppointments", groupedAppointments)
 
 
     useEffect(() => {
@@ -109,7 +140,6 @@ const CalendarDayView = forwardRef<CalendarDayViewHandle, CalendarDayViewProps>(
     const initialScrollIndex = useMemo(() => {
         return dates.findIndex(date => date === selectedDate);
     }, [dates, selectedDate]);
-
 
     // Correct definition of onLayoutView within the component scope
     const onLayoutView = useCallback((event: LayoutChangeEvent) => {

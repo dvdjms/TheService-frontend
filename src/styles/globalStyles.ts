@@ -18,8 +18,6 @@ export const colors = {
 };
 
 
-
-
 // not yet used
 export const spacing = {
     small: 8,
@@ -32,3 +30,19 @@ export const fonts = {
     bold: 'System-Bold',
     // or custom fonts
 };
+
+
+export const apptColours = [
+    { name: 'Sky Blue', value: '#38bdf8' },       // sky-400
+    { name: 'Emerald', value: '#34d399' },        // emerald-400
+    { name: 'Amber', value: '#fbbf24' },          // amber-400
+    { name: 'Rose', value: '#fb7185' },           // rose-400
+    { name: 'Indigo', value: '#818cf8' },         // indigo-400
+    { name: 'Fuchsia', value: '#e879f9' },        // fuchsia-400
+    { name: 'Cyan', value: '#22d3ee' },           // cyan-400
+    { name: 'Lime', value: '#84cc16' },           // lime-500
+    { name: 'Slate', value: '#64748b' },          // slate-500
+    { name: 'Orange', value: '#fb923c' },         // orange-400
+    { name: 'Violet', value: '#a78bfa' },         // violet-400
+    { name: 'Cool Gray', value: '#94a3b8' },      // cool-gray-400
+];

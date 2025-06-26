@@ -21,30 +21,31 @@ export default function ClientScreen() {
 
     const { setClients } = useClientStore();
 
-    useEffect(() => {
-        if(!accessToken){
-            console.log("Missing access token");
-            return;
-        }
+    // useEffect(() => {
+    //     if(!accessToken){
+    //         console.log("Missing access token");
+    //         return;
+    //     }
 
-        const fetchClients = async () => {
-            try {
-                const response = await getAllClients(userId, accessToken);
-                const fetchedClients = response.clients || []
+    //     const fetchClients = async () => {
+    //         try {
+    //             const response = await getAllClients(userId, accessToken);
+    //             const fetchedClients = response.clients || []
+    //             setClients(fetchedClients); // ✅ store in Zustand
+    //         } catch (error) {
+    //             console.error('Failed to fetch clients', error);
+    //         } finally {
+    //             setLoading(false);
+    //         }
+    //     }
+    //     fetchClients()
+    // },[accessToken, userId])
 
-                setClients(fetchedClients); // ✅ store in Zustand
-            } catch (error) {
-                console.error('Failed to fetch clients', error);
-            } finally {
-                setLoading(false);
-            }
-        }
-        fetchClients()
-    },[accessToken, userId])
+    // const clients = useClientStore(state => state.clients);
 
-    if(loading) {
-        return <View><Text>Loading...</Text></View>;
-    }
+    // if(loading) {
+    //     return <View><Text>Loading...</Text></View>;
+    // }
 
 
     const goToClient = (client: Client) => {

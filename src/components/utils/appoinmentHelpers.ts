@@ -8,8 +8,8 @@ export const calculatePositionedAppointments = (
     dateStartMs: number
     ): PositionedAppointment[] => {
     return appointments.map(app => {
-        const start = app.start_minutes;
-        const end = app.end_minutes;
+        const start = app.startTime;
+        const end = app.endTime;
         const topOffset = Math.max(0, ((start - dateStartMs) / 60000 / 60) * HOUR_HEIGHT);
         const blockHeight = ((end - start) / 60000 / 60) * HOUR_HEIGHT;
 

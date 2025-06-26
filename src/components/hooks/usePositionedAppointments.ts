@@ -12,7 +12,7 @@ export const usePositionedAppointments = (displayDate: number, allGroupedAppoint
     const currentAppointments = useMemo(() => {
         return allGroupedAppointments[dateStartMs] || [];
     }, [allGroupedAppointments, dateStartMs]);
-
+        
     const positionedAppointments = useMemo(
         () => calculatePositionedAppointments(currentAppointments, dateStartMs),
         [currentAppointments, dateStartMs]

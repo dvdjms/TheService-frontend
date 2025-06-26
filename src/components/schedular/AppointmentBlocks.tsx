@@ -3,6 +3,7 @@ import React from "react";
 import { StyleSheet, Text, Pressable } from "react-native";
 import { PositionedAppointment } from "../types/Service";
 import { router } from "expo-router";
+import { yToTime11 } from "../utils/timeUtils";
 
 
 interface Props {
@@ -13,21 +14,20 @@ const AppointmentBlocks = React.memo(({ appointments }: Props) => {
 
     const goToAppointment = (appointmentId: string) => {     
         // use a modal and reuse appointment component
-        router.push(`/clients/${1}/appointments/${appointmentId}`);
+        // router.push(`/clients/${clientId}/appointments/${appointmentId}`);
     };
-
-
+    console.log("appointments", appointments)
     return (
         <>
             {appointments.map((app) => (
                 <Pressable
-                    onPress={() => goToAppointment(app.id)}
-                    key={app.id || app.start_minutes}
+                    onPress={() => goToAppointment(app.apptId)}
+                    key={app.apptId}
                     style={{
                         position: 'absolute',
                         top: app.topOffset,
                         height: app.blockHeight,
-                        backgroundColor: app.color,
+                        backgroundColor: app.colour,
                         borderRadius: 7,
                         padding: 7,
                         left: 62,
@@ -37,7 +37,8 @@ const AppointmentBlocks = React.memo(({ appointments }: Props) => {
                         borderColor: 'red'
                     }}
                 >
-                    <Text>{app.appointment_title}</Text>
+                    <Text>{app.title}</Text>
+                    <Text>{yToTime11(app.startTime)}</Text>
                     {/* <Text>{app.id}</Text> */}
                 </Pressable>
             ))}

@@ -30,6 +30,12 @@ export const convertMinutesToTimeStamp = (dateTimestamp: number, minutesSinceMid
 };
 
 
+export const getMinutesSinceMidnight = (timestamp: number) => {
+    const date = new Date(timestamp);
+    return date.getHours() * 60 + date.getMinutes();
+};
+
+
 // export const getYFromTimeBlock = (
 //     block: TimeBlock,
 //     HOUR_HEIGHT: number

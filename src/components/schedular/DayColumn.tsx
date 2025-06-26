@@ -132,9 +132,7 @@ export const DayColumn: React.FC<DayColumnProps> = ({
         };
     });
 
-
     const positionedAppointments = usePositionedAppointments(displayDate, allGroupedAppointments);
-
 
     const internalScrollHandler = useAnimatedScrollHandler({
         onBeginDrag: (event, context) => {

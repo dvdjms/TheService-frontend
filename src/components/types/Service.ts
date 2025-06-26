@@ -75,17 +75,15 @@ export interface UseTimeBlockGesturesProps {
 export interface Appointment {
     PK: string;
     SK: string;
-    id: string;
-    appointmentId: string;
+    apptId: string;
     clientId: string;
-    appointment_title: string;
-    startTimestamp: number;
-    endTimestamp: number;
-    start_minutes: number;
-    end_minutes: number;
-    startTimeStr: string;
-    dateStr: string;
-    color: string;
+    title: string;
+    notes: string;
+    startTime: number;
+    endTime: number;
+    startHour: number;
+    endHour: number;
+    colour: string;
 }
 
 export interface Client {

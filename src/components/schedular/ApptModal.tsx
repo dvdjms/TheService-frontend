@@ -9,6 +9,7 @@ import { convertMinutesToTimeStamp } from "../utils/timeBlockUtils";
 import { createAppointment } from "@/src/api/appointments";
 import { useAuth } from "@/src/context/authContext";
 import ClientSelectModal from "@/src/components/schedular/ClientSelectModal";
+import ColourSelectModal from "./ColorSelectModal";
 
 
 interface AppointmentBlockProps {
@@ -23,6 +24,8 @@ const AppointmentBlock = ({ selectedTimeBlock, isModalVisible, isModalExpanded }
     const [expandedJS, setExpandedJS] = useState<boolean>(false);
     const [showClientModal, setShowClientModal] = useState<boolean>(false);
     const [selectedClient, setSelectedClient] = useState<Client | null>(null);
+    const [showColourPicker, setShowColourPicker] = useState<boolean>(false)
+    const [selectedColour, setSelectedColour] = useState<string>('#fb7185')
     const { userId, accessToken } = useAuth();
 
     useAnimatedReaction(
@@ -69,13 +72,14 @@ const AppointmentBlock = ({ selectedTimeBlock, isModalVisible, isModalExpanded }
                 userId: userId,
                 clientId: selectedClient.clientId,
                 title: title,
+                notes: "",
                 startTime: convertMinutesToTimeStamp(date, startTimestamp),
                 endTime: convertMinutesToTimeStamp(date, endTimestamp),
-                date: displayBlock?.date,
+                colour: selectedColour
             };
             try {
                 if(accessToken){
-                    const response = await createAppointment(userId, accessToken, appointmentData)
+                    const response = await createAppointment(accessToken, appointmentData)
                     console.log("response", response)
                     console.log('Saving appointment:', appointmentData);
                     setTitle("");
@@ -133,17 +137,21 @@ const AppointmentBlock = ({ selectedTimeBlock, isModalVisible, isModalExpanded }
                             value={title}
                             onChangeText={setTitle}
                         />
-
-                        <TouchableOpacity style={ styles.addClientContainer } onPress={() => setShowClientModal(true)}>
-                            <Ionicons name="people-outline" size={18} />
-                            {selectedClient ? (
-                                <Text style={styles.label}>
-                                    {selectedClient.firstName} {selectedClient.lastName}
-                                </Text>
-                            ):(
-                                <Text style={ styles.label }>Add client</Text>
-                            )}
-                        </TouchableOpacity>
+                        <View style={styles.bottomRowContainer}>
+                            <TouchableOpacity style={ styles.addClientContainer } onPress={() => setShowClientModal(true)}>
+                                <Ionicons name="people-outline" size={18} />
+                                {selectedClient ? (
+                                    <Text style={styles.label}>
+                                        {selectedClient.firstName} {selectedClient.lastName}
+                                    </Text>
+                                ):(
+                                    <Text style={ styles.label }>Add client</Text>
+                                )}
+                            </TouchableOpacity>
+                            <TouchableOpacity style={ styles.addClientContainer } onPress={() => setShowColourPicker(true)}>
+                                <View style={[styles.colorSquare, { backgroundColor: selectedColour }]} />
+                            </TouchableOpacity>
+                        </View>
                     </View>
                 )}
             </>
@@ -159,6 +167,16 @@ const AppointmentBlock = ({ selectedTimeBlock, isModalVisible, isModalExpanded }
             }}
             onClose={() => setShowClientModal(false)}
         />
+
+        <ColourSelectModal 
+            visible={showColourPicker}
+            onSelect={(colour) => {
+                setSelectedColour(colour);
+                setShowColourPicker(false);
+            }}
+            onClose={() => setShowClientModal(false)}
+        />
+
         </>
     )
 };
@@ -233,8 +251,16 @@ const styles = StyleSheet.create({
         zIndex: 100,
         alignItems: 'center',
     },
-    selectedClient: {
-
+    bottomRowContainer: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        paddingRight: 20
+    },
+    colorSquare: {
+        borderWidth: 1,
+        borderRadius: 2,
+        height: 17,
+        width: 17,
     }
 });
 

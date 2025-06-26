@@ -9,22 +9,39 @@ type ClientStore = {
     clients: Client[];
     setSelectedClient: (client: Client) => void;
     setClients: (clients: Client[]) => void;
-    clearClient: () => void;
+    clearClients: () => void;
+    addClient: (client: Client) => void;
+    updateClient: (updatedClient: Client) => void;
+    removeClient: (id: string) => void;
 };
 
 
 const zustandAsyncStorage: PersistStorage<{ selectedClient: Client | null; clients: Client[] }> = {
     getItem: async (key) => {
-        const value = await AsyncStorage.getItem(key);
-        return value ? JSON.parse(value) : null;
+        try {
+            const value = await AsyncStorage.getItem(key);
+            return value ? JSON.parse(value) : null;
+        } catch (error) {
+            console.error("Error reading from AsyncStorage", error);
+            return null;
+        }
     },
     setItem: async (key, value) => {
-        await AsyncStorage.setItem(key, JSON.stringify(value));
+        try {
+            await AsyncStorage.setItem(key, JSON.stringify(value));
+        } catch (error) {
+            console.error("Error writing to AsyncStorage", error);
+        }
     },
     removeItem: async (key) => {
-        await AsyncStorage.removeItem(key);
+        try {
+            await AsyncStorage.removeItem(key);
+        } catch (error) {
+            console.error("Error removing from AsyncStorage", error);
+        }
     },
 };
+
 
 export const useClientStore = create<ClientStore>()(
     persist(
@@ -33,7 +50,15 @@ export const useClientStore = create<ClientStore>()(
             clients: [],
             setSelectedClient: (client) => set({ selectedClient: client }),
             setClients: (clients) => set({ clients }),
-            clearClient: () => set({ selectedClient: null }),
+            clearClients: () => set({ selectedClient: null }),
+
+            addClient: (client) => set(state => ({ clients: [...state.clients, client] })),
+            updateClient: (updatedClient) => set(state => ({
+                clients: state.clients.map(c => c.clientId === updatedClient.clientId ? updatedClient : c)
+            })),
+            removeClient: (id) => set(state => ({
+                clients: state.clients.filter(c => c.clientId !== id)
+            })),
         }),
         {
             name: 'client-store',
@@ -46,10 +71,3 @@ export const useClientStore = create<ClientStore>()(
     )
 );
 
-
-
-// export const useClientStore = create<ClientStore>((set) => ({
-//     selectedClient: null,
-//     setSelectedClient: (client) => set({ selectedClient: client }),
-//     clearClient: () => set({ selectedClient: null }),
-// }));

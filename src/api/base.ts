@@ -1,4 +1,3 @@
-import { useAuth } from "../context/authContext";
 import Constants from 'expo-constants';
 
 
@@ -21,7 +20,7 @@ export const fetchRequest = async (
         },
     });
     let responseBody: any;
-    
+
     try {
         responseBody = await res.json();
     } catch {

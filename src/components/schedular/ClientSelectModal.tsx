@@ -64,7 +64,6 @@ const styles = StyleSheet.create({
         bottom: 0,
         borderTopLeftRadius: 30,
         borderTopRightRadius: 30,
-
     },
     itemContainer: {
         padding: 10,

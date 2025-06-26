@@ -2,7 +2,7 @@ import { fetchRequest } from './base';
 
 
 export const getAllClients = async (userId: string, accessToken: string) => {
-    return await fetchRequest(`/clients?userId=${userId}`, accessToken,);
+    return await fetchRequest(`clients?userId=${userId}`, accessToken,);
 }
 
 export const getClient = async (userId: string, clientId: string, accessToken: string) => {
