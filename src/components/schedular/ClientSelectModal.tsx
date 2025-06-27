@@ -1,4 +1,4 @@
-import { useClientStore } from "@/src/store/clientStore";
+import { useUserDataStore } from "@/src/store/useUserDataStore";
 import { FlatList, TouchableOpacity, Text, StyleSheet, View, Modal } from "react-native"
 import FormButton from "../ui/FormButton";
 import { Dimensions } from "react-native";
@@ -14,7 +14,7 @@ const screenWidth: number = Dimensions.get("window").width;
 
 const ClientSelectModal = ({  onSelect, visible, onClose }: Props) => {
 
-    const clients = useClientStore(state => state.clients);
+    const clients = useUserDataStore(state => state.clients);
 
     return (
         <>

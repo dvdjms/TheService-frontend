@@ -1,31 +1,14 @@
 import { fetchRequest } from './base';
 
 
-export const getUsers = () => {
-    return fetchRequest('/users');
+export const getUser = (id: string, accessToken: string) => {
+    return fetchRequest(`/users/${id}`, accessToken)
 }
 
-export const getUser = (id: string) => {
-    return fetchRequest(`/users/${id}`)
-}
-
-export const updateUser = (id: string, data: any) => {
-    return fetchRequest(`/users/${id}`, {
+export const updateUser = (id: string, accessToken: string, data: any) => {
+    return fetchRequest(`/users/${id}`, accessToken, {
         method: 'PUT',
         body: JSON.stringify(data),
     })
 }
 
-export const createUser = (data: any) => {
-    return fetchRequest('/users', {
-        method: 'POST',
-        body: JSON.stringify(data),
-    });
-}
-
-
-export const deleteUser = (id: string) => {
-    return fetchRequest(`/users/${id}`, {
-        method: 'DELETE',
-    });
-}

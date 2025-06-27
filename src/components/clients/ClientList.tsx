@@ -1,8 +1,7 @@
-import { StyleSheet, FlatList } from 'react-native';
-// import clients from '../../../assets/mock-clients.json';
+import { FlatList } from 'react-native';
 import ClientCard from './ClientCard';
 import { Client } from '../types/Service';
-import { useClientStore } from '@/src/store/clientStore';
+import { useUserDataStore } from '@/src/store/useUserDataStore';
 
 
 interface Props {
@@ -10,7 +9,8 @@ interface Props {
 }
 
 export default function ClientList({ goToClient }: Props) {
-    const clients = useClientStore(state => state.clients);
+
+    const clients = useUserDataStore(state => state.clients);
     
     return (
         <FlatList
@@ -21,25 +21,3 @@ export default function ClientList({ goToClient }: Props) {
         />
     );
 }
-
-const styles = StyleSheet.create({
-    clientCard: {
-        flex: 1,
-        marginBottom: 16,
-        padding: 12,
-        backgroundColor: '#f2f2f2',
-        borderRadius: 8,
-    },
-    name: {
-        fontSize: 16,
-        fontWeight: 'bold',
-    },
-    email: {
-        fontSize: 14,
-        color: '#555',
-    },
-    phone: {
-        fontSize: 14,
-        color: '#777',
-    },
-});

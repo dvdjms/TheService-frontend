@@ -1,4 +1,3 @@
-
 import React from "react";
 import { StyleSheet, Text, Pressable } from "react-native";
 import { PositionedAppointment } from "../types/Service";
@@ -16,7 +15,7 @@ const AppointmentBlocks = React.memo(({ appointments }: Props) => {
         // use a modal and reuse appointment component
         // router.push(`/clients/${clientId}/appointments/${appointmentId}`);
     };
-    console.log("appointments", appointments)
+
     return (
         <>
             {appointments.map((app) => (
@@ -28,18 +27,16 @@ const AppointmentBlocks = React.memo(({ appointments }: Props) => {
                         top: app.topOffset,
                         height: app.blockHeight,
                         backgroundColor: app.colour,
-                        borderRadius: 7,
+                        borderRadius: 4,
                         padding: 7,
                         left: 62,
                         right: 5,
                         zIndex: 10,
-                        borderWidth: 2,
-                        borderColor: 'red'
+                        borderWidth: .1,
                     }}
                 >
                     <Text>{app.title}</Text>
-                    <Text>{yToTime11(app.startTime)}</Text>
-                    {/* <Text>{app.id}</Text> */}
+                    <Text>Client Id: {app.clientId.slice(0, 20)}</Text>
                 </Pressable>
             ))}
         </>

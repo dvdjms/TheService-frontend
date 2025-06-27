@@ -13,6 +13,7 @@ export default function AppointmentDetail() {
         .find(c => c.id === clientId)
         ?.appointments.find(a => a?.id === appointmentId);
 
+
     if (!appointment) {
         return (
         <View>

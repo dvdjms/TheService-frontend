@@ -2,13 +2,11 @@ import { Text, View, StyleSheet, Dimensions, Modal } from "react-native";
 import { ClientList } from "@/src/components/clients";
 import { colors } from '@/src/styles/globalStyles';
 import { AddButton } from "@/src/components/ui/AddButton";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import ClientForm from "@/src/components/forms/ClientForm";
-import { useAuth } from "@/src/context/authContext";
-import { getAllClients } from "@/src/api/clients";
 import { router } from "expo-router";
 import { Client } from "@/src/components/types/Service";
-import { useClientStore } from "@/src/store/clientStore";
+import { useUserDataStore } from "@/src/store/useUserDataStore";
 
 
 const screenWidth = Dimensions.get('window').width;
@@ -16,41 +14,11 @@ const screenWidth = Dimensions.get('window').width;
 export default function ClientScreen() {
     const [modalVisible, setModalVisible] = useState(false);
     const [newClientName, setNewClientName] = useState('');
-    const [loading, setLoading] = useState<boolean>(true);
-    const { userId, accessToken } = useAuth();
-
-    const { setClients } = useClientStore();
-
-    // useEffect(() => {
-    //     if(!accessToken){
-    //         console.log("Missing access token");
-    //         return;
-    //     }
-
-    //     const fetchClients = async () => {
-    //         try {
-    //             const response = await getAllClients(userId, accessToken);
-    //             const fetchedClients = response.clients || []
-    //             setClients(fetchedClients); // ✅ store in Zustand
-    //         } catch (error) {
-    //             console.error('Failed to fetch clients', error);
-    //         } finally {
-    //             setLoading(false);
-    //         }
-    //     }
-    //     fetchClients()
-    // },[accessToken, userId])
-
-    // const clients = useClientStore(state => state.clients);
-
-    // if(loading) {
-    //     return <View><Text>Loading...</Text></View>;
-    // }
 
 
     const goToClient = (client: Client) => {
         if (!client) return;
-        useClientStore.getState().setSelectedClient(client); // 💾 store in Zustand
+        // useUserDataStore.getState().setSelectedClient(client); // 💾 store in Zustand
         router.push(`/clients/${client.clientId}`);
     };
 

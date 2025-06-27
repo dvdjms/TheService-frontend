@@ -2,32 +2,31 @@ import { useLocalSearchParams, useRouter } from 'expo-router';
 import { View, Text, Button, StyleSheet, Pressable } from 'react-native';
 import FormButton from '@/src/components/ui/FormButton';
 import { colors } from '@/src/styles/globalStyles';
-import dummyAppointments from "@/assets/mock-clients.json";
 import { FlatList } from 'react-native-gesture-handler';
-import { Appointment, Client } from '@/src/components/types/Service';
 import { format } from 'date-fns';
-import { useClientStore } from '@/src/store/clientStore';
 import React, { useEffect, useState } from 'react';
 import { getClient } from '@/src/api/clients';
 import { useAuth } from '@/src/context/authContext';
+import { useUserDataStore } from '@/src/store/useUserDataStore';
 
 
 export default function ClientDetail() {
-    const router = useRouter();
-    const { clientId } = useLocalSearchParams();
     const { userId, accessToken } = useAuth();
-    const selectedClient = useClientStore(state => state.selectedClient);
-    const setSelectedClient = useClientStore(state => state.setSelectedClient);
-
+    const router = useRouter();
     const [loading, setLoading] = useState(false);
-    
+
+    const { clientId } = useLocalSearchParams();
     const clientIdString = Array.isArray(clientId) ? clientId[0] : clientId;
+    const selectedClient = useUserDataStore(state => state.getClientById(clientIdString));
+    const setSelectedClient = useUserDataStore(state => state.setSelectedClient);
+    const appts = useUserDataStore(state => state.appointments);
+    const clientAppts = appts.filter(c => c.clientId === clientIdString);
+
 
     useEffect(() => {
         // If no client in store or different clientId, fetch client from API
         if (!selectedClient || selectedClient.clientId !== clientIdString) {
             setLoading(true);
-
             const fetchClients = async () => {
                 if(accessToken){
                     const client = await getClient(userId, clientIdString, accessToken);
@@ -42,7 +41,6 @@ export default function ClientDetail() {
     if (loading) return <View></View>//LoadingSpinner />;
 
     if (!selectedClient) return <Text>No client found</Text>;
-
 
 
     const goToAppointment = (appointmentId: string) => {          
@@ -65,14 +63,14 @@ export default function ClientDetail() {
 
     const renderItem = ({ item }: { item: any}) => (
         <View style={styles.appointment}>
-            <Pressable onPress={() => goToAppointment(item.id)} style={styles.card} >
+            <Pressable onPress={() => goToAppointment(item.apptId)} style={styles.card} >
                 <View>
                     <Text style={{ fontWeight: 'bold' }}>
-                        {item.appointment_title.split('\n')[0]}
+                        {item.title.split('\n')[0]}
                     </Text>
                     <Text>
-                        {format(item.start_minutes, 'eeee dd MMMM yyyy HH:mm')} -{' '}
-                        {format(item.end_minutes,'HH:mm')}
+                        {format(item.startTime, 'eeee dd MMMM yyyy HH:mm')} -{' '}
+                        {format(item.endTime,'HH:mm')}
                     </Text>
                 
                 </View>
@@ -90,15 +88,20 @@ export default function ClientDetail() {
                 <Text>Phone: {selectedClient.phone}</Text>
             </View>
 
+        {clientAppts.length ? (
             <View style={styles.appointmentsContainer}>
-                {/* <FlatList 
-                    data={sortedAppointments}
-                    keyExtractor={item => item.id}
+                <FlatList 
+                    data={clientAppts}
+                    keyExtractor={item => item.apptId}
                     renderItem={renderItem}
                     style={styles.FlatList}
-                /> */}
+                />
               
             </View>
+            ) : (
+                <Text>No appointments found </Text>
+
+            )}
               <Text>Add appointment +</Text>
 
             <View style={styles.buttonContainer}>

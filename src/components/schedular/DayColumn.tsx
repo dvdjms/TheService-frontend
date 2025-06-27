@@ -8,7 +8,7 @@ import { TimeBlock, Appointment } from '../types/Service';
 import { useTimeBlockGestures } from '@/src/components/hooks/useTimeBlockGestures';
 import HourGrid from '@/src/components/schedular/HourGrid';
 import DateHeader from '@/src/components/schedular/DateHeader';
-import AppointmentBlocks from './AppointmentBlocks';
+import AppointmentBlocks from './ApptBlocks';
 import SelectedTimeBlock from './SelectedTimeBlock';
 import { usePositionedAppointments } from '../hooks/usePositionedAppointments';
 

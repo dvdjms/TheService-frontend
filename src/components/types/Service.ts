@@ -72,11 +72,54 @@ export interface UseTimeBlockGesturesProps {
 }
 
 
+export type UserDataStore = {
+    user: User | null;
+    clients: Client[];
+    appointments: Appointment[];
+    images: Image[];
+    userData: UserData;
+};
+
+
+export interface UserData {
+    user: User;
+    clients: Client[];
+    appointments: Appointment[];
+    images: Image[];
+}
+
+
+export interface User {
+    PK: string,
+    SK: string
+    userId: string,
+    firstName: string,
+    lastName: string,
+    email: string,
+    phone: string,
+    subscriptionTier: string,
+    type: string,
+    createdAt: string,
+    updatedAt: string,
+}
+
+export interface Image {
+    PK: string,
+    SK: string,
+    userId: string,
+    clientId: string;
+    apptId: string;
+    imageId: string,
+    S3Addess: string,
+    createdAt: string,
+}
+
 export interface Appointment {
     PK: string;
     SK: string;
-    apptId: string;
+    userId: string,
     clientId: string;
+    apptId: string;
     title: string;
     notes: string;
     startTime: number;
@@ -115,3 +158,4 @@ export interface PositionedAppointment extends Appointment {
     topOffset: number;
     blockHeight: number;
 }
+
