@@ -1,7 +1,7 @@
 import { Redirect } from 'expo-router';
 import { useAuth } from '@/src/context/authContext';
 import { ActivityIndicator, View } from 'react-native';
-import {configureReanimatedLogger} from 'react-native-reanimated';
+import { configureReanimatedLogger } from 'react-native-reanimated';
 import { useEffect } from 'react';
 import { getUserData } from '@/src/api/userData';
 import { useUserDataStore } from '@/src/store/useUserDataStore'
@@ -13,7 +13,7 @@ export default function Index() {
     const {
         setUser,
         setClients,
-        setAppointments,
+        setAppts,
         setImages,
     } = useUserDataStore();
 
@@ -25,12 +25,12 @@ export default function Index() {
 
                     const user = data?.user ?? null;
                     const clients = data?.clients ?? [];
-                    const appointments = data?.appointments ?? [];
+                    const appts = data?.appointments ?? [];
                     const images = data?.images ?? [];
-
+ 
                     setUser(user);
                     setClients(clients);
-                    setAppointments(appointments);
+                    setAppts(appts);
                     setImages(images);
 
                 } catch (error) {

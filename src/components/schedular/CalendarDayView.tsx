@@ -54,7 +54,7 @@ const CalendarDayView = forwardRef<CalendarDayViewHandle, CalendarDayViewProps>(
     });
 
 
-    const appts = useUserDataStore(state => state.appointments);
+    const appts = useUserDataStore(state => state.appts);
 
     const normalizeToDayTimestamp = (ts: number) => {
         const d = new Date(ts);

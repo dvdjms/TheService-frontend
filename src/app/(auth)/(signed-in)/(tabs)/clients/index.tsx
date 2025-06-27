@@ -18,7 +18,7 @@ export default function ClientScreen() {
 
     const goToClient = (client: Client) => {
         if (!client) return;
-        // useUserDataStore.getState().setSelectedClient(client); // 💾 store in Zustand
+        useUserDataStore.getState().setSelectedClient(client); // 💾 store in Zustand
         router.push(`/clients/${client.clientId}`);
     };
 

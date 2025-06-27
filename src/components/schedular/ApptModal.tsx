@@ -6,7 +6,7 @@ import { runOnJS, runOnUI, SharedValue, useAnimatedReaction } from "react-native
 import { format } from "date-fns";
 import { Ionicons } from "@expo/vector-icons";
 import { convertMinutesToTimeStamp } from "../utils/timeBlockUtils";
-import { createAppointment } from "@/src/api/appointments";
+import { createAppointment } from "@/src/api/appts";
 import { useAuth } from "@/src/context/authContext";
 import ClientSelectModal from "@/src/components/schedular/ClientSelectModal";
 import ColourSelectModal from "./ColorSelectModal";

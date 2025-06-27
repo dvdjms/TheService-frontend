@@ -1,20 +1,46 @@
 import { Text, View, StyleSheet, ScrollView } from "react-native";
 import { colors } from '@/src/styles/globalStyles';
 import { router, useLocalSearchParams } from "expo-router";
-import dummyAppointments from "@/assets/mock-clients.json";
 import { format } from "date-fns";
 import FormButton from "@/src/components/ui/FormButton";
+import { useEffect, useState } from "react";
+import { useUserDataStore } from "@/src/store/useUserDataStore";
+import { useAuth } from "@/src/context/authContext";
+import { getAppointment } from "@/src/api/appts";
 
 
 export default function AppointmentDetail() {
+    const { userId, accessToken } = useAuth();
+    const [loading, setLoading] = useState<boolean>(false)
     const { clientId, appointmentId } = useLocalSearchParams();
+    const clientIdString = Array.isArray(clientId) ? clientId[0] : clientId;
+    const apptIdString = Array.isArray(appointmentId) ? appointmentId[0] : appointmentId;
+    
+    const selectedAppt = useUserDataStore(state => state.getApptById(apptIdString));
+    const setSelectedClient = useUserDataStore(state => state.setSelectedClient);
 
-    const appointment = dummyAppointments
-        .find(c => c.id === clientId)
-        ?.appointments.find(a => a?.id === appointmentId);
+    useEffect(() => {
+        // If no client in store or different clientId, fetch client from API
+        if (!selectedAppt || selectedAppt.apptId !== clientIdString) {
+            setLoading(true);
+            const fetchClients = async () => {
+                if(accessToken){
+                    const client = await getAppointment(userId, clientIdString, apptIdString, accessToken);
+                    setSelectedClient(client)
+                }
+            }
+            setLoading(false);
+            fetchClients()
+        }
+    }, [clientIdString, accessToken]);
+
+    if (loading) return <View></View>//LoadingSpinner />;
+
+    if (!selectedAppt) return <Text>No client found</Text>;
 
 
-    if (!appointment) {
+
+    if (!selectedAppt) {
         return (
         <View>
             <Text>Appointment not found.</Text>
@@ -30,11 +56,11 @@ export default function AppointmentDetail() {
         <>
         <ScrollView>
             <Text style={{ fontSize: 24, fontWeight: 'bold' }}>
-                {appointment.appointment_title}
+                {selectedAppt.title}
             </Text>
             <Text>
-                {format(appointment.start_minutes, 'eeee dd MMM yyyy HH:mm')} -{' '}
-                {format(appointment.end_minutes, 'HH:mm')}
+                {format(selectedAppt.startTime, 'eeee dd MMM yyyy HH:mm')} -{' '}
+                {format(selectedAppt.endTime, 'HH:mm')}
             </Text>
             {/* Example images */}
             {/* {appointment.photos?.map((uri, idx) => (

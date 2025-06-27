@@ -5,7 +5,7 @@ import { User, Client, Appointment, Image } from '@/src/components/types/Service
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { createUserSlice } from './slices/userSlice';
 import { createClientsSlice } from './slices/clientSlice';
-import { createAppointmentsSlice } from './slices/apptSlice';
+import { createApptsSlice } from './slices/apptSlice';
 import { createImagesSlice } from './slices/imageSlice';
 
 
@@ -19,7 +19,7 @@ export interface UserSlice {
 export interface ClientsSlice {
     clients: Client[];
     setClients: (clients: Client[]) => void;
-    selectedClient: null,
+    selectedClient: Client | null,
     setSelectedClient: (client: Client) => void;
     addClient: (client: Client) => void;
     updateClient: (client: Client) => void;
@@ -27,14 +27,15 @@ export interface ClientsSlice {
     getClientById: (id: string) => Client | undefined;
 }
 
-export interface AppointmentsSlice {
-    appointments: Appointment[];
-    selectedAppointment: null,
-    setAppointments: (appointments: Appointment[]) => void;
-    addAppointment: (appointment: Appointment) => void;
-    updateAppointment: (appointment: Appointment) => void;
-    removeAppointment: (id: string) => void;
-    getAppointmentById: (id: string) => Appointment | undefined;
+export interface ApptsSlice {
+    appts: Appointment[];
+    setAppts: (appts: Appointment[]) => void;
+    selectedAppt: Appointment | null,
+    setSelectedAppt: (appt: Appointment) => void;
+    addAppt: (appt: Appointment) => void;
+    updateAppt: (appt: Appointment) => void;
+    removeAppt: (id: string) => void;
+    getApptById: (id: string) => Appointment | undefined;
 }
 
 export interface ImagesSlice {
@@ -42,7 +43,7 @@ export interface ImagesSlice {
     setImages: (images: Image[]) => void;
 }
 
-export type useUserDataStore = UserSlice & ClientsSlice & AppointmentsSlice & ImagesSlice;
+export type useUserDataStore = UserSlice & ClientsSlice & ApptsSlice & ImagesSlice;
 
 // === STORE CREATION ===
 export const useUserDataStore = create<useUserDataStore>()(
@@ -50,7 +51,7 @@ export const useUserDataStore = create<useUserDataStore>()(
         (set, get, store) => ({
             ...createUserSlice(set, get, store),
             ...createClientsSlice(set, get, store),
-            ...createAppointmentsSlice(set, get, store),
+            ...createApptsSlice(set, get, store),
             ...createImagesSlice(set, get, store),
         }),
         {

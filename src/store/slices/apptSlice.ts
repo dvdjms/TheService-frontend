@@ -1,28 +1,28 @@
 import { StateCreator } from 'zustand';
-import { AppointmentsSlice, useUserDataStore } from '../useUserDataStore';
+import { ApptsSlice, useUserDataStore } from '../useUserDataStore';
 
 
-export const createAppointmentsSlice: StateCreator<useUserDataStore, [], [], AppointmentsSlice> = (set, get) => ({
-    appointments: [],
-    setAppointments: (appointments) => set({ appointments }),
+export const createApptsSlice: StateCreator<useUserDataStore, [], [], ApptsSlice> = (set, get) => ({
+    appts: [],
+    setAppts: (appts) => set({ appts }),
 
-    selectedAppointment: null,
-    setAppointment: (appointment: any) => set({ selectedAppointment: appointment }),
+    selectedAppt: null,
+    setSelectedAppt: (appt: any) => set({ selectedAppt: appt }),
 
-    addAppointment: (appt) =>
+    addAppt: (appt) =>
         set((state) => ({
-            appointments: [...state.appointments, appt],
+            appts: [...state.appts, appt],
         })),
-    updateAppointment: (updatedAppt) =>
+    updateAppt: (updatedAppt) =>
         set((state) => ({
-            appointments: state.appointments.map((a) =>
+            appts: state.appts.map((a) =>
                 a.apptId === updatedAppt.apptId ? updatedAppt : a
             ),
         })),
-    removeAppointment: (id) =>
+    removeAppt: (id) =>
         set((state) => ({
-            appointments: state.appointments.filter((a) => a.apptId !== id),
+            appts: state.appts.filter((a) => a.apptId !== id),
         })),
-    getAppointmentById: (id) => get().appointments.find((a) => a.apptId === id),
-    clearAppointments: () => set({ appointments: [] }),
+    getApptById: (id) => get().appts.find((a) => a.apptId === id),
+    clearAppts: () => set({ appts: [] }),
 });

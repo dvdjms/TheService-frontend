@@ -8,6 +8,7 @@ import React, { useEffect, useState } from 'react';
 import { getClient } from '@/src/api/clients';
 import { useAuth } from '@/src/context/authContext';
 import { useUserDataStore } from '@/src/store/useUserDataStore';
+import { Appointment } from '@/src/components/types/Service';
 
 
 export default function ClientDetail() {
@@ -19,9 +20,9 @@ export default function ClientDetail() {
     const clientIdString = Array.isArray(clientId) ? clientId[0] : clientId;
     const selectedClient = useUserDataStore(state => state.getClientById(clientIdString));
     const setSelectedClient = useUserDataStore(state => state.setSelectedClient);
-    const appts = useUserDataStore(state => state.appointments);
-    const clientAppts = appts.filter(c => c.clientId === clientIdString);
+    const appts = useUserDataStore(state => state.appts);
 
+    const clientAppts = appts.filter(c => c.clientId === clientIdString);
 
     useEffect(() => {
         // If no client in store or different clientId, fetch client from API
@@ -43,9 +44,12 @@ export default function ClientDetail() {
     if (!selectedClient) return <Text>No client found</Text>;
 
 
-    const goToAppointment = (appointmentId: string) => {          
-        router.push(`/clients/${clientId}/appointments/${appointmentId}`);
+    const goToAppointment = (appt: Appointment) => {   
+        if (!appt) return;
+        useUserDataStore.getState().setSelectedAppt(appt); // 💾 store in Zustand
+        router.push(`/clients/${clientId}/appointments/${appt.apptId}`);
     };
+
 
     if (!selectedClient) {
         return (
@@ -56,14 +60,10 @@ export default function ClientDetail() {
         );
     }
 
-    // const sortedAppointments = [...client.appointments].sort(
-    //     (a, b) => a.start_minutes - b.start_minutes
-    // );
-
 
     const renderItem = ({ item }: { item: any}) => (
         <View style={styles.appointment}>
-            <Pressable onPress={() => goToAppointment(item.apptId)} style={styles.card} >
+            <Pressable onPress={() => goToAppointment(item)} style={styles.card} >
                 <View>
                     <Text style={{ fontWeight: 'bold' }}>
                         {item.title.split('\n')[0]}

@@ -10,7 +10,7 @@ export const createAppointment = async (accessToken: string | null, data: any) =
 }
 
 export const getAllAppointments = async (userId: string, accessToken: string) => {
-    return await fetchRequest(`/appointments/?userId=${userId}`, accessToken);
+    return await fetchRequest(`appointments?userId=${userId}`, accessToken);
 }
 
 
