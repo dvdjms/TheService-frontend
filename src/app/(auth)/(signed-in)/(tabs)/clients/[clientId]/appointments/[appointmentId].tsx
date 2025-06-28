@@ -39,7 +39,7 @@ export default function AppointmentDetail() {
 
     const handleDelete = async () => {
         const response = await deleteAppointment(userId, clientIdString, apptIdString, accessTokenString);
-        console.log("AWS response:", response.message)
+        console.log("AWS StatusCode:", response.appointment.$metadata.httpStatusCode, "message:", response.message)
         if(response.appointment) useUserDataStore.getState().removeAppt(apptIdString);
         router.back();
     }

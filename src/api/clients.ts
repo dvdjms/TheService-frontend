@@ -25,14 +25,10 @@ export const createClient = async (accessToken: string | null, data: any) => {
     });
 }
 
-// export const deleteClient = async (id: string, accessToken: string) => {
-//     return await fetchRequest(`clients/${id}`, accessToken, {
-//         method: 'DELETE',
-//     });
-// }
 
 export const deleteClient = (userId: string, clientId: string, accessToken: string) => {
-    return fetchRequest(`/clients`, accessToken, {
+    console.log("deleteClient triggered")
+    return fetchRequest(`clients`, accessToken, {
         method: 'DELETE',
         body: JSON.stringify({
             userId,

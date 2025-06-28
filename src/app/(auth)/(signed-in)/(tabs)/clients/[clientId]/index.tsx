@@ -53,13 +53,14 @@ export default function ClientDetail() {
     };
 
 
-        const handleDelete = async () => {
-            const response = await deleteClient(userId, clientIdString, accessTokenString);
-            console.log("AWS response:", response.message)
-            if(response.client) useUserDataStore.getState().removeClient(clientIdString);
-            
-            router.back();
-        }
+    const handleDelete = async () => {
+        console.log('handleDelete client triggered')
+        const response = await deleteClient(userId, clientIdString, accessTokenString);
+        console.log("AWS response:", response.message)
+        if(response.client) useUserDataStore.getState().removeClient(clientIdString);
+        
+        router.back();
+    }
 
 
     if (!selectedClient) {

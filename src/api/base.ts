@@ -22,6 +22,7 @@ export const fetchRequest = async (
 
     try {
         responseBody = await res.json();
+        // console.log('responseBody', responseBody)
     } catch {
         responseBody = null
     }
