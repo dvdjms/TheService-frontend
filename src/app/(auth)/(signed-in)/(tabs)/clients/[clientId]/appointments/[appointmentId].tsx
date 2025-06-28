@@ -1,4 +1,4 @@
-import { Text, View, StyleSheet, ScrollView } from "react-native";
+import { Text, View, StyleSheet, ScrollView, TouchableOpacity } from "react-native";
 import { colors } from '@/src/styles/globalStyles';
 import { router, useLocalSearchParams } from "expo-router";
 import { format } from "date-fns";
@@ -6,7 +6,8 @@ import FormButton from "@/src/components/ui/FormButton";
 import { useEffect, useState } from "react";
 import { useUserDataStore } from "@/src/store/useUserDataStore";
 import { useAuth } from "@/src/context/authContext";
-import { getAppointment } from "@/src/api/appts";
+import { deleteAppointment, getAppointment } from "@/src/api/appts";
+import { Ionicons } from "@expo/vector-icons";
 
 
 export default function AppointmentDetail() {
@@ -15,7 +16,8 @@ export default function AppointmentDetail() {
     const { clientId, appointmentId } = useLocalSearchParams();
     const clientIdString = Array.isArray(clientId) ? clientId[0] : clientId;
     const apptIdString = Array.isArray(appointmentId) ? appointmentId[0] : appointmentId;
-    
+    const accessTokenString = Array.isArray(accessToken) ? accessToken[0] : accessToken;
+
     const selectedAppt = useUserDataStore(state => state.getApptById(apptIdString));
     const setSelectedClient = useUserDataStore(state => state.setSelectedClient);
 
@@ -34,11 +36,18 @@ export default function AppointmentDetail() {
         }
     }, [clientIdString, accessToken]);
 
+
+    const handleDelete = async () => {
+        const response = await deleteAppointment(userId, clientIdString, apptIdString, accessTokenString);
+        console.log("AWS response:", response.message)
+        if(response.appointment) useUserDataStore.getState().removeAppt(apptIdString);
+        router.back();
+    }
+
+
     if (loading) return <View></View>//LoadingSpinner />;
 
     if (!selectedAppt) return <Text>No client found</Text>;
-
-
 
     if (!selectedAppt) {
         return (
@@ -67,7 +76,10 @@ export default function AppointmentDetail() {
                 <Image key={idx} source={{ uri }} style={{ width: '100%', height: 200, marginVertical: 10 }} />
             ))} */}
         </ScrollView>
-
+            <Ionicons name={"close-outline"} size={35}></Ionicons>
+            <TouchableOpacity onPress={() => handleDelete()}>
+                <Ionicons name={"trash-outline"} size={35} ></Ionicons>
+            </TouchableOpacity>
         <View style={styles.buttonContainer}>
             <FormButton title="Close" OnPress={() => router.back()} width={0.9} />
         </View>

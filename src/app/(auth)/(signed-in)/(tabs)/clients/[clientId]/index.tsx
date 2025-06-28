@@ -1,14 +1,15 @@
 import { useLocalSearchParams, useRouter } from 'expo-router';
-import { View, Text, Button, StyleSheet, Pressable } from 'react-native';
+import { View, Text, Button, StyleSheet, Pressable, TouchableOpacity } from 'react-native';
 import FormButton from '@/src/components/ui/FormButton';
 import { colors } from '@/src/styles/globalStyles';
 import { FlatList } from 'react-native-gesture-handler';
 import { format } from 'date-fns';
 import React, { useEffect, useState } from 'react';
-import { getClient } from '@/src/api/clients';
+import { deleteClient, getClient } from '@/src/api/clients';
 import { useAuth } from '@/src/context/authContext';
 import { useUserDataStore } from '@/src/store/useUserDataStore';
 import { Appointment } from '@/src/components/types/Service';
+import { Ionicons } from '@expo/vector-icons';
 
 
 export default function ClientDetail() {
@@ -17,6 +18,7 @@ export default function ClientDetail() {
     const [loading, setLoading] = useState(false);
 
     const { clientId } = useLocalSearchParams();
+    const accessTokenString = Array.isArray(accessToken) ? accessToken[0] : accessToken;
     const clientIdString = Array.isArray(clientId) ? clientId[0] : clientId;
     const selectedClient = useUserDataStore(state => state.getClientById(clientIdString));
     const setSelectedClient = useUserDataStore(state => state.setSelectedClient);
@@ -49,6 +51,15 @@ export default function ClientDetail() {
         useUserDataStore.getState().setSelectedAppt(appt); // 💾 store in Zustand
         router.push(`/clients/${clientId}/appointments/${appt.apptId}`);
     };
+
+
+        const handleDelete = async () => {
+            const response = await deleteClient(userId, clientIdString, accessTokenString);
+            console.log("AWS response:", response.message)
+            if(response.client) useUserDataStore.getState().removeClient(clientIdString);
+            
+            router.back();
+        }
 
 
     if (!selectedClient) {
@@ -104,6 +115,11 @@ export default function ClientDetail() {
             )}
               <Text>Add appointment +</Text>
 
+
+            <TouchableOpacity onPress={() => handleDelete()}>
+                <Ionicons name={"trash-outline"} size={35} ></Ionicons>
+            </TouchableOpacity>
+            
             <View style={styles.buttonContainer}>
                 <FormButton title="Close" OnPress={() => router.back()} width={0.9} />
             </View>
