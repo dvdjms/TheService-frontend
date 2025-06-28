@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { View, StyleSheet, TextInput, Text, TouchableOpacity } from "react-native";
 import { yToTime, yToTime11 } from '../utils/timeUtils';
-import { Client, TimeBlock } from "../types/Service";
+import { Appointment, Client, TimeBlock } from "../types/Service";
 import { runOnJS, runOnUI, SharedValue, useAnimatedReaction } from "react-native-reanimated";
 import { format } from "date-fns";
 import { Ionicons } from "@expo/vector-icons";
@@ -10,6 +10,7 @@ import { createAppointment } from "@/src/api/appts";
 import { useAuth } from "@/src/context/authContext";
 import ClientSelectModal from "@/src/components/schedular/ClientSelectModal";
 import ColourSelectModal from "./ColorSelectModal";
+import { useUserDataStore } from "@/src/store/useUserDataStore";
 
 
 interface AppointmentBlockProps {
@@ -58,8 +59,8 @@ const AppointmentBlock = ({ selectedTimeBlock, isModalVisible, isModalExpanded }
 
     const handleSave = async () => {
         const date = displayBlock?.date
-        const startTimestamp = displayBlock?.startMinutes
-        const endTimestamp = displayBlock?.endMinutes
+        const startMinutes = displayBlock?.startMinutes
+        const endMinutes = displayBlock?.endMinutes
 
         if(!title || !selectedClient){
             console.log('please add both title and client');
@@ -67,21 +68,39 @@ const AppointmentBlock = ({ selectedTimeBlock, isModalVisible, isModalExpanded }
             return;
         }
 
-        if(date && startTimestamp && endTimestamp){
-            const appointmentData = {
+        if(date && startMinutes && endMinutes){
+            let appointmentData = {
                 userId: userId,
                 clientId: selectedClient.clientId,
                 title: title,
                 notes: "",
-                startTime: convertMinutesToTimeStamp(date, startTimestamp),
-                endTime: convertMinutesToTimeStamp(date, endTimestamp),
+                startTime: convertMinutesToTimeStamp(date, startMinutes),
+                endTime: convertMinutesToTimeStamp(date, endMinutes),
                 colour: selectedColour
             };
             try {
                 if(accessToken){
                     const response = await createAppointment(accessToken, appointmentData)
-                    console.log("response", response)
-                    console.log('Saving appointment:', appointmentData);
+                    const apptId = response.appointment?.ToolboxItem?.apptId;
+
+                    const fullAppointment: Appointment = {
+                        userId,
+                        clientId: selectedClient.clientId,
+                        apptId: apptId,
+                        title,
+                        notes: "",
+                        startTime: convertMinutesToTimeStamp(date, startMinutes) ?? 0,
+                        endTime: convertMinutesToTimeStamp(date, endMinutes) ?? 0,
+                        colour: selectedColour,
+                        PK: `USER#${userId}`,
+                        SK: `APPT#${apptId}#CLIENT#${selectedClient.clientId}`,
+                        startHour: startMinutes ?? 0,
+                        endHour: endMinutes ?? 0,
+                    };
+
+                    if (response) {
+                        useUserDataStore.getState().addAppt(fullAppointment);
+                    }
                     setTitle("");
                     setSelectedClient(null);
                     handleClose();

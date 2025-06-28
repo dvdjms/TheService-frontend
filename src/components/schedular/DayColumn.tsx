@@ -93,7 +93,6 @@ export const DayColumn: React.FC<DayColumnProps> = ({
     }, [masterScrollOffsetY, scrollViewRef, dateTimestamp]);
 
 
-
    // Reaction to masterScrollOffsetY changes (runs on UI thread)
     useAnimatedReaction(
         () => masterScrollOffsetY.value,
@@ -131,7 +130,7 @@ export const DayColumn: React.FC<DayColumnProps> = ({
             right: 5 - expand,
         };
     });
-
+    
     const positionedAppointments = usePositionedAppointments(displayDate, allGroupedAppointments);
 
     const internalScrollHandler = useAnimatedScrollHandler({

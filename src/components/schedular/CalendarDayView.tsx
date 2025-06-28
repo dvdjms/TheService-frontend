@@ -155,9 +155,11 @@ const CalendarDayView = forwardRef<CalendarDayViewHandle, CalendarDayViewProps>(
                 <FlashList
                     ref={flashListRef}
                     data={dates}
+                    extraData={groupedAppointments}
                     renderItem={({ item }) => {
                         return (
                             <DayColumn 
+                                key={item}
                                 dateTimestamp={item} 
                                 allGroupedAppointments={groupedAppointments} 
                                 itemActualHeight={layoutSize.height} 

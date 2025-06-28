@@ -7,6 +7,8 @@ import { colors } from '@/src/styles/globalStyles';
 import { Ionicons } from '@expo/vector-icons';
 import { createClient } from '@/src/api/clients';
 import { useAuth } from '@/src/context/authContext';
+import { Client } from '../types/Service';
+import { useUserDataStore } from '@/src/store/useUserDataStore';
 
 
 
@@ -74,7 +76,36 @@ const ClientForm = ({ setModalVisible }: Props) => {
             }
 
             const response = await createClient(accessToken, body)
-            console.log("response", response)
+            const clientId = response.client?.ToolboxItem?.clientId;
+            const now = new Date().toISOString();
+
+            const fullClient: Client = {
+                PK: `USER#${userId}`,
+                SK: `#CLIENT#${clientId}`,
+                clientId: clientId,
+                userId,
+                firstName: firstName, 
+                lastName: lastName,
+                fullName: `${firstName} ${lastName}`,
+                email: email,
+                phone: phone || '',
+                notes: notes || '',
+                address1: address1 || '',
+                address2: address2 || '',
+                city: city || '',
+                stateOrProvince: stateOrProvince || '',
+                postalCode: postalCode || '',
+                countryCode, 
+                lng: 0,
+                lat: 0, 
+                type: 'Client',
+                createdAt: now,
+                updatedAt: now
+            };
+
+            if (response) {
+                useUserDataStore.getState().addClient(fullClient);
+            }
 
             setModalVisible(false);
 
