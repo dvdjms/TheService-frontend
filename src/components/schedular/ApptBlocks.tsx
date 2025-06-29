@@ -3,6 +3,7 @@ import { StyleSheet, Text, Pressable } from "react-native";
 import { PositionedAppointment } from "../types/Service";
 import { router } from "expo-router";
 import { yToTime11 } from "../utils/timeUtils";
+import { useUserDataStore } from "@/src/store/useUserDataStore";
 
 
 interface Props {
@@ -11,6 +12,7 @@ interface Props {
 
 const AppointmentBlocks = React.memo(({ appointments }: Props) => {
 
+
     const goToAppointment = (appointmentId: string) => {     
         // use a modal and reuse appointment component
         // router.push(`/clients/${clientId}/appointments/${appointmentId}`);
@@ -18,27 +20,32 @@ const AppointmentBlocks = React.memo(({ appointments }: Props) => {
 
     return (
         <>
-            {appointments.map((app) => (
-                <Pressable
-                    onPress={() => goToAppointment(app.apptId)}
-                    key={app.apptId}
-                    style={{
-                        position: 'absolute',
-                        top: app.topOffset,
-                        height: app.blockHeight,
-                        backgroundColor: app.colour,
-                        borderRadius: 4,
-                        padding: 7,
-                        left: 62,
-                        right: 5,
-                        zIndex: 10,
-                        borderWidth: .1,
-                    }}
-                >
-                    <Text>{app.title}</Text>
-                    <Text>Client Id: {app.clientId.slice(0, 20)}</Text>
-                </Pressable>
-            ))}
+            {appointments.map((app) => {
+                const client = useUserDataStore.getState().getClientById(app.clientId);
+                return (
+                    <Pressable
+                        onPress={() => goToAppointment(app.apptId)}
+                        key={app.apptId}
+                        style={{
+                            position: 'absolute',
+                            top: app.topOffset,
+                            height: app.blockHeight,
+                            backgroundColor: app.colour,
+                            borderRadius: 4,
+                            padding: 7,
+                            left: 62,
+                            right: 5,
+                            zIndex: 10,
+                            borderWidth: .1,
+                        }}
+                    >
+                        <Text>{app.title}</Text>
+                        <Text>
+                            {client ? `${client.firstName} ${client.lastName}` : 'Unknown'}
+                        </Text>                
+                    </Pressable>
+                )
+            })}
         </>
     );
 });

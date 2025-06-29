@@ -2,13 +2,23 @@
 
 // globalStyles.ts
 export const colors = {
-    background: '#f0f0dd',
+    background: '#f2f2f7',//'#f0f0dd',
     // background: '#660033',
     HeaderFooter: '#604652',
-    backgroundHeaderFooter: '#604652',
+    // backgroundHeaderFooter: '#604652',
+
+    headerStyle: {
+        backgroundColor: 'rgba(138, 130, 255, 0.07)',
+        borderBottomColor: '#E5E5E5',
+        borderBottomWidth: 1,
+    },
+    tabBarStyle: {
+        backgroundColor: 'rgba(138, 130, 255, 0.07)',
+    },
+
     //backgroundHeaderFooter: '#660033',
-    iconActive: '#F2C6AE',
-    iconInactive: '#D29F80',
+    iconActive: '#6C4DFF',
+    iconInactive: '#B0B0C3',
     
 
     primary: '#3498db',

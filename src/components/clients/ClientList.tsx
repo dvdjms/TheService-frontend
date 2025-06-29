@@ -18,6 +18,7 @@ export default function ClientList({ goToClient }: Props) {
             keyExtractor={(item) => item.clientId}
             renderItem={({ item }) => <ClientCard client={item} goToClient={goToClient} />}
             contentContainerStyle={{ paddingHorizontal: 10, paddingVertical: 20 }}
+            showsVerticalScrollIndicator={false}
         />
     );
 }

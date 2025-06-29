@@ -8,7 +8,6 @@ import { router } from "expo-router";
 import { Client } from "@/src/components/types/Service";
 import { useUserDataStore } from "@/src/store/useUserDataStore";
 
-
 const screenWidth = Dimensions.get('window').width;
 
 export default function ClientScreen() {
@@ -35,9 +34,19 @@ export default function ClientScreen() {
 
             <View style={styles.headerContainer}>
                 <Text style={styles.title}>Clients</Text>
-                <AddButton onPress={handleAddClient}/>
+                <View style={styles.underline} />
             </View>
     
+            <AddButton 
+                onPress={handleAddClient}
+                style={{
+                    position: 'absolute',
+                    bottom: 30,
+                    right: 20,
+                    zIndex: 10,
+                }}
+            />
+
             <View style={{ flex: 1, width: screenWidth-5 }}>
                 <ClientList goToClient={goToClient}/>
             </View>
@@ -77,10 +86,19 @@ const styles = StyleSheet.create({
         width: screenWidth,
     },
     title: {
-        color: 'red',
-        gap: 8,
-        fontSize: 22,
+        fontSize: 26,
+        fontWeight: '700',
+        color: '#111',
+        letterSpacing: 1,
+        paddingTop: 7
     },
+    underline: {
+        marginTop: 6,
+        width: 40,
+        height: 4,
+        borderRadius: 2,
+        backgroundColor: '#007AFF', // iOS blue accent color
+    }, 
     modalOverlay: {
         flex: 1,
         justifyContent: 'center',

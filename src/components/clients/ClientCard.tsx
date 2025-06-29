@@ -1,4 +1,4 @@
-import { Text, StyleSheet, Pressable } from 'react-native';
+import { Text, StyleSheet, Pressable, TouchableOpacity } from 'react-native';
 import { Client } from '../types/Service';
 
 
@@ -11,36 +11,48 @@ type Props = {
 export default function ClientCard({ client, goToClient }: Props) {
 
     return (
-        <Pressable style={styles.card} onPress={() => goToClient(client)}>
+        <TouchableOpacity style={styles.card} onPress={() => goToClient(client)}>
             <Text style={styles.name}>{client.firstName} {client.lastName}</Text>
             <Text style={styles.email}>{client.email}</Text>
             <Text style={styles.phone}>{client.phone}</Text>
             <Text style={styles.phone}>{client.clientId}</Text>
-        </Pressable>
+        </TouchableOpacity>
     );
 }
 
 
 const styles = StyleSheet.create({
     card: {
-        flex: 1,
-        marginBottom: 16,
-        padding: 12,
-        backgroundColor: '#F2F2F2',
-        borderRadius: 8,
-        width: '100%',
-        alignSelf: 'center'
+        backgroundColor: '#fff',
+        borderRadius: 12,
+        padding: 18,
+        marginVertical: 8,
+        marginHorizontal: 6,
+        shadowColor: '#000',
+        shadowOpacity: 0.05,
+        shadowRadius: 10,
+        shadowOffset: { width: 0, height: 3 },
+        elevation: 4, // Android shadow
     },
     name: {
-        fontSize: 16,
-        fontWeight: 'bold',
+        fontSize: 20,
+        fontWeight: '600',
+        color: '#111',
+        marginBottom: 4,
     },
     email: {
         fontSize: 14,
         color: '#666',
+        marginBottom: 2,
     },
     phone: {
         fontSize: 14,
-        color: '#888',
+        color: '#666',
     },
+    clientId: {
+        fontSize: 12,
+        color: '#aaa',
+        marginTop: 4,
+    }
 });
+

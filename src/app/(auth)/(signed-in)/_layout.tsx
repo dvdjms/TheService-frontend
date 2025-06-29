@@ -26,9 +26,7 @@ export default function SignedInLayout() {
                     name={name}
                     options={{
                         headerShown: true,
-                        headerStyle: {
-                            backgroundColor: colors.backgroundHeaderFooter
-                        },
+                        headerStyle: colors.headerStyle,
                         drawerLabel: label,
                         headerLeft: () => (
                             <HamburgerHeaderLeft />

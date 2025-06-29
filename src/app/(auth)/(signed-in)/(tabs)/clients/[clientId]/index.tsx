@@ -1,5 +1,5 @@
 import { useLocalSearchParams, useRouter } from 'expo-router';
-import { View, Text, Button, StyleSheet, Pressable, TouchableOpacity } from 'react-native';
+import { View, Text, Button, StyleSheet, Pressable, TouchableOpacity, Dimensions } from 'react-native';
 import FormButton from '@/src/components/ui/FormButton';
 import { colors } from '@/src/styles/globalStyles';
 import { FlatList } from 'react-native-gesture-handler';
@@ -10,6 +10,8 @@ import { useAuth } from '@/src/context/authContext';
 import { useUserDataStore } from '@/src/store/useUserDataStore';
 import { Appointment } from '@/src/components/types/Service';
 import { Ionicons } from '@expo/vector-icons';
+import ApptCard from '@/src/components/dashboard/ApptCard';
+import { CustomContact } from '@/src/components/ui/CustomContact';
 
 
 export default function ClientDetail() {
@@ -46,7 +48,7 @@ export default function ClientDetail() {
     if (!selectedClient) return <Text>No client found</Text>;
 
 
-    const goToAppointment = (appt: Appointment) => {   
+    const goToAppt = (appt: Appointment) => {   
         if (!appt) return;
         useUserDataStore.getState().setSelectedAppt(appt); // 💾 store in Zustand
         router.push(`/clients/${clientId}/appointments/${appt.apptId}`);
@@ -62,6 +64,10 @@ export default function ClientDetail() {
         router.back();
     }
 
+    const onPress = () => {
+
+    }
+
 
     if (!selectedClient) {
         return (
@@ -75,29 +81,22 @@ export default function ClientDetail() {
 
     const renderItem = ({ item }: { item: any}) => (
         <View style={styles.appointment}>
-            <Pressable onPress={() => goToAppointment(item)} style={styles.card} >
-                <View>
-                    <Text style={{ fontWeight: 'bold' }}>
-                        {item.title.split('\n')[0]}
-                    </Text>
-                    <Text>
-                        {format(item.startTime, 'eeee dd MMMM yyyy HH:mm')} -{' '}
-                        {format(item.endTime,'HH:mm')}
-                    </Text>
-                
-                </View>
-            </Pressable>
+            <ApptCard appt={item} goToAppt={goToAppt}></ApptCard>
         </View>
     );
 
     return (
    
         <View style={styles.container}>
-            <View style={styles.details}>
-                <Text style={styles.title}>Client Detail Screen</Text>
-                <Text>Name: {selectedClient.firstName} {selectedClient.lastName}</Text>
-                <Text>Email: {selectedClient.email}</Text>
-                <Text>Phone: {selectedClient.phone}</Text>
+            <View style={styles.titleContainer}>
+                <Text style={styles.title}>{selectedClient.firstName} {selectedClient.lastName}</Text>
+                <Text style={styles.email}>{selectedClient.email}</Text>
+
+                <View style={styles.contactContainer}>
+                    <CustomContact title={"Message"} name={"chatbubble-outline"} value={selectedClient.email} onPress={(onPress)}/>
+                    <CustomContact title={"Call"} name={"call-outline"} value={selectedClient.phone} onPress={(onPress)}/>
+                    <CustomContact title={"Email"} name={"mail-outline"} value={selectedClient.email} onPress={(onPress)}/>
+                </View>
             </View>
 
         {clientAppts.length ? (
@@ -106,9 +105,9 @@ export default function ClientDetail() {
                     data={clientAppts}
                     keyExtractor={item => item.apptId}
                     renderItem={renderItem}
+                    showsVerticalScrollIndicator={false}  
                     style={styles.FlatList}
                 />
-              
             </View>
             ) : (
                 <Text>No appointments found </Text>
@@ -134,20 +133,37 @@ const styles = StyleSheet.create({
         flex: 1,
         backgroundColor: colors.background,
         padding: 20,
+
         justifyContent: 'space-between', // pushes button to bottom
 
-    },
-    details: {
-        flexShrink: 1,
     },
     buttonContainer: {
         alignItems: 'center',
         marginBottom: 20,
     },
+    titleContainer: {
+        backgroundColor: '#f2f2f7',
+        justifyContent: 'center',
+        alignItems: 'center',
+    },
     title: {
-        fontSize: 22,
-        fontWeight: 'bold',
-        marginBottom: 12,
+        fontSize: 26,
+        fontWeight: '700',
+        color: '#111',
+        letterSpacing: 1,
+        paddingTop: 7
+    },
+    email: {
+        fontSize: 14,
+        fontWeight: '700',
+        color: '#111',
+        paddingTop: 7
+    },
+    contactContainer: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        paddingTop: 20,
+        width: '95%',
     },
     centered: {
         flex: 1,
@@ -159,21 +175,18 @@ const styles = StyleSheet.create({
         // borderColor: 'red'
     },
     FlatList: {
-
+       height: 400,
     },
     appointment: {
         padding: 8,
         gap: 5,
-        marginBottom: 5,
-        height: 60,
+        // marginBottom: 5,
+        // height: 60,
         borderRadius: 5,
-        backgroundColor: 'brown'
+        backgroundColor: colors.background,
 
     },
     card: {
-        // marginBottom: 16,
-        // padding: 12,
-        // backgroundColor: '#F2F2F2',
         borderRadius: 8,
         width: '95%',
         alignSelf: 'center'

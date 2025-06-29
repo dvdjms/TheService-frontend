@@ -20,6 +20,14 @@ export default function AppointmentDetail() {
 
     const selectedAppt = useUserDataStore(state => state.getApptById(apptIdString));
     const setSelectedClient = useUserDataStore(state => state.setSelectedClient);
+    
+    let clientName = '';
+    if (selectedAppt?.clientId) {
+        const client = useUserDataStore.getState().getClientById(selectedAppt.clientId);
+        if (client) {
+            clientName = `${client.firstName}`;
+        }
+    }
 
     useEffect(() => {
         // If no client in store or different clientId, fetch client from API
@@ -54,7 +62,7 @@ export default function AppointmentDetail() {
         <View>
             <Text>Appointment not found.</Text>
             <View style={styles.buttonContainer}>
-                <FormButton title="Close" OnPress={() => router.back()} width={0.9} />
+                <FormButton title="Close" OnPress={() => router.push(`/clients/${clientIdString}`)} width={0.9} />
             </View>
         </View>
         );
@@ -81,7 +89,9 @@ export default function AppointmentDetail() {
                 <Ionicons name={"trash-outline"} size={35} ></Ionicons>
             </TouchableOpacity>
         <View style={styles.buttonContainer}>
-            <FormButton title="Close" OnPress={() => router.back()} width={0.9} />
+            <FormButton title="Back" OnPress={() => router.back()} width={0.3}/>
+            <FormButton title="All Clients" OnPress={() => router.push(`/clients`)} width={0.3} />
+            <FormButton title={clientName} OnPress={() => router.push(`/clients/${selectedAppt.clientId}`)} width={0.3} />
         </View>
         </>
     );
@@ -113,5 +123,7 @@ const styles = StyleSheet.create({
     buttonContainer: {
         alignItems: 'center',
         marginBottom: 20,
+        flexDirection: 'row',
+        justifyContent: 'space-between'
     },
 });

@@ -18,10 +18,8 @@ export default function TabLayout() {
             headerRight: () => (
                 route.name === '(tabs)' ? <CustomHeaderRight /> : null
             ),
-            tabBarStyle: {
-                backgroundColor: colors.backgroundHeaderFooter,
-                borderTopWidth: 0,
-            },
+            tabBarStyle: colors.tabBarStyle,
+            headerStyle: colors.headerStyle,
             tabBarActiveTintColor: colors.iconActive,
             tabBarInactiveTintColor: colors.iconInactive,
 

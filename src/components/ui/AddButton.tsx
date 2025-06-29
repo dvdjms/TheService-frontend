@@ -1,33 +1,41 @@
-import { Text, StyleSheet, TouchableOpacity } from 'react-native';
+import { Text, StyleSheet, TouchableOpacity, SafeAreaView, View, ViewStyle } from 'react-native';
 
 interface Props {
     onPress: () => void;
+    style?: ViewStyle;
 };
 
 
-export const AddButton = ({ onPress }: Props) => {
-
+export const AddButton = ({ onPress, style }: Props ) => {
     return (
-        <TouchableOpacity onPress={onPress} style={styles.button}><Text style={styles.plus}>+</Text></TouchableOpacity>
+        <TouchableOpacity onPress={onPress} style={[styles.button, style]}>
+            <Text style={styles.plus}>+</Text>
+        </TouchableOpacity>
     );
 }
 
 const styles = StyleSheet.create({
     button: {
-        position: 'absolute',
-        right: 20,
-        top: 10,
-        backgroundColor:'#4CAF50', /* Green background */
-        opacity: 0.7,
-        width: 30,
-        height: 30,
-        borderRadius: 15,
+        backgroundColor: '#8A63D2',
+        width: 56,
+        height: 56,
+        borderRadius: 28,
         alignItems: 'center',
+        justifyContent: 'center',
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 3 },
+        shadowOpacity: 0.2,
+        shadowRadius: 4,
+        elevation: 6,
+        opacity: .8
     },
     plus: {
-        fontSize: 28,
-        color: 'white',
-        lineHeight: 28,
-        marginTop: 2
-    }
+        fontSize: 32,
+        color: '#fff',
+        fontWeight: '600',
+        lineHeight: 34,
+    },
 });
+
+
+
