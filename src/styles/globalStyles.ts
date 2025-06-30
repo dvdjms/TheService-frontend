@@ -4,8 +4,9 @@
 export const colors = {
     background: '#f2f2f7',//'#f0f0dd',
     // background: '#660033',
-    HeaderFooter: '#604652', // soft purple
-    // backgroundHeaderFooter: '#604652',
+    HeaderFooter: '#604652',
+    companyPink: '#E5E5E5',
+    companyPurple: '#f2f2f7', // soft purple
 
     headerStyle: {
         backgroundColor: 'rgba(138, 130, 255, 0.07)',

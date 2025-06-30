@@ -11,6 +11,7 @@ import { useAuth } from "@/src/context/authContext";
 import ClientSelectModal from "@/src/components/schedular/ClientSelectModal";
 import ColourSelectModal from "./ColorSelectModal";
 import { useUserDataStore } from "@/src/store/useUserDataStore";
+import { colors } from "@/src/styles/globalStyles";
 
 
 interface AppointmentBlockProps {
@@ -123,7 +124,7 @@ const AppointmentBlock = ({ selectedTimeBlock, isModalVisible, isModalExpanded }
                     style={styles.chevron}
                     >
                     <Ionicons name={expandedJS ? "chevron-down" : "chevron-up"} size={24} />
-                    <Text style={{textAlign: 'center'}}>{expandedJS ? "" : "(No title)"}  </Text>
+                    <Text style={{textAlign: 'center'}}>{expandedJS ? "" : "(No title)"}</Text>
                 </TouchableOpacity>
 
                 {expandedJS && (
@@ -193,7 +194,7 @@ const AppointmentBlock = ({ selectedTimeBlock, isModalVisible, isModalExpanded }
                 setSelectedColour(colour);
                 setShowColourPicker(false);
             }}
-            onClose={() => setShowClientModal(false)}
+            onClose={() => setShowColourPicker(false)}
         />
 
         </>
@@ -207,11 +208,12 @@ const styles = StyleSheet.create({
         left: 0,
         right: 0,
         zIndex: 100,
-        backgroundColor: 'transparent', // white
+        // backgroundColor: 'transparent', // white
+                backgroundColor: colors.companyPurple,
         justifyContent: 'center'
     },
     modalContainer: {
-        backgroundColor: '#ddd',
+        backgroundColor: colors.companyPurple,//'#ddd',
         padding: 20,
         paddingTop: 40,
         borderTopLeftRadius: 30,
