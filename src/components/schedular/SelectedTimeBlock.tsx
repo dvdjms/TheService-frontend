@@ -1,4 +1,3 @@
-import { Background } from "@react-navigation/elements";
 import { Text, StyleSheet, View } from "react-native";
 import { GestureDetector, PanGesture } from "react-native-gesture-handler";
 import Animated from "react-native-reanimated";
@@ -53,35 +52,20 @@ const styles = StyleSheet.create({
         position: 'absolute',
         // left: 62,
         // right: 5,
-        backgroundColor: 'rgba(33, 150, 243, 0.15)',
+        backgroundColor: 'rgba(110, 33, 243, 0.15)',
         borderWidth: 2.5,
-        borderColor: '#2196f3',
+        borderColor:  '#6C4DFF',
+        // borderColor: '#2196f3',
         borderRadius: 5,
     },
     moveGesture: {
         flex: 1, 
         justifyContent: 'center' ,
     },
-    // topResizeGesture: {
-    //     position: 'absolute',
-    //     top: 0,
-    //     left: 0,
-    //     right: 0,
-    //     height: 5,
-    //     zIndex: 10,
-    // },
-    //     bottomResizeGesture:{
-    //     position: 'absolute',        
-    //     bottom: 0,
-    //     left: 0,
-    //     right: 0,
-    //     height: 5,
-    //     zIndex: 10,
-    // },
     topResizeGesture: {
         position: 'absolute',
         backgroundColor: 'white',
-        borderColor: '#2196f3',
+        borderColor: '#6C4DFF',
         borderWidth: 2.5,
         borderRadius: 50,
         top: -7,
@@ -94,7 +78,7 @@ const styles = StyleSheet.create({
     bottomResizeGesture:{
         position: 'absolute',
         backgroundColor: 'white',
-        borderColor: '#2196f3',
+        borderColor: '#6C4DFF',
         borderWidth: 2.5,
         borderRadius: 50,      
         bottom: -7,

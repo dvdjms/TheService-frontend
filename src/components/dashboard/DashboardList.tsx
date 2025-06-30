@@ -1,7 +1,7 @@
 import { SectionList, Text, StyleSheet } from 'react-native';
 import { Appointment } from '../types/Service';
 import { useUserDataStore } from '@/src/store/useUserDataStore';
-import ApptCard from './ApptCard';
+import ApptCard from './ApptCardDashBoard';
 import { router } from 'expo-router';
 import dayjs from 'dayjs';
 import isSameOrAfter from 'dayjs/plugin/isSameOrAfter';
