@@ -4,6 +4,7 @@ import * as FileSystem from 'expo-file-system';
 import { Ionicons } from '@expo/vector-icons';
 import PhotoGrid from '@/src/components/gallery/PhotoGrid';
 import FormButton from '@/src/components/ui/FormButton';
+import GalleryModal from '@/src/components/gallery/GalleryModal';
 
 const loadPhotos = async () => {
     const photosDir = FileSystem.documentDirectory + 'photos';
@@ -23,6 +24,7 @@ export default function GalleryScreen() {
     const [selectMode, setSelectMode] = useState(false);
     const [selectedPhotos, setSelectedPhotos] = useState<string[]>([]);
     const [previewPhoto, setPreviewPhoto] = useState<string | null>(null);
+    const [modalVisible, setModalVisible] = useState<boolean>(false);
 
     useEffect(() => {
         const fetchPhotos = async () => {
@@ -44,9 +46,19 @@ export default function GalleryScreen() {
         );
     };
 
-    const handleSubmit = () => {
-        console.log('Selected photos:', selectedPhotos);
-    };
+
+    console.log('Selected photos:', selectedPhotos);
+
+
+
+    const handleModal = () => {
+        setModalVisible(prev => !prev);
+    }
+
+    const handleSelectClient = () => {
+        handleModal();
+
+    }
 
     if (loading) return <Text>Loading photos...</Text>;
 
@@ -73,8 +85,8 @@ export default function GalleryScreen() {
                     {selectMode && (
                         <View style={styles.buttonWrapper}>
                         <FormButton
-                            OnPress={handleSubmit}
-                            title={'Select Client'}
+                            OnPress={handleSelectClient}
+                            title={'Tag images'}
                             width={0.9}
                         />
                         </View>
@@ -117,6 +129,9 @@ export default function GalleryScreen() {
                     </View>
                 </Modal>
             )}
+
+            <GalleryModal visible={modalVisible} onSelect={handleSelectClient} onClose={handleModal} />
+
         </View>
     );
 }

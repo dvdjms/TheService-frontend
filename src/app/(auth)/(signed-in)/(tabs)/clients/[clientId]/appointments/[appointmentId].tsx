@@ -8,6 +8,7 @@ import { useUserDataStore } from "@/src/store/useUserDataStore";
 import { useAuth } from "@/src/context/authContext";
 import { deleteAppointment, getAppointment } from "@/src/api/appts";
 import { Ionicons } from "@expo/vector-icons";
+import PhotoGrid from "@/src/components/gallery/PhotoGrid";
 
 
 export default function AppointmentDetail() {
@@ -71,28 +72,33 @@ export default function AppointmentDetail() {
     
     return (
         <>
-        <ScrollView>
-            <Text style={{ fontSize: 24, fontWeight: 'bold' }}>
-                {selectedAppt.title}
-            </Text>
-            <Text>
-                {format(selectedAppt.startTime, 'eeee dd MMM yyyy HH:mm')} -{' '}
-                {format(selectedAppt.endTime, 'HH:mm')}
-            </Text>
-            {/* Example images */}
-            {/* {appointment.photos?.map((uri, idx) => (
-                <Image key={idx} source={{ uri }} style={{ width: '100%', height: 200, marginVertical: 10 }} />
-            ))} */}
-        </ScrollView>
-            <Ionicons name={"close-outline"} size={35}></Ionicons>
+            <View>
+                <Text style={{ fontSize: 24, fontWeight: 'bold' }}>
+                    {selectedAppt.title}
+                </Text>
+                <Text>
+                    {format(selectedAppt.startTime, 'eeee dd MMM yyyy HH:mm')} -{' '}
+                    {format(selectedAppt.endTime, 'HH:mm')}
+                </Text>
+                {/* Example images */}
+                <PhotoGrid photos={[]} selectMode={false} selectedPhotos={[]} />
+                {/* {appointment.photos?.map((uri, idx) => (
+                    <Image key={idx} source={{ uri }} style={{ width: '100%', height: 200, marginVertical: 10 }} />
+                ))} */}
+            </View>
+        
+            <Ionicons name={"close-outline"} size={35} />
             <TouchableOpacity onPress={() => handleDelete()}>
-                <Ionicons name={"trash-outline"} size={35} ></Ionicons>
+                <Ionicons name={"trash-outline"} size={35} />
             </TouchableOpacity>
-        <View style={styles.buttonContainer}>
-            <FormButton title="Back" OnPress={() => router.back()} width={0.3}/>
-            <FormButton title="All Clients" OnPress={() => router.push(`/clients`)} width={0.3} />
-            <FormButton title={clientName} OnPress={() => router.push(`/clients/${selectedAppt.clientId}`)} width={0.3} />
-        </View>
+
+            <View style={styles.buttonContainer}>
+                <FormButton title="Back" OnPress={() => router.back()} width={0.3}/>
+                <FormButton title="All Clients" OnPress={() => router.push(`/clients`)} width={0.3} />
+                <FormButton title={clientName} OnPress={() => router.push(`/clients/${selectedAppt.clientId}`)} width={0.3} />
+            </View>
+
+
         </>
     );
 }

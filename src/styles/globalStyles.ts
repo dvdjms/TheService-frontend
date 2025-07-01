@@ -3,10 +3,12 @@
 // globalStyles.ts
 export const colors = {
     background: '#f2f2f7',//'#f0f0dd',
-    // background: '#660033',
+
     HeaderFooter: '#604652',
-    companyPink: '#E5E5E5',
-    companyPurple: '#f2f2f7', // soft purple
+    companyPink: '#E5E5E5', // very soft purple
+    companyPurple: '#f2f2f7', // even softer
+    companyPurpleOpacity: 'rgba(138, 130, 255, 0.07)',
+    companyMediumPurple: '#7b5dc7', // medium purple
 
     headerStyle: {
         backgroundColor: 'rgba(138, 130, 255, 0.07)',

@@ -1,4 +1,4 @@
-import { View, StyleSheet } from "react-native";
+import { View, Text, StyleSheet } from "react-native";
 import { Link } from 'expo-router';
 import ScreenTitle from "@/src/components/ui/ScreenTitle";
 import SignInForm from "@/src/components/forms/SignInForm";
@@ -32,5 +32,5 @@ const styles = StyleSheet.create({
     },
     link: {
         marginTop: 20
-    }
+    },
 });

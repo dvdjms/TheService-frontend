@@ -86,7 +86,7 @@ const SignUpForm = () => {
                     iconName={"lock-closed-outline"}
                     />
                 <View style={styles.buttonContainer}> 
-                    <FormButton OnPress={handleSubmit} title={loading ? 'Registering...' : 'Register'} width={0.9}/>
+                    <FormButton OnPress={handleSubmit} title={loading ? 'Signing up...' : 'Sign up'} width={0.9}/>
                 </View>
                 {error ? <Text style={styles.error}>{error}</Text> : null}
             </View>

@@ -12,7 +12,7 @@ import { Appointment } from '@/src/components/types/Service';
 import { Ionicons } from '@expo/vector-icons';
 import ApptCard from '@/src/components/dashboard/ApptCardDashBoard';
 import { CustomContact } from '@/src/components/ui/CustomContact';
-import ApptCardClient from '@/src/components/appoinments/ApptCardClient';
+import ApptCardClient from '@/src/components/clients/ApptCardClient';
 import { AddButton } from '@/src/components/ui/AddButton';
 import Animated, { FadeIn, useAnimatedStyle, useSharedValue, withTiming } from 'react-native-reanimated';
 import { ClientAddress } from '@/src/components/clients/ClientAddress';
@@ -52,8 +52,16 @@ export default function ClientDetail() {
         }
     }, [clientIdString, accessToken]);
 
-    if (loading) return <View></View>//LoadingSpinner />;
 
+    const animatedStyle = useAnimatedStyle(() => ({
+        height: dropdownHeight.value,
+        opacity: opacity.value,
+        overflow: 'hidden',
+    }));
+
+
+
+    if (loading) return <View></View>//LoadingSpinner />;
     if (!selectedClient) return <Text>No client found</Text>;
 
 
@@ -83,8 +91,6 @@ export default function ClientDetail() {
     }
 
 
-
-
     const toggleDropdown = () => {
         const next = !addressActive;
         setAddressActive(next);
@@ -92,12 +98,6 @@ export default function ClientDetail() {
         dropdownHeight.value = withTiming(next ? 120 : 0, { duration: 300 });
         opacity.value = withTiming(next ? 1 : 0, { duration: 300 });
     };
-
-    const animatedStyle = useAnimatedStyle(() => ({
-        height: dropdownHeight.value,
-        opacity: opacity.value,
-        overflow: 'hidden',
-    }));
 
 
     if (!selectedClient) {

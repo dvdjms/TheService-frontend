@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { FlatList, StyleSheet, Dimensions, TouchableOpacity } from 'react-native';
+import React from 'react';
+import { FlatList, StyleSheet, Dimensions } from 'react-native';
 import PhotoThumbnail from './PhotoThumbnail';
 
 

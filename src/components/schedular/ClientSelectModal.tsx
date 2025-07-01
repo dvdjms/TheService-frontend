@@ -3,6 +3,7 @@ import { FlatList, TouchableOpacity, Text, StyleSheet, Modal } from "react-nativ
 import { Dimensions } from "react-native";
 import Animated, { useSharedValue, useAnimatedStyle, withTiming, Easing, runOnJS } from "react-native-reanimated";
 import { useEffect, useState } from "react";
+import { colors } from "@/src/styles/globalStyles";
 
 interface Props {
     visible: boolean;
@@ -107,7 +108,7 @@ const styles = StyleSheet.create({
         color: "#111",
     },
     closeButton: {
-        backgroundColor: "#7b5dc7",  // medium purple button
+        backgroundColor: colors.companyMediumPurple,
         marginTop: 20,
         paddingVertical: 14,
         borderRadius: 12,

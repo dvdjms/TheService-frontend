@@ -1,3 +1,4 @@
+import { colors } from '@/src/styles/globalStyles';
 import {  Text, StyleSheet, TouchableOpacity, Dimensions } from 'react-native';
 
 type FormFieldProps = {
@@ -19,7 +20,7 @@ export default function FormButton({ title, OnPress, width }: FormFieldProps) {
     
 const styles = StyleSheet.create({
     container: { 
-        backgroundColor: "#777777",
+        backgroundColor: colors.companyMediumPurple,
         padding: 12,
         borderRadius: 6,
         alignItems: 'center',

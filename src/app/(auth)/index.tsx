@@ -43,7 +43,6 @@ export default function Index() {
     }, [isAuthenticated, userId, accessToken]);
 
 
-
     if (!hasCheckedAuth) {
         return (
             <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>

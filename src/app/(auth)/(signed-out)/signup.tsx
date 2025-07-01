@@ -10,7 +10,7 @@ export default function SignUpScreen() {
     return (
         <DismissKeyboardView>
             <View style={styles.container}>
-                <ScreenTitle title="Register" />
+                <ScreenTitle title="Sign up" />
                 <RegisterForm />
                 <Link style={styles.link}  href="/signin">Login</Link>
             </View>
