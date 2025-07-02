@@ -13,7 +13,7 @@ export const getImage = async (id: string, accessToken: string) => {
 
 export const createImage = async (accessToken: string, data: any ) => {
     if (!accessToken) throw new Error('Access token required');
-    return "createImage function triggered but not fetched"
+    return "createImage function triggered but not posted"
     // return await fetchRequest('clients', accessToken, {
     //     method: 'POST',
     //     body: JSON.stringify(data),

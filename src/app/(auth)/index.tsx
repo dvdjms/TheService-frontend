@@ -18,12 +18,14 @@ export default function Index() {
         setClients,
         setAppts,
         setImages,
+        setLocalImages
     } = useUserDataStore();
 
     useEffect(() => {
         const initialize = async () => {
             if (isAuthenticated && accessToken) {
                 try {
+                    // Get DynamoDb user data
                     const data = await getUserData(userId, accessToken);
 
                     const user = data?.user ?? null;
@@ -36,6 +38,42 @@ export default function Index() {
                     setAppts(appts);
                     setImages(images);
 
+                    // Get local images from file system
+                    const folderInfo = await FileSystem.getInfoAsync(PHOTOS_DIR);
+                    
+                    if (!folderInfo.exists || !folderInfo.isDirectory) {
+                        console.log('Photos directory does not exist');
+                        setLocalImages([]);
+                        return;
+                    }
+
+                    const files = await FileSystem.readDirectoryAsync(PHOTOS_DIR);
+
+                    const localImages = await Promise.all(
+                        files
+                        .filter(file => !file.startsWith('.') && file.toLowerCase().includes('photo'))
+                        .map(async (filename) => {
+                            const uri = PHOTOS_DIR + filename;
+                            const fileInfo = await FileSystem.getInfoAsync(uri);
+
+                            // Ensure file exists and is not a directory
+                            if (!fileInfo.exists || fileInfo.isDirectory) {
+                                return null;
+                            }
+
+                            return {
+                                uri,
+                                createdAt: fileInfo.modificationTime ?? Date.now(), // ← Safe access
+                                uploaded: false,
+                            };
+                        })
+                    );
+                    const nonNullImages = localImages.filter(
+                        (img): img is { uri: string; createdAt: number; uploaded: boolean } => img !== null
+                    );
+
+                    setLocalImages(nonNullImages);
+
                 } catch (error) {
                     console.error("Error initializing app data:", error);
                     // Optionally: showToast("Failed to load data"); or setError("...");
@@ -44,24 +82,6 @@ export default function Index() {
         };
         initialize();
     }, [isAuthenticated, userId, accessToken]);
-
-
-
-    useEffect(() => {
-        const loadLocalImages = async () => {
-            try {
-                const fileInfo = await FileSystem.getInfoAsync(PHOTOS_DIR);
-                if (!fileInfo.exists) {
-                    console.log('Photos directory does not exist');
-                    return;
-                }
-
-            } catch (error) {
-                    console.error("Error loading images from local storage:", error);
-            }
-        };
-        loadLocalImages();
-    }, []);
 
 
     if (!hasCheckedAuth) {

@@ -8,18 +8,8 @@ import GalleryModal from '@/src/components/gallery/GalleryModal';
 import { useAuth } from '@/src/context/authContext';
 import { createImage } from '@/src/api/images';
 import { Appointment, Client } from '@/src/components/types/Service';
+import { useUserDataStore } from '@/src/store/useUserDataStore';
 
-const loadPhotos = async () => {
-    const photosDir = FileSystem.documentDirectory + 'photos';
-    const files = await FileSystem.readDirectoryAsync(photosDir);
-
-    const photoFiles = files.filter(file => {
-        return !file.startsWith('.') && file.toLowerCase().includes('photo')
-    });
-    return photoFiles.map((fileName) => `${photosDir}/${fileName}`);
-};
-
-// saving .DS_Store when I click 'select Client'
 
 export default function GalleryScreen() {
     const { userId, accessToken } = useAuth();
@@ -30,19 +20,12 @@ export default function GalleryScreen() {
     const [previewPhoto, setPreviewPhoto] = useState<string | null>(null);
     const [modalVisible, setModalVisible] = useState<boolean>(false);
 
+    const localImages = useUserDataStore(state => state.localImages);
+    
     useEffect(() => {
-        const fetchPhotos = async () => {
-        try {
-            const uris = await loadPhotos();
-            setPhotos(uris);
-        } catch (error) {
-            console.error('Failed to load photos', error);
-        } finally {
-            setLoading(false);
-        }
-        };
-        fetchPhotos();
-    }, []);
+        setPhotos(localImages.map(img => img.uri));
+        setLoading(false);
+    }, [localImages]);
 
     const toggleSelect = (uri: string) => {
         setSelectedPhotos((prev) =>
@@ -58,7 +41,6 @@ export default function GalleryScreen() {
 
     const handleUpload = async (client: Client, appt: Appointment) => {
         try {
-
             const base64Images = await Promise.all(
                 selectedPhotos.map(async (fileUri) => {
                     const base64 = await FileSystem.readAsStringAsync(fileUri, {
@@ -77,14 +59,14 @@ export default function GalleryScreen() {
 
             if(accessToken){
                 const response = await createImage(accessToken, data);
-                console.log("response", response)
+                console.log("Gallery index page: response", response)
 
                 if (response) {
                     // Loop over selectedPhotos to delete each local file
                     for (const uri of selectedPhotos) {
                         try {
                             await FileSystem.readAsStringAsync(uri, { encoding: 'base64' });
-                            console.log('Photo deleted');
+                            console.log('Gallery index page: Photo to be deleted');
                         } catch (deleteError) {
                             console.warn("Failed to delete file:", uri, deleteError);
                         }
@@ -102,6 +84,8 @@ export default function GalleryScreen() {
 
     return (
         <View style={styles.container}>
+            <Text style={styles.headerText}>Locally saved. Tag to upload.</Text>
+            
             <View style={styles.topBar}>
                 <TouchableOpacity onPress={() => setSelectMode((prev) => !prev)}>
                     <Text style={styles.topBarText}>{selectMode ? 'Cancel' : 'Select'}</Text>
@@ -212,5 +196,10 @@ const styles = StyleSheet.create({
     previewImage: {
         width: '100%',
         height: '80%',
+    },
+    headerText: {
+        textAlign: 'center',
+        color: '#999',
+        marginTop: 5,
     },
 });

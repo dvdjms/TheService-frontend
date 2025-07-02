@@ -3,6 +3,7 @@ import { useState, useRef } from 'react';
 import { Button, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import * as FileSystem from 'expo-file-system';
+import { useUserDataStore } from '@/src/store/useUserDataStore';
 
 
 
@@ -10,6 +11,7 @@ export default function CameraScreen() {
     const [facing, setFacing] = useState<CameraType>('back');
     const [permission, requestPermission] = useCameraPermissions();
     const cameraRef = useRef<CameraView>(null);
+    const dateNow = Date.now()
 
     if (!permission) return <View />;
 
@@ -33,7 +35,7 @@ export default function CameraScreen() {
 
             // Create an app-specific directory (if it doesn't exist)
             const folderUri = FileSystem.documentDirectory + 'photos/';
-            const filename = `photo_${Date.now()}.jpg`;
+            const filename = `photo_${dateNow}.jpg`;
             const newPath = folderUri + filename;
 
             // Ensure folder exists
@@ -49,6 +51,18 @@ export default function CameraScreen() {
             });
 
             console.log('Photo saved to:', newPath);
+
+            // Add photo to Zustand store immediately:
+            const newImage = {
+                uri: newPath,
+                createdAt: dateNow,
+                uploaded: false,
+            };
+
+            // Get the current images array and append the new image
+            useUserDataStore.setState((state) => ({
+                localImages: [...state.localImages, newImage]
+            }));
         }
     };
 

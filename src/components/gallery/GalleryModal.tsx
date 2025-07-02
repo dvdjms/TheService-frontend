@@ -107,16 +107,20 @@ const GalleryModal = ({  handleUpload, visible, onClose }: Props) => {
                         <TouchableOpacity onPress={() => setSelectedClient(null)} style={styles.backButton}>
                             <Text style={styles.backText}>← Back to Clients</Text>
                         </TouchableOpacity>
-                        <Text style={styles.clientName}>{selectedClient.firstName} {selectedClient.lastName}</Text>
                         <Text style={styles.sectionTitle}>Select Appointment</Text>
+                        <Text style={styles.clientName}>{selectedClient.firstName} {selectedClient.lastName}</Text>
+
                         <FlatList
                             data={filteredAppointments}
                             keyExtractor={(item) => item.apptId.toString()}
                             renderItem={({ item }) => (
                                 <TouchableOpacity onPress={() => handleApptSelect(item)} style={styles.itemContainer}>
                                     <View>
-                                        <Text>{item.title}</Text>
-                                        <Text>{format(item.startTime, 'hh:mm')} - {format(item.startTime, 'hh:mm')}</Text>
+                                        <Text style={styles.itemTitle}>{item.title}</Text>
+                                        <View style={styles.itemDateTime}>
+                                            <Text>{format(item.startTime, 'EEE dd MMM yy')} &#8226; </Text>
+                                            <Text>{format(item.startTime, 'hh:mm')} - {format(item.endTime, 'hh:mm')}</Text>
+                                        </View>
                                     </View>
                                 </TouchableOpacity>
                             )}
@@ -215,8 +219,17 @@ const styles = StyleSheet.create({
         fontSize: 16,
         fontWeight: "500",
         color: "#666",
-        marginBottom: 12,
+        marginTop: 7,
+        marginBottom: 7,
     },
+    itemTitle: {
+        fontWeight: 500
+    },
+    itemDateTime: {
+        paddingTop: 7,
+        flexDirection: 'row',
+        // justifyContent: 'flex-end'
+    }
 });
 
 
