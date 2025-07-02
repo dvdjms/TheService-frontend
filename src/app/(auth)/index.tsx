@@ -5,6 +5,9 @@ import { configureReanimatedLogger } from 'react-native-reanimated';
 import { useEffect } from 'react';
 import { getUserData } from '@/src/api/userData';
 import { useUserDataStore } from '@/src/store/useUserDataStore'
+import * as FileSystem from 'expo-file-system';
+
+const PHOTOS_DIR = FileSystem.documentDirectory + 'photos/';
 
 export default function Index() {
     const { isAuthenticated, hasCheckedAuth, userId, accessToken } = useAuth();
@@ -41,6 +44,24 @@ export default function Index() {
         };
         initialize();
     }, [isAuthenticated, userId, accessToken]);
+
+
+
+    useEffect(() => {
+        const loadLocalImages = async () => {
+            try {
+                const fileInfo = await FileSystem.getInfoAsync(PHOTOS_DIR);
+                if (!fileInfo.exists) {
+                    console.log('Photos directory does not exist');
+                    return;
+                }
+
+            } catch (error) {
+                    console.error("Error loading images from local storage:", error);
+            }
+        };
+        loadLocalImages();
+    }, []);
 
 
     if (!hasCheckedAuth) {

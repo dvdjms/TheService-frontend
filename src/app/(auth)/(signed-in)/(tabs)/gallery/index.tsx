@@ -5,6 +5,9 @@ import { Ionicons } from '@expo/vector-icons';
 import PhotoGrid from '@/src/components/gallery/PhotoGrid';
 import FormButton from '@/src/components/ui/FormButton';
 import GalleryModal from '@/src/components/gallery/GalleryModal';
+import { useAuth } from '@/src/context/authContext';
+import { createImage } from '@/src/api/images';
+import { Appointment, Client } from '@/src/components/types/Service';
 
 const loadPhotos = async () => {
     const photosDir = FileSystem.documentDirectory + 'photos';
@@ -19,6 +22,7 @@ const loadPhotos = async () => {
 // saving .DS_Store when I click 'select Client'
 
 export default function GalleryScreen() {
+    const { userId, accessToken } = useAuth();
     const [photos, setPhotos] = useState<string[]>([]);
     const [loading, setLoading] = useState(true);
     const [selectMode, setSelectMode] = useState(false);
@@ -47,18 +51,52 @@ export default function GalleryScreen() {
     };
 
 
-    console.log('Selected photos:', selectedPhotos);
-
-
-
     const handleModal = () => {
         setModalVisible(prev => !prev);
-    }
+    };
 
-    const handleSelectClient = () => {
-        handleModal();
 
-    }
+    const handleUpload = async (client: Client, appt: Appointment) => {
+        try {
+
+            const base64Images = await Promise.all(
+                selectedPhotos.map(async (fileUri) => {
+                    const base64 = await FileSystem.readAsStringAsync(fileUri, {
+                    encoding: FileSystem.EncodingType.Base64,
+                    });
+                    return base64;
+                })
+            );
+
+            const data = {
+                userId: userId,
+                clientId: client.clientId,
+                apptId: appt.apptId,
+                image: base64Images
+            };
+
+            if(accessToken){
+                const response = await createImage(accessToken, data);
+                console.log("response", response)
+
+                if (response) {
+                    // Loop over selectedPhotos to delete each local file
+                    for (const uri of selectedPhotos) {
+                        try {
+                            await FileSystem.readAsStringAsync(uri, { encoding: 'base64' });
+                            console.log('Photo deleted');
+                        } catch (deleteError) {
+                            console.warn("Failed to delete file:", uri, deleteError);
+                        }
+                    }
+                    // Also update your state/store to clear selectedPhotos after deletion
+                    setSelectedPhotos([])
+                }
+            }
+        } catch (error){
+            console.error("Error uploading images", error);
+        }
+    };
 
     if (loading) return <Text>Loading photos...</Text>;
 
@@ -82,13 +120,13 @@ export default function GalleryScreen() {
                         onPreview={(uri) => setPreviewPhoto(uri)}
                     />
 
-                    {selectMode && (
+                    {selectedPhotos.length > 0 && (
                         <View style={styles.buttonWrapper}>
-                        <FormButton
-                            OnPress={handleSelectClient}
-                            title={'Tag images'}
-                            width={0.9}
-                        />
+                            <FormButton
+                                OnPress={handleModal}
+                                title={'Tag images'}
+                                width={0.9}
+                            />
                         </View>
                     )}
                 </>
@@ -130,7 +168,7 @@ export default function GalleryScreen() {
                 </Modal>
             )}
 
-            <GalleryModal visible={modalVisible} onSelect={handleSelectClient} onClose={handleModal} />
+            <GalleryModal visible={modalVisible} handleUpload={handleUpload} onClose={handleModal} />
 
         </View>
     );

@@ -114,6 +114,7 @@ export interface Image {
     createdAt: string,
 }
 
+
 export interface Appointment {
     PK: string;
     SK: string;
@@ -157,5 +158,14 @@ export interface Client {
 export interface PositionedAppointment extends Appointment {
     topOffset: number;
     blockHeight: number;
+}
+
+
+export interface LocalImage {
+    uri: string;         // file:// path
+    base64?: string;     // optional: preloaded for preview/upload
+    createdAt: number;   // timestamp to sort/order
+    apptId?: string;     // optional association
+    uploaded?: boolean;  // mark as uploaded
 }
 

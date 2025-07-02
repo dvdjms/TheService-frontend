@@ -1,16 +1,13 @@
 import { useLocalSearchParams, useRouter } from 'expo-router';
-import { View, Text, Button, StyleSheet, Pressable, TouchableOpacity, SectionList, ScrollView } from 'react-native';
+import { View, Text, Button, StyleSheet, TouchableOpacity, SectionList } from 'react-native';
 import FormButton from '@/src/components/ui/FormButton';
 import { colors } from '@/src/styles/globalStyles';
-import { FlatList } from 'react-native-gesture-handler';
-import { format } from 'date-fns';
 import React, { useEffect, useState } from 'react';
 import { deleteClient, getClient } from '@/src/api/clients';
 import { useAuth } from '@/src/context/authContext';
 import { useUserDataStore } from '@/src/store/useUserDataStore';
 import { Appointment } from '@/src/components/types/Service';
 import { Ionicons } from '@expo/vector-icons';
-import ApptCard from '@/src/components/dashboard/ApptCardDashBoard';
 import { CustomContact } from '@/src/components/ui/CustomContact';
 import ApptCardClient from '@/src/components/clients/ApptCardClient';
 import { AddButton } from '@/src/components/ui/AddButton';
@@ -30,7 +27,6 @@ export default function ClientDetail() {
     const selectedClient = useUserDataStore(state => state.getClientById(clientIdString));
     const setSelectedClient = useUserDataStore(state => state.setSelectedClient);
     const appts = useUserDataStore(state => state.appts);
-
 
     const dropdownHeight = useSharedValue(0);
     const opacity = useSharedValue(0);
@@ -141,6 +137,7 @@ export default function ClientDetail() {
 
     const sections = groupAppointmentsByTime(clientAppts);
 
+    
     return (
         <View style={styles.container}>
             <SectionList

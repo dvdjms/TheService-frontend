@@ -4,10 +4,10 @@ import { User } from '@/src/components/types/Service';
 
 export const createUserSlice: StateCreator<useUserDataStore, [], [], UserSlice> = (set) => ({
     user: null,
-    setUser: (user) => set({ user: user }),
+    setUser: (user: User) => set({ user: user }),
     clearUser: () => set({ user: null }),
     updateUser: (updated: User) =>
         set((state) => ({
-            user: { ...state.user, ...updated } as any,
+            user: { ...state.user, ...updated } as User,
         })),
 });

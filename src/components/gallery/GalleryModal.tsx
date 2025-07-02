@@ -6,12 +6,11 @@ import { useEffect, useState } from "react";
 import { colors } from "@/src/styles/globalStyles";
 import { Appointment, Client } from "../types/Service";
 import { format } from "date-fns";
-import { useAuth } from "@/src/context/authContext";
-import { createImage } from "@/src/api/images";
+
 
 interface Props {
     visible: boolean;
-    onSelect: (selection: { client: Client; appointment: Appointment }) => void;
+    handleUpload: (client: Client, appointment: Appointment ) => void;
     onClose: () => void;
 }
 
@@ -19,27 +18,16 @@ const screenWidth: number = Dimensions.get("window").width;
 const screenHeight: number = Dimensions.get("window").height;
 
 
-const GalleryModal = ({  onSelect, visible, onClose }: Props) => {
-    const { userId, accessToken } = useAuth();
+const GalleryModal = ({  handleUpload, visible, onClose }: Props) => {
     const clients = useUserDataStore(state => state.clients);
     const appts = useUserDataStore(state => state.appts);
 
     const [showModal, setShowModal] = useState(visible);
     const [selectedClient, setSelectedClient] = useState<Client | null>(null);
-    const [selectedAppt, setSelectedAppt] = useState<Appointment | null>(null);
     
     const opacity = useSharedValue(0);
     const translateY = useSharedValue(50);
     const scale = useSharedValue(0.95);
-    const containerHeight = useSharedValue(600);
-
-    useEffect(() => {
-        if (selectedClient) {
-            containerHeight.value = withTiming(500, { duration: 300 }); // more space for appt list
-        } else {
-            containerHeight.value = withTiming(600, { duration: 300 }); // shorter client list
-        }
-    }, [selectedClient]);
 
     useEffect(() => {
         if (visible) {
@@ -58,13 +46,9 @@ const GalleryModal = ({  onSelect, visible, onClose }: Props) => {
                 if (finished) runOnJS(setShowModal)(false);
             });
             setSelectedClient(null);
-            setSelectedAppt(null);
         }
     }, [visible]);
 
-    const animatedContentStyle = useAnimatedStyle(() => ({
-        height: containerHeight.value,
-    }));
 
     const animatedBackgroundStyle = useAnimatedStyle(() => ({
         opacity: opacity.value,
@@ -79,45 +63,29 @@ const GalleryModal = ({  onSelect, visible, onClose }: Props) => {
         ? appts.filter(a => a.clientId === selectedClient.clientId)
         : [];
 
-    if (!showModal) return null;
 
-    
     const handleClientSelect = (client: Client) => {
         setSelectedClient(client);
     };
 
-
-    const handleAppointmentSelect = async (appt: Appointment) => {
-        setSelectedAppt(appt);
-        // console.log("selectedClient", selectedClient)
-        // console.log("selectedAppointment", selectedAppt)
-        if (selectedClient && selectedAppt) {
-            // onSelect({
-            //     client: selectedClient,
-            //     appointment: selectedAppointment,
-            // });
-            const image = '';
-
-            const data = {
-                userId: userId,
-                clientId: selectedClient.clientId,
-                apptId: selectedAppt.apptId,
-                image: image
-            }
-            if(accessToken){
-                const response = await createImage(accessToken, data);
-                console.log("response", response)
-            }
+    
+    const handleApptSelect = async (selectedAppt: Appointment) => {
+        if(selectedClient && selectedAppt){
+            handleUpload(selectedClient, selectedAppt);
         }
         onClose();
     };
 
+
+    if (!showModal) return null;
+
   
     return (
+        <>
         <Modal transparent visible={showModal} animationType="none" onRequestClose={onClose}>
             <Animated.View style={[styles.modalBackground, animatedBackgroundStyle]} />
             <Animated.View style={[styles.modalContainer, animatedModalStyle]}>
-            <Animated.View style={[styles.modalContainer, animatedContentStyle]}>
+            {/* <Animated.View style={[styles.modalContainer, animatedContentStyle]}> */}
 
                 {!selectedClient ? (
                     <>            
@@ -145,7 +113,7 @@ const GalleryModal = ({  onSelect, visible, onClose }: Props) => {
                             data={filteredAppointments}
                             keyExtractor={(item) => item.apptId.toString()}
                             renderItem={({ item }) => (
-                                <TouchableOpacity onPress={() => handleAppointmentSelect(item)} style={styles.itemContainer}>
+                                <TouchableOpacity onPress={() => handleApptSelect(item)} style={styles.itemContainer}>
                                     <View>
                                         <Text>{item.title}</Text>
                                         <Text>{format(item.startTime, 'hh:mm')} - {format(item.startTime, 'hh:mm')}</Text>
@@ -155,6 +123,8 @@ const GalleryModal = ({  onSelect, visible, onClose }: Props) => {
                             ListEmptyComponent={
                                 <Text style={styles.emptyText}>No appointments found.</Text>
                             }
+                            contentContainerStyle={{ paddingBottom: 20 }}
+                            showsVerticalScrollIndicator={false}
                         />
                     </>
                 )}
@@ -163,8 +133,8 @@ const GalleryModal = ({  onSelect, visible, onClose }: Props) => {
                     <Text style={styles.closeButtonText}>Close</Text>
                 </TouchableOpacity>
             </Animated.View>
-            </Animated.View>
         </Modal>
+        </>
     );
 };
 
@@ -178,6 +148,7 @@ const styles = StyleSheet.create({
         bottom: 0,
         width: screenWidth,
         maxHeight: 600,
+        height: 600,
         backgroundColor: '#f9f9f9',
         borderTopLeftRadius: 30,
         borderTopRightRadius: 30,
