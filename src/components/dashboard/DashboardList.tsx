@@ -1,4 +1,4 @@
-import { SectionList, Text, StyleSheet } from 'react-native';
+import { SectionList, Text, StyleSheet, View } from 'react-native';
 import { Appointment } from '../types/Service';
 import { useUserDataStore } from '@/src/store/useUserDataStore';
 import ApptCard from './ApptCardDashBoard';
@@ -40,6 +40,14 @@ export default function DashboardList() {
         router.push(`/clients/${appt.clientId}/appointments/${appt.apptId}`);
     };
 
+    
+    if(!sections.length) {
+        return ( 
+            <View style={{flex: 1, paddingTop: 50}}>
+                <Text style={styles.EmptyMessage}>No appointments scheduled</Text>
+            </View>
+        )
+    }
 
     return (
         <SectionList
@@ -83,5 +91,10 @@ const styles = StyleSheet.create({
         shadowRadius: 2,
         elevation: 2,
         zIndex: 1,
+    },
+    EmptyMessage: {
+        textAlign: 'center',
+        color: '#999',
+        marginTop: 20,
     },
 });

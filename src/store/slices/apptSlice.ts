@@ -24,6 +24,14 @@ export const createApptsSlice: StateCreator<useUserDataStore, [], [], ApptsSlice
         set((state) => ({
             appts: state.appts.filter((a) => a.apptId !== id),
         })),
+
     getApptById: (id: string) => get().appts.find((a) => a.apptId === id),
     clearAppts: () => set({ appts: [] }),
+
+    replaceAppt: (tempId: string, newAppt: Appointment) => {
+        set(state => ({
+            appts: state.appts.map(appt =>
+            appt.apptId === tempId ? newAppt : appt
+        )})
+    )}
 });

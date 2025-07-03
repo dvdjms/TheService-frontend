@@ -1,15 +1,13 @@
 import React, { Dispatch, SetStateAction, useState } from 'react';
-import { Text, View, StyleSheet, Dimensions, TouchableOpacity } from "react-native";
+import { Text, View, StyleSheet, TouchableOpacity } from "react-native";
 import FormField from "@/src/components/ui/FormField";
 import FormButton from '../ui/FormButton';
 import { ScrollView } from 'react-native-gesture-handler';
 import { colors } from '@/src/styles/globalStyles';
 import { Ionicons } from '@expo/vector-icons';
-import { createClient } from '@/src/api/clients';
 import { useAuth } from '@/src/context/authContext';
-import { Client } from '../types/Service';
-import { useUserDataStore } from '@/src/store/useUserDataStore';
-
+import { saveClientLocally } from '@/src/lib/clients/saveClientLocally';
+import { saveClientToDynamo } from '@/src/lib/clients/saveClientToDynamo';
 
 
 interface Props {
@@ -17,6 +15,7 @@ interface Props {
 }
 
 const ClientForm = ({ setModalVisible }: Props) => {
+    const { subscriptionTier } = useAuth();
     const [firstName, setFirstName] = useState<string>('');
     const [lastName, setLastName] = useState<string>('');
     const [email, setEmail] = useState<string>('');
@@ -46,48 +45,21 @@ const ClientForm = ({ setModalVisible }: Props) => {
 
     }
 
-
     // Function to handle login submission
     const handleSubmit = async () => {
-        setLoading(true);
+        setLoading(true)
         setError('');
 
         try {
-            if (!firstName || !lastName) {
-                throw new Error('First name and last name are required');
-            }
-
-            if (!email.includes('@')) {
-                throw new Error('Username must be a valid email address');
-            }
-        
-            const body = {
-                userId: userId,
-                firstName: firstName, 
-                lastName: lastName, 
-                email: email,
-                phone: phone || '',
-                notes: notes || '',
-                address1: address1 || '',
-                address2: address2 || '',
-                city: city || '',
-                stateOrProvince: stateOrProvince || '',
-                postalCode: postalCode || '',
-            }
-
-            const response = await createClient(accessToken, body)
-            const clientId = response.client?.ToolboxItem?.clientId;
-            const now = new Date().toISOString();
-
-            const fullClient: Client = {
-                PK: `USER#${userId}`,
-                SK: `#CLIENT#${clientId}`,
-                clientId: clientId,
+            if (!firstName || !lastName) throw new Error('First name and last name are required');
+            if (!email.includes('@')) throw new Error('Username must be a valid email address');
+            
+            const clientData = {
                 userId,
-                firstName: firstName, 
-                lastName: lastName,
+                firstName, 
+                lastName,
                 fullName: `${firstName} ${lastName}`,
-                email: email,
+                email,
                 phone: phone || '',
                 notes: notes || '',
                 address1: address1 || '',
@@ -95,20 +67,20 @@ const ClientForm = ({ setModalVisible }: Props) => {
                 city: city || '',
                 stateOrProvince: stateOrProvince || '',
                 postalCode: postalCode || '',
-                countryCode, 
-                lng: 0,
-                lat: 0, 
-                type: 'Client',
-                createdAt: now,
-                updatedAt: now
-            };
-
-            if (response) {
-                useUserDataStore.getState().addClient(fullClient);
+                countryCode: countryCode || '',
             }
 
-            setModalVisible(false);
+            if (subscriptionTier === 'free') {
+                const response = await saveClientLocally(clientData);
+                console.log("saveClientLocally response", response)
 
+            } else {
+                const response = await saveClientToDynamo(clientData, accessToken)
+                console.log("saveClientToDynamo response", response)
+    
+            }
+            setModalVisible(false);
+            
         } catch (err) {
             console.error('Add client', err);
             setError('Failed to add client. Try again later.');
@@ -116,7 +88,8 @@ const ClientForm = ({ setModalVisible }: Props) => {
             setLoading(false);
         }
     };
-    // consider not having a ScrollView??
+
+
     return (
         <View style={styles.modalContainer}>
             <Text style={styles.title}>Add New Client</Text>
@@ -255,3 +228,4 @@ const styles = StyleSheet.create({
 });
 
 export default ClientForm;
+

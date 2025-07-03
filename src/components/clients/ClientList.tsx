@@ -1,4 +1,4 @@
-import { FlatList } from 'react-native';
+import { FlatList, View, Text, StyleSheet } from 'react-native';
 import ClientCard from './ClientCard';
 import { Client } from '../types/Service';
 import { useUserDataStore } from '@/src/store/useUserDataStore';
@@ -12,6 +12,15 @@ export default function ClientList({ goToClient }: Props) {
 
     const clients = useUserDataStore(state => state.clients);
     
+
+    if(!clients.length) {
+        return ( 
+            <View style={{flex: 1, paddingTop: 50}}>
+                <Text style={styles.EmptyMessage}>No Clients to list</Text>
+            </View>
+        )
+    }
+    
     return (
         <FlatList
             data={clients}
@@ -22,3 +31,12 @@ export default function ClientList({ goToClient }: Props) {
         />
     );
 }
+
+
+const styles = StyleSheet.create({
+    EmptyMessage: {
+        textAlign: 'center',
+        color: '#999',
+        marginTop: 20,
+    },
+});

@@ -106,6 +106,8 @@ export default function SchedularScreen() {
         runOnJS(handleOutsideTap)();
     });
 
+    
+
 
     return (
         <>

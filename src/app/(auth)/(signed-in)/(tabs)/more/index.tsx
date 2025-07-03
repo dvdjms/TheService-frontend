@@ -9,10 +9,10 @@ export default function MoreScreen() {
     <View style={styles.container}>
       <Text style={styles.header}>More</Text>
 
-      <Link href="/profile" asChild>
+      <Link href="/account" asChild>
         <TouchableOpacity style={styles.item}>
           <Ionicons name="person-outline" size={20} style={styles.icon} />
-          <Text style={styles.text}>Profile</Text>
+          <Text style={styles.text}>Account</Text>
         </TouchableOpacity>
       </Link>
 
@@ -30,7 +30,7 @@ export default function MoreScreen() {
         </TouchableOpacity>
       </Link>
 
-        <Link href="/profile" asChild>
+        <Link href="/" asChild>
         <TouchableOpacity style={styles.item}>
           <Ionicons name="log-out-outline" size={20} style={styles.icon} />
           <Text style={styles.text}>Sign Out</Text>

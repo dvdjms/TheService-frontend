@@ -1,6 +1,5 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
-
 import { User, Client, Appointment, Image, LocalImage } from '@/src/components/types/Service';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { createUserSlice } from './slices/userSlice';
@@ -26,6 +25,7 @@ export interface ClientsSlice {
     updateClient: (client: Client) => void;
     removeClient: (id: string) => void;
     getClientById: (id: string) => Client | undefined;
+    replaceClient: (tempId: string, newClient: Client) => void;
 }
 
 export interface ApptsSlice {
@@ -37,6 +37,7 @@ export interface ApptsSlice {
     updateAppt: (appt: Appointment) => void;
     removeAppt: (id: string) => void;
     getApptById: (id: string) => Appointment | undefined;
+    replaceAppt: (tempId: string, newAppt: Appointment) => void;
 }
 
 export interface ImagesSlice {

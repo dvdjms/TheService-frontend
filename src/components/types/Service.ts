@@ -125,10 +125,24 @@ export interface Appointment {
     notes: string;
     startTime: number;
     endTime: number;
-    startHour: number;
-    endHour: number;
+    startMinutes: number;
+    endMinutes: number;
     colour: string;
+    createdAt: string;
+    updatedAt: string;
 }
+
+export type PartialAppointment = {
+    userId: string;
+    clientId: string;
+    title: string;
+    notes: string;
+    startTime: number;
+    endTime: number;
+    startMinutes: number;
+    endMinutes: number;
+    colour: string;
+};
 
 export interface Client {
     PK: string;
@@ -153,6 +167,22 @@ export interface Client {
     createdAt: string,
     updatedAt: string,
 }
+
+export type PartialClient = {
+    userId: string
+    firstName: string,
+    lastName: string,
+    fullName: string,
+    email: string,
+    phone: string,
+    notes: string,
+    address1: string,
+    address2: string,
+    city: string,
+    stateOrProvince: string,
+    postalCode: string,
+    countryCode: string,
+};
 
 
 export interface PositionedAppointment extends Appointment {

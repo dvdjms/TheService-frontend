@@ -41,7 +41,7 @@ export default function AppointmentDetail() {
                 }
             }
             setLoading(false);
-            fetchClients()
+            fetchClients();
         }
     }, [clientIdString, accessToken]);
 

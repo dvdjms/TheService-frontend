@@ -1,17 +1,17 @@
 import React, { useState } from "react";
 import { View, StyleSheet, TextInput, Text, TouchableOpacity } from "react-native";
 import { yToTime, yToTime11 } from '../utils/timeUtils';
-import { Appointment, Client, TimeBlock } from "../types/Service";
+import { Client, TimeBlock } from "../types/Service";
 import { runOnJS, runOnUI, SharedValue, useAnimatedReaction } from "react-native-reanimated";
 import { format } from "date-fns";
 import { Ionicons } from "@expo/vector-icons";
 import { convertMinutesToTimeStamp } from "../utils/timeBlockUtils";
-import { createAppointment } from "@/src/api/appts";
 import { useAuth } from "@/src/context/authContext";
 import ClientSelectModal from "@/src/components/schedular/ClientSelectModal";
 import ColourSelectModal from "./ColorSelectModal";
-import { useUserDataStore } from "@/src/store/useUserDataStore";
 import { colors } from "@/src/styles/globalStyles";
+import { saveApptLocally } from "@/src/lib/appts/saveApptLocally";
+import { saveApptToDynamo } from "@/src/lib/appts/saveApptToDynamo";
 
 
 interface AppointmentBlockProps {
@@ -28,7 +28,7 @@ const AppointmentBlock = ({ selectedTimeBlock, isModalVisible, isModalExpanded }
     const [selectedClient, setSelectedClient] = useState<Client | null>(null);
     const [showColourPicker, setShowColourPicker] = useState<boolean>(false)
     const [selectedColour, setSelectedColour] = useState<string>('#fb7185')
-    const { userId, accessToken } = useAuth();
+    const { userId, accessToken, subscriptionTier } = useAuth();
 
     useAnimatedReaction(
         () => selectedTimeBlock.value,
@@ -59,56 +59,56 @@ const AppointmentBlock = ({ selectedTimeBlock, isModalVisible, isModalExpanded }
 
 
     const handleSave = async () => {
-        const date = displayBlock?.date
-        const startMinutes = displayBlock?.startMinutes
-        const endMinutes = displayBlock?.endMinutes
+        const date = displayBlock?.date;
+        const startMinutes = displayBlock?.startMinutes;
+        const endMinutes = displayBlock?.endMinutes;
 
+        const notes = ''; ///////////////////// to do //////////////
+        
         if(!title || !selectedClient){
             console.log('please add both title and client');
             // create on screen display
             return;
         }
+        
+        if (!date || !startMinutes || !endMinutes) return;
 
-        if(date && startMinutes && endMinutes){
-            let appointmentData = {
-                userId: userId,
-                clientId: selectedClient.clientId,
-                title: title,
-                notes: "",
-                startTime: convertMinutesToTimeStamp(date, startMinutes),
-                endTime: convertMinutesToTimeStamp(date, endMinutes),
-                colour: selectedColour
-            };
-            try {
+        const startTime = convertMinutesToTimeStamp(date, startMinutes);
+        const endTime = convertMinutesToTimeStamp(date, endMinutes);
+
+        if (!startTime || !endTime) return;
+
+        console.log("startTime", startTime)
+
+        const appointmentData = {
+            userId: userId,
+            clientId: selectedClient.clientId,
+            title: title,
+            notes: notes,
+            startTime: startTime,
+            endTime: endTime,
+            startMinutes: startMinutes,
+            endMinutes: endMinutes,
+            colour: selectedColour,
+        };
+
+        try {
+            if(subscriptionTier === 'free'){
+                const response = await saveApptLocally(appointmentData);
+                //console.log('Save appt locally', response)
+
+            } else {
                 if(accessToken){
-                    const response = await createAppointment(accessToken, appointmentData)
-                    const apptId = response.appointment?.ToolboxItem?.apptId;
-
-                    const fullAppointment: Appointment = {
-                        userId,
-                        clientId: selectedClient.clientId,
-                        apptId: apptId,
-                        title,
-                        notes: "",
-                        startTime: convertMinutesToTimeStamp(date, startMinutes) ?? 0,
-                        endTime: convertMinutesToTimeStamp(date, endMinutes) ?? 0,
-                        colour: selectedColour,
-                        PK: `USER#${userId}`,
-                        SK: `APPT#${apptId}#CLIENT#${selectedClient.clientId}`,
-                        startHour: startMinutes ?? 0,
-                        endHour: endMinutes ?? 0,
-                    };
-
-                    if (response) {
-                        useUserDataStore.getState().addAppt(fullAppointment);
-                    }
-                    setTitle("");
-                    setSelectedClient(null);
-                    handleClose();
+                    const response = await saveApptToDynamo(appointmentData, accessToken);
+                    //console.log('Saved appt to Dynamo', response)
                 } 
-            } catch (error) {
-                console.error("Failed to save appointment")
             }
+
+            setTitle("");
+            setSelectedClient(null);
+            handleClose();
+        } catch (error) {
+            console.error("Failed to save appointment")
         }
     };
 
