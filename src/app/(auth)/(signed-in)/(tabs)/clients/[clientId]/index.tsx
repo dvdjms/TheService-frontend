@@ -13,10 +13,13 @@ import ApptCardClient from '@/src/components/clients/ApptCardClient';
 import { AddButton } from '@/src/components/ui/AddButton';
 import Animated, { FadeIn, useAnimatedStyle, useSharedValue, withTiming } from 'react-native-reanimated';
 import { ClientAddress } from '@/src/components/clients/ClientAddress';
+import { deleteClientMMKV } from '@/src/store/mmkv/mmkvStorageClients';
+import { deleteClientLocally } from '@/src/lib/clients/clientLocally';
+import { deleteClientDynamo } from '@/src/lib/clients/clientDynamo';
 
 
 export default function ClientDetail() {
-    const { userId, accessToken } = useAuth();
+    const { userId, accessToken, subscriptionTier } = useAuth();
     const router = useRouter();
     const [loading, setLoading] = useState<boolean>(false);
     const [addressActive, setAddressActive] = useState<boolean>(false)
@@ -74,11 +77,13 @@ export default function ClientDetail() {
 
 
     const handleDelete = async () => {
-        console.log('handleDelete client triggered')
-        const response = await deleteClient(userId, clientIdString, accessTokenString);
-        console.log("AWS response:", response.message)
-        if(response.client) useUserDataStore.getState().removeClient(clientIdString);
-        
+        if (subscriptionTier === 'free'){
+            deleteClientLocally(clientIdString);
+        }else {
+            const response = await deleteClientDynamo(userId, clientIdString, accessTokenString);
+            console.log('handleDelete client triggered', response)
+      
+        }
         router.back();
     }
 

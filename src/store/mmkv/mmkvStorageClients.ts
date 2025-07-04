@@ -31,3 +31,7 @@ export const deleteClientMMKV = (clientId: string) => {
     clients = clients.filter(c => c.clientId !== clientId);
     saveClientsMMKV(clients);
 };
+
+export const clearClientsMMKV = () => {
+    storage.delete(CLIENTS_KEY);
+};

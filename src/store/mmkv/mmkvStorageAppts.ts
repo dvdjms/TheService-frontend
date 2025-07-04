@@ -30,3 +30,8 @@ export const deleteApptMMKV = (apptId: string) => {
     appts = appts.filter(c => c.apptId !== apptId);
     saveApptsMMKV(appts);
 };
+
+
+export const clearApptsMMKV = () => {
+    storage.delete(APPTS_KEY);
+};

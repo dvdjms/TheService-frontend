@@ -6,8 +6,8 @@ import { useEffect } from 'react';
 import { getUserData } from '@/src/api/userData';
 import { useUserDataStore } from '@/src/store/useUserDataStore'
 import * as FileSystem from 'expo-file-system';
-import { loadClientsMMKV } from '@/src/store/mmkv/mmkvStorageClients';
 import { loadApptsMMKV } from '@/src/store/mmkv/mmkvStorageAppts';
+import { loadClientsMMKV } from '@/src/store/mmkv/mmkvStorageClients';
 
 
 const PHOTOS_DIR = FileSystem.documentDirectory + 'photos/';

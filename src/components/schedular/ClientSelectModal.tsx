@@ -1,5 +1,5 @@
 import { useUserDataStore } from "@/src/store/useUserDataStore";
-import { FlatList, TouchableOpacity, Text, StyleSheet, Modal } from "react-native"
+import { FlatList, TouchableOpacity, Text, StyleSheet, Modal, View } from "react-native"
 import { Dimensions } from "react-native";
 import Animated, { useSharedValue, useAnimatedStyle, withTiming, Easing, runOnJS } from "react-native-reanimated";
 import { useEffect, useState } from "react";
@@ -46,27 +46,35 @@ const ClientSelectModal = ({  onSelect, visible, onClose }: Props) => {
 
     if (!showModal) return null;
 
-  
+
     return (
         <Modal transparent visible={showModal} animationType="none" onRequestClose={onClose}>
             <Animated.View style={[styles.modalBackground, animatedBackgroundStyle]} />
             <Animated.View style={[styles.modalContainer, animatedModalStyle]}>
-                <FlatList
-                data={clients}
-                keyExtractor={(item) => item.clientId.toString()}
-                renderItem={({ item }) => (
-                    <TouchableOpacity onPress={() => onSelect(item)} style={styles.itemContainer}>
-                        <Text>{item.firstName} {item.lastName}</Text>
-                    </TouchableOpacity>
-                )}
-                contentContainerStyle={{ paddingBottom: 20 }}
-                showsVerticalScrollIndicator={false}
-                />
-
+                    
+                {!clients.length ? (
+                    <View style={{flex: 1, paddingBottom: 250}}>
+                        <Text style={styles.EmptyMessage}>No clients in directory</Text>
+                    </View>
+                ) : (
+                    <FlatList
+                    data={clients}
+                    keyExtractor={(item) => item.clientId.toString()}
+                    renderItem={({ item }) => (
+                        <TouchableOpacity onPress={() => onSelect(item)} style={styles.itemContainer}>
+                            <Text>{item.firstName} {item.lastName}</Text>
+                        </TouchableOpacity>
+                    )}
+                    contentContainerStyle={{ paddingBottom: 20 }}
+                    showsVerticalScrollIndicator={false}
+                    />
+                )} 
+                
                 <TouchableOpacity onPress={onClose} style={styles.closeButton}>
                     <Text style={styles.closeButtonText}>Close</Text>
                 </TouchableOpacity>
             </Animated.View>
+
         </Modal>
     );
 };
@@ -125,7 +133,13 @@ const styles = StyleSheet.create({
         fontWeight: "700",
         fontSize: 16,
     },
+    EmptyMessage: {
+        textAlign: 'center',
+        color: '#999',
+        marginTop: 0,
+    },
 });
+
 
 
 export default ClientSelectModal;

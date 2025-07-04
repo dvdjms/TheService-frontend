@@ -19,7 +19,7 @@
     "@react-navigation/bottom-tabs": "^7.3.10",
     "@react-navigation/drawer": "^7.3.9",
     "@react-navigation/elements": "^2.3.8",
-    "@react-navigation/native": "^7.1.6",
+    "@react-navigation/native": "^7.1.14",
     "@react-navigation/stack": "^7.3.4",
     "@shopify/flash-list": "1.7.6",
     "amazon-cognito-identity-js": "^6.3.15",
@@ -48,7 +48,7 @@
     "react": "19.0.0",
     "react-dom": "19.0.0",
     "react-native": "0.79.2",
-    "react-native-calendars": "^1.1312.0",
+    "react-native-calendars": "^1.1293.0",
     "react-native-gesture-handler": "^2.25.0",
     "react-native-mmkv": "^3.3.0",
     "react-native-paper": "^5.14.4",
@@ -58,7 +58,6 @@
     "react-native-uuid": "^2.0.3",
     "react-native-web": "~0.20.0",
     "react-native-webview": "13.13.5",
-    "react-navigation": "^5.0.0",
     "zustand": "^5.0.5"
   },
   "devDependencies": {

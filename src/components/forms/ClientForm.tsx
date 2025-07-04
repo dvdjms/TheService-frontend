@@ -6,8 +6,8 @@ import { ScrollView } from 'react-native-gesture-handler';
 import { colors } from '@/src/styles/globalStyles';
 import { Ionicons } from '@expo/vector-icons';
 import { useAuth } from '@/src/context/authContext';
-import { saveClientLocally } from '@/src/lib/clients/saveClientLocally';
-import { saveClientToDynamo } from '@/src/lib/clients/saveClientToDynamo';
+import { saveClientLocally } from '@/src/lib/clients/clientLocally';
+import { saveClientDynamo } from '@/src/lib/clients/clientDynamo';
 
 
 interface Props {
@@ -71,11 +71,11 @@ const ClientForm = ({ setModalVisible }: Props) => {
             }
 
             if (subscriptionTier === 'free') {
-                const response = await saveClientLocally(clientData);
+                const response = saveClientLocally(clientData);
                 console.log("saveClientLocally response", response)
 
             } else {
-                const response = await saveClientToDynamo(clientData, accessToken)
+                const response = await saveClientDynamo(clientData, accessToken)
                 console.log("saveClientToDynamo response", response)
     
             }
