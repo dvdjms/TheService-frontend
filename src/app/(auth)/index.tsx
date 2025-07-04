@@ -6,7 +6,8 @@ import { useEffect } from 'react';
 import { getUserData } from '@/src/api/userData';
 import { useUserDataStore } from '@/src/store/useUserDataStore'
 import * as FileSystem from 'expo-file-system';
-import { loadApptsAsyncStorage, loadClientsAsyncStorage } from '@/src/store/asyncStorageHelpers';
+import { loadClientsMMKV } from '@/src/store/mmkv/mmkvStorageClients';
+import { loadApptsMMKV } from '@/src/store/mmkv/mmkvStorageAppts';
 
 
 const PHOTOS_DIR = FileSystem.documentDirectory + 'photos/';
@@ -68,8 +69,8 @@ export default function Index() {
         const initialize = async () => {
             if (subscriptionTier === 'free') {
                 // Just load local images and maybe local clients/appointments from AsyncStorage
-                const localClients = await loadClientsAsyncStorage();
-                const localAppts = await loadApptsAsyncStorage();
+                const localClients = loadClientsMMKV();
+                const localAppts = loadApptsMMKV();
                 
                 setClients(localClients ?? []);
                 setAppts(localAppts ?? []);

@@ -68,6 +68,7 @@ const AppointmentBlock = ({ selectedTimeBlock, isModalVisible, isModalExpanded }
         if(!title || !selectedClient){
             console.log('please add both title and client');
             // create on screen display
+
             return;
         }
         
@@ -77,8 +78,6 @@ const AppointmentBlock = ({ selectedTimeBlock, isModalVisible, isModalExpanded }
         const endTime = convertMinutesToTimeStamp(date, endMinutes);
 
         if (!startTime || !endTime) return;
-
-        console.log("startTime", startTime)
 
         const appointmentData = {
             userId: userId,

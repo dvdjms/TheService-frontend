@@ -6,7 +6,6 @@ import * as FileSystem from 'expo-file-system';
 import { useUserDataStore } from '@/src/store/useUserDataStore';
 
 
-
 export default function CameraScreen() {
     const [facing, setFacing] = useState<CameraType>('back');
     const [permission, requestPermission] = useCameraPermissions();
@@ -17,10 +16,10 @@ export default function CameraScreen() {
 
     if (!permission.granted) {
         return (
-        <View style={styles.container}>
-            <Text style={styles.message}>We need your permission to show the camera</Text>
-            <Button onPress={requestPermission} title="Grant Permission" />
-        </View>
+            <View style={styles.container}>
+                <Text style={styles.message}>We need your permission to show the camera</Text>
+                <Button onPress={requestPermission} title="Grant Permission" />
+            </View>
         );
     }
 
@@ -67,20 +66,20 @@ export default function CameraScreen() {
     };
 
     return (
-  <View style={styles.container}>
-    <CameraView ref={cameraRef} style={styles.camera} facing={facing} />
+        <View style={styles.container}>
+            <CameraView ref={cameraRef} style={styles.camera} facing={facing} />
 
-    <View style={styles.sideButtonWrapper}>
-      <TouchableOpacity onPress={toggleCameraFacing} style={styles.sideButton}>
-        <Ionicons name="camera-reverse-outline" size={32} color="white" />
-      </TouchableOpacity>
-    </View>
+            <View style={styles.sideButtonWrapper}>
+                <TouchableOpacity onPress={toggleCameraFacing} style={styles.sideButton}>
+                    <Ionicons name="camera-reverse-outline" size={32} color="white" />
+                </TouchableOpacity>
+            </View>
 
-    <TouchableOpacity onPress={takePicture} style={styles.shutterButton}>
-      <View style={styles.innerShutter} />
-    </TouchableOpacity>
-  </View>
-);
+            <TouchableOpacity onPress={takePicture} style={styles.shutterButton}>
+                <View style={styles.innerShutter} />
+            </TouchableOpacity>
+        </View>
+    );
 }
 
 const styles = StyleSheet.create({

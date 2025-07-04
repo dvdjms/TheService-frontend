@@ -18,7 +18,6 @@ export const getAppointment = async (userId: string, clientId: string, apptId: s
 }
 
 
-
 export const updateAppointment = async (userId: string, clientId: string, apptId: string, accessToken: string, data: any) => {
     return await fetchRequest(`/appointments/${apptId}?userId=${userId}&clientId=${clientId}`, accessToken, {
         method: 'PUT',
