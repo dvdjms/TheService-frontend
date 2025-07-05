@@ -4,7 +4,7 @@ import { router, useLocalSearchParams } from "expo-router";
 import { format } from "date-fns";
 import FormButton from "@/src/components/ui/FormButton";
 import { useEffect, useState } from "react";
-import { useUserDataStore } from "@/src/store/useUserDataStore";
+import { useUserDataStore } from "@/src/store/zustand/useUserDataStore";
 import { useAuth } from "@/src/context/authContext";
 import { deleteAppointment, getAppointment } from "@/src/api/appts";
 import { Ionicons } from "@expo/vector-icons";
