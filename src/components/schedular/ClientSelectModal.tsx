@@ -11,7 +11,6 @@ interface Props {
     onClose: () => void;
 }
 
-
 const screenWidth: number = Dimensions.get("window").width;
 const screenHeight: number = Dimensions.get("window").height;
 
@@ -69,7 +68,7 @@ const ClientSelectModal = ({  onSelect, visible, onClose }: Props) => {
                     showsVerticalScrollIndicator={false}
                     />
                 )} 
-                
+
                 <TouchableOpacity onPress={onClose} style={styles.closeButton}>
                     <Text style={styles.closeButtonText}>Close</Text>
                 </TouchableOpacity>

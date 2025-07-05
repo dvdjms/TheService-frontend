@@ -6,8 +6,7 @@ import { ScrollView } from 'react-native-gesture-handler';
 import { colors } from '@/src/styles/globalStyles';
 import { Ionicons } from '@expo/vector-icons';
 import { useAuth } from '@/src/context/authContext';
-import { saveClientLocally } from '@/src/lib/clients/clientLocally';
-import { saveClientDynamo } from '@/src/lib/clients/clientDynamo';
+import { saveClient } from '@/src/store/clients/clientController';
 
 
 interface Props {
@@ -15,7 +14,7 @@ interface Props {
 }
 
 const ClientForm = ({ setModalVisible }: Props) => {
-    const { subscriptionTier } = useAuth();
+    const { userId, accessToken, subscriptionTier } = useAuth();
     const [firstName, setFirstName] = useState<string>('');
     const [lastName, setLastName] = useState<string>('');
     const [email, setEmail] = useState<string>('');
@@ -31,7 +30,6 @@ const ClientForm = ({ setModalVisible }: Props) => {
     const [error, setError] = useState<string>('');
     const [loading, setLoading] = useState<boolean>(false);
 
-    const { userId, accessToken } = useAuth();
 
     if(!accessToken){
         throw new Error('No access token available, please log in');
@@ -70,14 +68,9 @@ const ClientForm = ({ setModalVisible }: Props) => {
                 countryCode: countryCode || '',
             }
 
-            if (subscriptionTier === 'free') {
-                const response = saveClientLocally(clientData);
-                console.log("saveClientLocally response", response)
-
-            } else {
-                const response = await saveClientDynamo(clientData, accessToken)
-                console.log("saveClientToDynamo response", response)
-    
+            if(accessToken && subscriptionTier){
+                const response = await saveClient(clientData, accessToken, subscriptionTier)
+                console.log('Save client response (ClientForm): ', response)
             }
             setModalVisible(false);
             

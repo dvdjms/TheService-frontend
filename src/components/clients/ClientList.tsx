@@ -1,7 +1,8 @@
 import { FlatList, View, Text, StyleSheet } from 'react-native';
 import ClientCard from './ClientCard';
 import { Client } from '../types/Service';
-import { useUserDataStore } from '@/src/store/useUserDataStore';
+import { useUserDataStore } from '@/src/store/zustand/useUserDataStore';
+
 
 
 interface Props {

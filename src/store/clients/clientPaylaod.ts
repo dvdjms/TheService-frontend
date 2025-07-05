@@ -19,8 +19,6 @@ export const createFullClient = (data: {
     updatedAt?: string;
 
     }): Client => {
-        
-    const now = new Date().toISOString();
 
     return {
         PK: `USER#${data.userId}`,

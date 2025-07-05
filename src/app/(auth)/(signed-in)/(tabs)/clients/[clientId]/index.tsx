@@ -5,7 +5,6 @@ import { colors } from '@/src/styles/globalStyles';
 import React, { useEffect, useState } from 'react';
 import { deleteClient, getClient } from '@/src/api/clients';
 import { useAuth } from '@/src/context/authContext';
-import { useUserDataStore } from '@/src/store/useUserDataStore';
 import { Appointment } from '@/src/components/types/Service';
 import { Ionicons } from '@expo/vector-icons';
 import { CustomContact } from '@/src/components/ui/CustomContact';
@@ -13,9 +12,7 @@ import ApptCardClient from '@/src/components/clients/ApptCardClient';
 import { AddButton } from '@/src/components/ui/AddButton';
 import Animated, { FadeIn, useAnimatedStyle, useSharedValue, withTiming } from 'react-native-reanimated';
 import { ClientAddress } from '@/src/components/clients/ClientAddress';
-import { deleteClientMMKV } from '@/src/store/mmkv/mmkvStorageClients';
-import { deleteClientLocally } from '@/src/lib/clients/clientLocally';
-import { deleteClientDynamo } from '@/src/lib/clients/clientDynamo';
+import { useUserDataStore } from '@/src/store/zustand/useUserDataStore';
 
 
 export default function ClientDetail() {
@@ -77,14 +74,10 @@ export default function ClientDetail() {
 
 
     const handleDelete = async () => {
-        if (subscriptionTier === 'free'){
-            deleteClientLocally(clientIdString);
-        }else {
-            const response = await deleteClientDynamo(userId, clientIdString, accessTokenString);
-            console.log('handleDelete client triggered', response)
-      
-        }
-        router.back();
+        const response = await deleteClient(userId, clientIdString, accessTokenString);
+        console.log('handleDelete client triggered', response)
+        
+        if(response) router.back();
     }
 
     const onPress = () => {

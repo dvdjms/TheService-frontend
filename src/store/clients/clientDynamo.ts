@@ -1,8 +1,16 @@
-import { createClient, deleteClient, updateClient } from "@/src/api/clients";
+import { createClient, deleteClient, getAllClients, updateClient } from "@/src/api/clients";
 import { Client, PartialClient } from "@/src/components/types/Service";
-import { useUserDataStore } from "@/src/store/useUserDataStore";
+import { createFullClient } from "./clientPaylaod";
+import { useUserDataStore } from "../zustand/useUserDataStore";
 import UUID from 'react-native-uuid';
-import { createFullClient } from "./client";
+
+
+
+
+export const getClientsDynamo = async (userId: string, accessToken: string): Promise<Client[]> => {
+    const response = await getAllClients(userId, accessToken);
+    return response
+};
 
 
 export const saveClientDynamo = async (params: PartialClient, accessToken: string) => {
@@ -69,37 +77,9 @@ export const deleteClientDynamo = async (userId: string, clientId: string, acces
 };
 
 
-export const updateClientDynamo = async (updatedFields: Client, accessToken: string) => {
-    const { clientId } = updatedFields;
-    if (!clientId) return null;
 
-    const prevClient = useUserDataStore.getState().getClientById(clientId);
-    
-    const optimisticClient = {
-        ...prevClient,
-        ...updatedFields,
-        updatedAt: new Date().toISOString(),
-    };
-
-
-    useUserDataStore.getState().replaceClient(clientId, optimisticClient);
-
-    try {
-        const response = await updateClient(clientId, accessToken, updatedFields);
-        if (!response?.client) {
-            throw new Error("Update failed");
-        }
-
-        const confirmedClient = response.client.ToolboxItem;
-        useUserDataStore.getState().replaceClient(clientId, confirmedClient);
-        
-        return confirmedClient;
-    } catch (err) {
-        console.error("Failed to update client:", err);
-        // Roll back
-        if (prevClient) {
-            useUserDataStore.getState().replaceClient(clientId, prevClient);
-        }
-        return null;
-    }
+export const updateClientDynamo = async (clientId: string, updatedFields: Partial<Client>, accessToken: string
+): Promise<Client | null> => {
+    const response = await updateClient(clientId, accessToken, updatedFields);
+    return response?.client?.ToolboxItem ?? null;
 };

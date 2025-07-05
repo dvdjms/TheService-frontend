@@ -10,8 +10,7 @@ import { useAuth } from "@/src/context/authContext";
 import ClientSelectModal from "@/src/components/schedular/ClientSelectModal";
 import ColourSelectModal from "./ColorSelectModal";
 import { colors } from "@/src/styles/globalStyles";
-import { saveApptLocally } from "@/src/lib/appts/apptLocally";
-import { saveApptToDynamo } from "@/src/lib/appts/apptDynamo";
+import { saveAppt } from "@/src/store/appts/apptController";
 
 
 interface AppointmentBlockProps {
@@ -92,27 +91,20 @@ const AppointmentBlock = ({ selectedTimeBlock, isModalVisible, isModalExpanded }
         };
 
         try {
-            if(subscriptionTier === 'free'){
-                const response = saveApptLocally(appointmentData);
-                //console.log('Save appt locally', response)
-
-            } else {
-                if(accessToken){
-                    const response = await saveApptToDynamo(appointmentData, accessToken);
-                    //console.log('Saved appt to Dynamo', response)
-                } 
+            if(accessToken && subscriptionTier){
+                const response = await saveAppt(appointmentData, accessToken, subscriptionTier);
+                console.log("Save appt response", response);
+                
+                setTitle("");
+                setSelectedClient(null);
+                handleClose();
             }
 
-            setTitle("");
-            setSelectedClient(null);
-            handleClose();
         } catch (error) {
             console.error("Failed to save appointment")
         }
     };
 
-
-    
 
     return (
         <>

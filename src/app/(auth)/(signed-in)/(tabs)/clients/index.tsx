@@ -6,7 +6,7 @@ import { useState } from "react";
 import ClientForm from "@/src/components/forms/ClientForm";
 import { router } from "expo-router";
 import { Client } from "@/src/components/types/Service";
-import { useUserDataStore } from "@/src/store/useUserDataStore";
+import { useUserDataStore } from "@/src/store/zustand/useUserDataStore";
 import ScreenTitle from "@/src/components/ui/ScreenTitle";
 
 const screenWidth = Dimensions.get('window').width;
