@@ -3,7 +3,7 @@ import { useAuth } from '@/src/context/authContext';
 import { ActivityIndicator, View } from 'react-native';
 import { configureReanimatedLogger } from 'react-native-reanimated';
 import { useEffect } from 'react';
-import { useUserDataStore } from '@/src/store/useUserDataStore'
+import { useUserDataStore } from '@/src/store/zustand/useUserDataStore'
 import * as FileSystem from 'expo-file-system';
 import { initializeUserData } from '@/src/lib/init/initializeUserData';
 

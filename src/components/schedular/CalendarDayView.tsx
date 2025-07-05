@@ -9,7 +9,7 @@ import { addDaysNumber } from '../utils/timeUtils';
 import { CalendarDayViewHandle, TimeBlock } from '@/src/components/types/Service';
 import { useSwipeGestures } from '../hooks/useSwipeGestures';
 import { getMinutesSinceMidnight } from '../utils/timeBlockUtils';
-import { useUserDataStore } from '@/src/store/useUserDataStore';
+import { useUserDataStore } from '@/src/store/zustand/useUserDataStore';
 
 
 const screenWidth = Dimensions.get('window').width;

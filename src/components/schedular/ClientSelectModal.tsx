@@ -1,4 +1,4 @@
-import { useUserDataStore } from "@/src/store/useUserDataStore";
+import { useUserDataStore } from "@/src/store/zustand/useUserDataStore";
 import { FlatList, TouchableOpacity, Text, StyleSheet, Modal, View } from "react-native"
 import { Dimensions } from "react-native";
 import Animated, { useSharedValue, useAnimatedStyle, withTiming, Easing, runOnJS } from "react-native-reanimated";

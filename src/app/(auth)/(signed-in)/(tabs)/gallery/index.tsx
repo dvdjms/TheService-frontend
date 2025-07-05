@@ -8,7 +8,7 @@ import GalleryModal from '@/src/components/gallery/GalleryModal';
 import { useAuth } from '@/src/context/authContext';
 import { createImage } from '@/src/api/images';
 import { Appointment, Client } from '@/src/components/types/Service';
-import { useUserDataStore } from '@/src/store/useUserDataStore';
+import { useUserDataStore } from '@/src/store/zustand/useUserDataStore';
 
 
 export default function GalleryScreen() {

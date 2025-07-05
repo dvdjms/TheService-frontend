@@ -1,7 +1,7 @@
 import { Text, StyleSheet, Pressable, View, TouchableOpacity } from 'react-native';
 import { Appointment } from '../types/Service';
 import dayjs from 'dayjs';
-import { useUserDataStore } from '@/src/store/useUserDataStore';
+import { useUserDataStore } from '@/src/store/zustand/useUserDataStore';
 
 
 type Props = {

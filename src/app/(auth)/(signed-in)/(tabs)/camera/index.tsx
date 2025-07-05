@@ -3,7 +3,7 @@ import { useState, useRef } from 'react';
 import { Button, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import * as FileSystem from 'expo-file-system';
-import { useUserDataStore } from '@/src/store/useUserDataStore';
+import { useUserDataStore } from '@/src/store/zustand/useUserDataStore';
 
 
 export default function CameraScreen() {

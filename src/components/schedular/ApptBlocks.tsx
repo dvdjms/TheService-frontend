@@ -3,7 +3,7 @@ import { StyleSheet, Text, Pressable } from "react-native";
 import { PositionedAppointment } from "../types/Service";
 import { router } from "expo-router";
 import { yToTime11 } from "../utils/timeUtils";
-import { useUserDataStore } from "@/src/store/useUserDataStore";
+import { useUserDataStore } from "@/src/store/zustand/useUserDataStore";
 
 
 interface Props {
