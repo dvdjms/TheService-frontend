@@ -1,58 +1,35 @@
 import { createAppointment, getAllAppointments, updateAppointment } from "@/src/api/appts";
-import { createFullAppointment } from "./apptsPayload";
-import { Appointment, PartialAppointment } from "@/src/components/types/Service";
-import UUID from 'react-native-uuid';
-import { useUserDataStore } from "../zustand/useUserDataStore";
+import { Appointment } from "@/src/components/types/Service";
+
 
 
 export const getApptsDynamo = async (userId: string, accessToken: string): Promise<Appointment[]> => {
     const response = await getAllAppointments(userId, accessToken);
-    return response
+    const apptsArray = response.appointments ?? [];
+    return apptsArray;
+
 };
 
 
-export const saveApptToDynamo = async (params: PartialAppointment, accessToken: string) => {
-    const now = new Date().toISOString();
-    const tempApptId = UUID.v4();
+export const saveApptToDynamo = async (appt: Appointment, accessToken: string): Promise<{appt: Appointment, apptId: string}> => {
+    const response = await createAppointment(accessToken, appt);
+    const apptId = response.appointment?.ToolboxItem?.apptId;
 
-    const optimisticAppt = createFullAppointment({
-        ...params,
-        apptId: tempApptId,
-        createdAt: now,
-        updatedAt: now,
-    });
-
-    useUserDataStore.getState().addAppt(optimisticAppt);
-
-    try {
-        const response = await createAppointment(accessToken, params);
-        const apptId = response.appointment?.ToolboxItem?.apptId;
-
-        if (!response || !apptId) {
-            throw new Error("Failed to get appointment ID from server");
-        }
-
-        const confirmedAppt = createFullAppointment({
-            ...optimisticAppt,
-            apptId,
-        });
-
-        useUserDataStore.getState().replaceAppt(tempApptId, confirmedAppt);
-
-        return confirmedAppt;
-    } catch (error) {
-        console.error("Failed to save appointment to Dynamo", error);
-        // Rollback optimistic update
-        useUserDataStore.getState().removeAppt(tempApptId);
-        return null;
+    if (!apptId) {
+        throw new Error("Failed to get appointment ID from server");
     }
+    const confirmedAppt = { ...appt, apptId}
+    return { apptId, appt: confirmedAppt  }
 };
+
 
 
 export const updateApptDynamo = async (appt: Appointment, accessToken: string
 ): Promise<Appointment | null> => {
 
     const response = await updateAppointment(appt.userId, appt.clientId, appt. apptId, accessToken, appt);
-    return response?.client?.ToolboxItem ?? null;
+    return response?.appt?.ToolboxItem ?? null;
 };
+
+
 

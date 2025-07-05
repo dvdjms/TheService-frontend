@@ -2,8 +2,9 @@ import { Client, PartialClient } from "@/src/components/types/Service";
 
 import UUID from 'react-native-uuid';
 import { createFullClient } from "./clientPaylaod";
-import { loadClientsMMKV, saveClientsMMKV } from "@/src/store/mmkv/mmkvStorageClients";
+import { addClientMMKV, loadClientsMMKV, saveClientsMMKV } from "@/src/store/mmkv/mmkvStorageClients";
 import { useUserDataStore } from "../zustand/useUserDataStore";
+import { loadApptsMMKV } from "../mmkv/mmkvStorageAppts";
 
 
 export const loadClientsLocally = () => {
@@ -12,22 +13,11 @@ export const loadClientsLocally = () => {
 };
 
 
-
-export const saveClientLocally = (params: PartialClient) => {
-    const clientId = UUID.v4() as string;
-
-    const fullClient = createFullClient({
-        ...params,
-        clientId,
-    });
-
-    useUserDataStore.getState().addClient(fullClient);
-    const clients = useUserDataStore.getState().clients;
-
-    saveClientsMMKV(clients);
-
-    return fullClient;
+export const saveClientLocally = (client: Client) => {
+    addClientMMKV(client);
+    return {clientId: client.clientId, client };
 };
+
 
 
 export const deleteClientLocally = (clientId: string) => {

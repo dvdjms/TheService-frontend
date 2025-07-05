@@ -3,6 +3,8 @@ import { deleteApptLocally, loadApptsLocally, saveApptLocally, updateApptLocally
 import { getApptsDynamo, saveApptToDynamo, updateApptDynamo } from "./apptDynamo";
 import { deleteAppointment } from "@/src/api/appts";
 import { useUserDataStore } from "../zustand/useUserDataStore";
+import UUID from 'react-native-uuid';
+import { createFullAppointment } from "./apptsPayload";
 
 
 export const getAppts = async (userId: string, accessToken: string, tier: string): Promise<Appointment[]> => {
@@ -10,20 +12,37 @@ export const getAppts = async (userId: string, accessToken: string, tier: string
         ? loadApptsLocally()
         : await getApptsDynamo(userId, accessToken);
     
-    console.log('appts controller', appts)
     useUserDataStore.getState().setAppts(appts);
     return appts;
 };
 
-////////Ensure dynamo and mmkv return the same object
-export const saveAppt = async (params: PartialAppointment, accessToken: string, tier: string) => {
-    const appts = tier === 'free'
-        ? saveApptLocally(params)
-        : await saveApptToDynamo(params, accessToken)
-        
-    // useUserDataStore.getState().setAppts(appts);
 
-    return appts;
+export const saveAppt = async (params: PartialAppointment, accessToken: string, tier: string) => {
+    const now = new Date().toISOString();
+    const tempApptId = UUID.v4() as string;
+
+    const optimisticAppt = createFullAppointment({
+        ...params,
+        apptId: tempApptId,
+        createdAt: now,
+        updatedAt: now,
+    });
+    
+    useUserDataStore.getState().addAppt(optimisticAppt);
+
+    try {
+        const confirmedAppt = tier === 'free'
+            ? saveApptLocally(optimisticAppt)
+            : await saveApptToDynamo(optimisticAppt, accessToken)
+            
+         useUserDataStore.getState().replaceAppt(tempApptId, confirmedAppt.appt);
+
+        return confirmedAppt;
+    } catch (error){
+        console.error("Failed to save appointment", error);
+        useUserDataStore.getState().removeAppt(tempApptId);
+        return null;
+    }
 };
 
 

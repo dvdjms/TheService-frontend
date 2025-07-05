@@ -93,7 +93,8 @@ const AppointmentBlock = ({ selectedTimeBlock, isModalVisible, isModalExpanded }
         try {
             if(accessToken && subscriptionTier){
                 const response = await saveAppt(appointmentData, accessToken, subscriptionTier);
-                console.log("Save appt response", response);
+                
+                if (response) console.log("ApptModal: Save appt success");
                 
                 setTitle("");
                 setSelectedClient(null);

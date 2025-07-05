@@ -1,32 +1,18 @@
-import { Appointment, PartialAppointment } from "@/src/components/types/Service";
-import UUID from 'react-native-uuid';
-import { createFullAppointment } from "./apptsPayload";
-import { loadApptsMMKV, saveApptsMMKV } from "@/src/store/mmkv/mmkvStorageAppts";
+import { Appointment } from "@/src/components/types/Service";
+import { addApptMMKV, loadApptsMMKV, saveApptsMMKV } from "@/src/store/mmkv/mmkvStorageAppts";
 
 
 export const loadApptsLocally = () => {
-    const appts = loadApptsMMKV(); // Reads from MMKV
+    const appts = loadApptsMMKV();
     return appts;
 };
 
 
-export const saveApptLocally = (params: PartialAppointment): Appointment[] => {
-    const apptId = UUID.v4() as string;
-    const now = new Date().toISOString();
-
-        const fullAppointment = createFullAppointment({
-            ...params,
-            apptId,
-            createdAt: now,
-            updatedAt: now,
-        });
-
-        const existingAppts = loadApptsMMKV() || [];
-        const updatedAppts = [...existingAppts, fullAppointment]
-        saveApptsMMKV(updatedAppts);
-        
-    return updatedAppts;
+export const saveApptLocally = (appt: Appointment) => {
+    addApptMMKV(appt);
+    return { apptId: appt.apptId, appt };
 };
+
 
 
 export const updateApptLocally = (appt: Appointment) => {

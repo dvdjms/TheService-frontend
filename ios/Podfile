@@ -48,7 +48,6 @@ target 'frontend' do
       config[:reactNativePath],
       :mac_catalyst_enabled => false,
       :ccache_enabled => podfile_properties['apple.ccacheEnabled'] == 'true',
-      :new_arch_enabled => true,
     )
 
     # This is necessary for Xcode 14, because it signs resource bundles by default

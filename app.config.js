@@ -8,7 +8,4 @@ export default ({ config }) => ({
     extra: {
         API_BASE_URL: process.env.API_BASE_URL,
     },
-    experiments: {
-        turboModules: true, // ✅ this enables TurboModules (needed for MMKV 3.x)
-    },
 });

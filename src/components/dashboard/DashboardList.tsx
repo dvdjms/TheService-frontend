@@ -14,11 +14,11 @@ export default function DashboardList() {
     const groupAppointmentsByDate = (appts: Appointment[]) => {
         const groups: { [date: string]: Appointment[] } = {};
 
-        // for (const appt of appts) {
-        //     const dateKey = dayjs(appt.startTime).format('YYYY-MM-DD');
-        //     if (!groups[dateKey]) groups[dateKey] = [];
-        //         groups[dateKey].push(appt);
-        // }
+        for (const appt of appts) {
+            const dateKey = dayjs(appt.startTime).format('YYYY-MM-DD');
+            if (!groups[dateKey]) groups[dateKey] = [];
+                groups[dateKey].push(appt);
+        }
 
         dayjs.extend(isSameOrAfter);
         // Convert to SectionList format

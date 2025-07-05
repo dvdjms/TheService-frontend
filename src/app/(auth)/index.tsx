@@ -14,13 +14,6 @@ export default function Index() {
     const { isAuthenticated, hasCheckedAuth, userId, accessToken, subscriptionTier } = useAuth();
     configureReanimatedLogger({strict: false,});
 
-    const {
-        setUser,
-        setClients,
-        setAppts,
-        setImages,
-        setLocalImages
-    } = useUserDataStore();
 
 
     // const loadLocalImagesOnly = async () => {
@@ -64,52 +57,9 @@ export default function Index() {
     useEffect(() => {
         if (isAuthenticated && userId && accessToken && subscriptionTier) {
             initializeUserData(userId, accessToken, subscriptionTier);
-            // loadLocalImagesOnly()
+            // loadLocalImagesOnly();
         }
     }, [isAuthenticated, accessToken, userId, subscriptionTier]);
-
-
-    // useEffect(() => {
-    //     if(!isAuthenticated || !accessToken) return;
-
-
-    //     const initialize = async () => {
-    //         if (subscriptionTier === 'free') {
-    //             // Just load local images and maybe local clients/appointments from AsyncStorage
-    //             const localClients = loadClientsMMKV();
-    //             const localAppts = loadApptsMMKV();
-                
-    //             setClients(localClients ?? []);
-    //             setAppts(localAppts ?? []);
-
-    //             // Get local images from file system
-    //             await loadLocalImagesOnly();
-    //         } else {
-    //             try {
-    //                 // Get DynamoDb user data
-    //                 const data = await getUserData(userId, accessToken);
-
-    //                 const user = data?.user ?? null;
-    //                 const clients = data?.clients ?? [];
-    //                 const appts = data?.appointments ?? [];
-    //                 const images = data?.images ?? [];
- 
-    //                 setUser(user);
-    //                 setClients(clients);
-    //                 setAppts(appts);
-    //                 setImages(images);
-
-    //                 // Get local images from file system
-    //                 await loadLocalImagesOnly();
-
-    //             } catch (error) {
-    //                 console.error("Error initializing app data:", error);
-    //                 // Optionally: showToast("Failed to load data"); or setError("...");
-    //             }
-    //         }
-    //     };
-    //     initialize();
-    // }, [isAuthenticated, userId, accessToken]);
 
 
     if (!hasCheckedAuth) {

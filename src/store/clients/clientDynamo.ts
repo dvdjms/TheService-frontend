@@ -1,53 +1,24 @@
 import { createClient, deleteClient, getAllClients, updateClient } from "@/src/api/clients";
-import { Client, PartialClient } from "@/src/components/types/Service";
-import { createFullClient } from "./clientPaylaod";
+import { Client } from "@/src/components/types/Service";
 import { useUserDataStore } from "../zustand/useUserDataStore";
-import UUID from 'react-native-uuid';
-
-
 
 
 export const getClientsDynamo = async (userId: string, accessToken: string): Promise<Client[]> => {
     const response = await getAllClients(userId, accessToken);
-    return response
+    const clientsArray = response.clients ?? [];
+    return clientsArray;
 };
 
 
-export const saveClientDynamo = async (params: PartialClient, accessToken: string) => {
-    const now = new Date().toISOString();
-    const tempClientId = UUID.v4();
+export const saveClientDynamo = async (client: Client, accessToken: string): Promise<{client: Client, clientId: string}> => {
+    const response = await createClient(accessToken, client);
+    const clientId = response.client?.ToolboxItem?.clientId;
 
-    const optimisticClient = createFullClient({
-        ...params,
-        clientId: tempClientId,
-        createdAt: now,
-        updatedAt: now,
-    });
-
-    useUserDataStore.getState().addClient(optimisticClient);
-
-    try {
-        const response = await createClient(accessToken, params);
-        const clientId = response.client?.ToolboxItem?.clientId;
-
-        if (!response || !clientId) {
-            throw new Error("Failed to get client ID from server");
-        }
-
-        const confirmedClient = createFullClient({
-            ...optimisticClient,
-            clientId,
-        });
-
-        useUserDataStore.getState().replaceClient(tempClientId, confirmedClient);
-
-        return confirmedClient;
-    } catch (error) {
-        console.error("Failed to save client to Dynamo", error);
-        // Rollback optimistic update
-        useUserDataStore.getState().removeClient(tempClientId);
-        return null;
+    if (!clientId) {
+        throw new Error("Failed to get client ID from server");
     }
+    const confirmedClient = { ...client, clientId}
+    return { clientId, client: confirmedClient };
 };
 
 
