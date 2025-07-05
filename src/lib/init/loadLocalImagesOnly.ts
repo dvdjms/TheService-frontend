@@ -1,11 +1,10 @@
-import { useUserDataStore } from "@/src/store/useUserDataStore";
+import { useUserDataStore } from "@/src/store/zustand/useUserDataStore";
 import * as FileSystem from 'expo-file-system';
 
+const PHOTOS_DIR = FileSystem.documentDirectory + 'photos/';
 
-const loadLocalImagesOnly = async () => {
-
-    const PHOTOS_DIR = FileSystem.documentDirectory + 'photos/';
-    const { setLocalImages} = useUserDataStore();
+export const loadLocalImagesOnly = async () => {
+    const { setLocalImages } = useUserDataStore();
 
     const folderInfo = await FileSystem.getInfoAsync(PHOTOS_DIR);
     

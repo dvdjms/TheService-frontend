@@ -45,9 +45,14 @@ export const saveClient = async (client: PartialClient, accessToken: string, tie
 };
 
 
+// todo
+export const updateClient = async () => {
+
+
+}
+
 
 export const deleteClient = async (userId: string, clientId: string, accessToken: string, tier: string) => {
-
     if (tier === "free") {
         return deleteClientLocally(clientId);
     } else if (accessToken && userId) {

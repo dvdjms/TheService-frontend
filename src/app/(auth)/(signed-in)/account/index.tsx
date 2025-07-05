@@ -19,6 +19,26 @@ export default function AccountScreen() {
                 <Text style={styles.text}>Plans ({subscriptionTier})</Text>
             </TouchableOpacity>
 
+            <TouchableOpacity style={styles.item} onPress={() => router.push('/(auth)/(signed-in)/account/plan')}>
+                <Ionicons name="mail-unread-outline" size={20} style={styles.icon} />
+                <Text style={styles.text}>Upgrade/Downgrade Options </Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity style={styles.item} onPress={() => router.push('/(auth)/(signed-in)/account/plan')}>
+                <Ionicons name="mail-unread-outline" size={20} style={styles.icon} />
+                <Text style={styles.text}>Notifications </Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity style={styles.item} onPress={() => router.push('/(auth)/(signed-in)/account/plan')}>
+                <Ionicons name="lock-closed-outline" size={20} style={styles.icon} />
+                <Text style={styles.text}>Change password </Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity style={styles.item} onPress={() => router.push('/(auth)/(signed-in)/account/plan')}>
+                <Ionicons name="trash-outline" size={20} style={styles.icon} />
+                <Text style={styles.text}>Delete account </Text>
+            </TouchableOpacity>
+
             </View>
 
         </View>

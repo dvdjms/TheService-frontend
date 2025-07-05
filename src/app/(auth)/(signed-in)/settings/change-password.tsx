@@ -1,4 +1,5 @@
 import ChangePasswordForm from "@/src/components/forms/ChangePasswordForm";
+import { colors } from "@/src/styles/globalStyles";
 import { Text, View, StyleSheet } from "react-native";
 
 
@@ -14,7 +15,7 @@ export default function ChangePasswordScreen() {
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        backgroundColor: '#f0f0dd',
+        backgroundColor: colors.background,
         justifyContent: 'center',
         alignItems: 'center',
     },

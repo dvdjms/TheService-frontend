@@ -1,5 +1,6 @@
 import { Text, View, StyleSheet, TouchableOpacity } from "react-native";
 import { Link } from 'expo-router';
+import { colors } from "@/src/styles/globalStyles";
 
 export default function SettingScreen() {
     return (
@@ -21,7 +22,7 @@ export default function SettingScreen() {
 const styles = StyleSheet.create({
   container: {
         flex: 1,
-        backgroundColor: '#f0f0dd',
+        backgroundColor: colors.background,
         justifyContent: 'center',
         alignItems: 'center',
   },

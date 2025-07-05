@@ -1,4 +1,4 @@
-import { subscriptionPlans } from "@/src/constants/drawerScreens";
+import { subscriptionPlans } from "@/src/constants/subscriptionPlans";
 import { useAuth } from "@/src/context/authContext";
 import { colors } from "@/src/styles/globalStyles";
 import { router } from "expo-router";
@@ -10,7 +10,6 @@ export default function PlanScreen() {
 
     const onChoose = (name: string) => {
         console.log(name)
-
     }
 
     return (
@@ -22,29 +21,31 @@ export default function PlanScreen() {
                 const isActive = subscriptionTier === plan.name.toLocaleLowerCase();
 
                 return (
-                <View 
-                    key={plan.name} 
-                    style={[
-                        styles.card,
-                        isActive && styles.activeCard
-                    ]}>
-                    <Text style={styles.cardTitle}>{plan.name}</Text>
-                    <Text style={styles.cardPrice}>{plan.price}</Text>
-                    <View style={styles.features}>
-                        {plan.features.map((f) => (
-                        <Text key={f} style={styles.feature}>• {f}</Text>
-                        ))}
-                    </View>
-                    {!isActive ? (
-                        <Button title="Choose Plan" onPress={() => onChoose(plan.name)} />
-                    ): (
-                        <Text style={styles.currentPlan}>Current Plan</Text>
-                    )}
-                </View>
-            )})}
-                <Button title="Back to account" onPress={() => router.back()} />
-        </View>
+                    <View 
+                        key={plan.name} 
+                        style={[
+                            styles.card,
+                            isActive && styles.activeCard
+                        ]}>
+                        <Text style={styles.cardTitle}>{plan.name}</Text>
+                        <Text style={styles.cardPrice}>{plan.price}</Text>
+                        
+                        <View style={styles.features}>
+                            {plan.features.map((f) => (
+                                <Text key={f} style={styles.feature}>• {f}</Text>
+                            ))}
+                        </View>
 
+                        {!isActive ? (
+                            <Button title="Choose Plan" onPress={() => onChoose(plan.name)} />
+                        ): (
+                            <Text style={styles.currentPlan}>Current Plan</Text>
+                        )}
+                    </View>
+                )
+            })}
+            <Button title="Back to account" onPress={() => router.back()} />
+        </View>
     );
 }
 

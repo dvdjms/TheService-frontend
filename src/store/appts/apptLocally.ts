@@ -14,7 +14,6 @@ export const saveApptLocally = (appt: Appointment) => {
 };
 
 
-
 export const updateApptLocally = (appt: Appointment) => {
     const updatedAppt = {
         ...appt,

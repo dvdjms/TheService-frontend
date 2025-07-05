@@ -2,12 +2,10 @@ import { createAppointment, getAllAppointments, updateAppointment } from "@/src/
 import { Appointment } from "@/src/components/types/Service";
 
 
-
 export const getApptsDynamo = async (userId: string, accessToken: string): Promise<Appointment[]> => {
     const response = await getAllAppointments(userId, accessToken);
     const apptsArray = response.appointments ?? [];
     return apptsArray;
-
 };
 
 
@@ -26,7 +24,6 @@ export const saveApptToDynamo = async (appt: Appointment, accessToken: string): 
 
 export const updateApptDynamo = async (appt: Appointment, accessToken: string
 ): Promise<Appointment | null> => {
-
     const response = await updateAppointment(appt.userId, appt.clientId, appt. apptId, accessToken, appt);
     return response?.appt?.ToolboxItem ?? null;
 };

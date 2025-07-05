@@ -45,8 +45,7 @@ export const saveAppt = async (params: PartialAppointment, accessToken: string, 
     }
 };
 
-
-
+// todo
 export const updateAppt = async (apptId: string, updatedData: Appointment, accessToken: string, tier: string) => {
     const store = useUserDataStore.getState();
 
@@ -89,8 +88,6 @@ export const updateAppt = async (apptId: string, updatedData: Appointment, acces
         }
     }
 };
-
-
 
 
 export const deleteAppt = async (userId: string, apptId: string, clientId: string, accessToken: string, tier: string) => {
